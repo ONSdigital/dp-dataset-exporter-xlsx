@@ -1,0 +1,8 @@
+{"namespace": "dp.avro",
+ "type": "record",
+ "name": "ExportedFile",
+ "fields": [
+     {"name": "filterId", "type": "string"},
+     {"name": "s3URL",  "type": "string"}
+ ]
+}
