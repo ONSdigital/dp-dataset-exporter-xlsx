@@ -20,8 +20,7 @@ public class AvroDeserializer<T extends SpecificRecordBase> implements Deseriali
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AvroDeserializer.class);
 
-    protected final Class<T> targetType;
-
+    private final Class<T> targetType;
 
     public AvroDeserializer(Class<T> targetType) {
         this.targetType = targetType;
