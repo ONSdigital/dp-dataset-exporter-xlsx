@@ -14,6 +14,9 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A spring configuration for kafka consumer
+ */
 @Configuration
 public class KafkaConfiguration {
 
@@ -24,6 +27,11 @@ public class KafkaConfiguration {
     private String kafkaGroup;
 
 
+    /**
+     * We override the default consumer factory to place a AvroDeserializer within the DefaultKafkaConsumerFactory
+     *
+     * @return A DefaultKafkaConsumerFactory with a AvroDeserializer
+     */
     @Bean
     ConsumerFactory<String, AvroDeserializer<ExportedFile>> consumerFactory() {
         Map<String, Object> props = new HashMap<>();

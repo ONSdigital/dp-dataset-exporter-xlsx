@@ -4,7 +4,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import dp.avro.ExportedFile;
-import dp.dataset.DatasetAPI;
 import dp.xlsx.XLXSConverter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,9 +25,6 @@ public class HandlerTest {
     private AmazonS3 s3Client;
 
     @MockBean
-    private DatasetAPI datasetAPI;
-
-    @MockBean
     private XLXSConverter converter;
 
     @Autowired
@@ -40,11 +36,11 @@ public class HandlerTest {
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
         when(s3Object.getObjectContent()).thenReturn(stream);
         when(s3Client.getObject("bucket", "v4.csv")).thenReturn(s3Object);
-        when(converter.toXLXS(any(), any())).thenReturn(new ByteArrayOutputStream() );
+        when(converter.toXLXS(any())).thenReturn(new ByteArrayOutputStream() );
         final ExportedFile exportedFile = new ExportedFile( "123", "s3://bucket/v4.csv");
         handler.listen(exportedFile);
         verify(s3Client, times(1)).getObject(anyString(), anyString());
-        verify(converter, times(1)).toXLXS(any(), any());
+        verify(converter, times(1)).toXLXS(any());
         verify(s3Client, times(1)).putObject(any());
     }
 

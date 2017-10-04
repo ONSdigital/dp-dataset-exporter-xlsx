@@ -1,6 +1,5 @@
 package dp.deserializer;
 
-import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumReader;
 import org.apache.avro.io.Decoder;
 import org.apache.avro.io.DecoderFactory;
@@ -16,34 +15,36 @@ import java.util.Arrays;
 import java.util.Map;
 
 
+/**
+ * A class used by kafka to deserialize any avro messages to Java Objects
+ *
+ * @param <T> The type of object to be returned must extend SpecificRecordBase
+ */
 public class AvroDeserializer<T extends SpecificRecordBase> implements Deserializer<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AvroDeserializer.class);
 
     private final Class<T> targetType;
 
-    public AvroDeserializer(Class<T> targetType) {
+    public AvroDeserializer(final Class<T> targetType) {
         this.targetType = targetType;
     }
 
     @Override
-    public void configure(Map<String, ?> map, boolean b) {
+    public void configure(final Map<String, ?> map, final boolean b) {
 
     }
 
     @Override
-    public T deserialize(String topic, byte[] data) {
+    public T deserialize(final String topic, final byte[] data) {
         try {
             T result = null;
 
             if (data != null) {
                 LOGGER.debug("data='{}'", data);
-
-                DatumReader<GenericRecord> datumReader =
-                        new SpecificDatumReader<>(targetType.newInstance().getSchema());
-                Decoder decoder = DecoderFactory.get().binaryDecoder(data, null);
-
-                result = (T) datumReader.read(null, decoder);
+                final DatumReader<T> datumReader = new SpecificDatumReader<>(targetType.newInstance().getSchema());
+                final Decoder decoder = DecoderFactory.get().binaryDecoder(data, null);
+                result = datumReader.read(null, decoder);
                 LOGGER.debug("deserialized data='{}'", result);
             }
             return result;
