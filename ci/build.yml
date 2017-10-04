@@ -1,0 +1,15 @@
+---
+
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: maven
+    tag: 3.5-jdk-9-slim
+
+inputs:
+  - name: dp-dataset-exporter-xlsx
+
+run:
+  path: dp-dataset-exporter-xlsx/ci/scripts/build.sh
