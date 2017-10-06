@@ -35,18 +35,22 @@ public class Handler {
     @Autowired
     private XLXSConverter converter;
 
-    @KafkaListener(topics = "${KAFKA_GROUP:convert-v4-file}")
-    public void listen(final ExportedFile message) throws IOException {
+    @KafkaListener(topics = "convert-v4-file")
+    public void listen(final ExportedFile message)  {
         LOGGER.debug("exporting file to xlsx using filterID: %s", message.getFilterId());
         final AmazonS3URI uri = new AmazonS3URI(message.getS3URL().toString());
-        try (final S3Object object = s3Client.getObject(uri.getBucket(), uri.getKey())) {
-            try (final ByteArrayOutputStream xls = converter.toXLXS(object.getObjectContent())) {
-                final long contentLength = xls.toByteArray().length;
-                final ObjectMetadata metadata = new ObjectMetadata();
-                metadata.setContentLength(contentLength);
-                final String key = message.getFilterId() + ".xlsx";
-                s3Client.putObject(new PutObjectRequest(bucket, key, new ByteArrayInputStream(xls.toByteArray()), metadata));
+        try {
+            try (final S3Object object = s3Client.getObject(uri.getBucket(), uri.getKey())) {
+                try (final ByteArrayOutputStream xls = converter.toXLXS(object.getObjectContent())) {
+                    final long contentLength = xls.toByteArray().length;
+                    final ObjectMetadata metadata = new ObjectMetadata();
+                    metadata.setContentLength(contentLength);
+                    final String key = message.getFilterId() + ".xlsx";
+                    s3Client.putObject(new PutObjectRequest(bucket, key, new ByteArrayInputStream(xls.toByteArray()), metadata));
+                }
             }
+        } catch (IOException | RuntimeException e) {
+            e.printStackTrace();
         }
         LOGGER.debug("exported completed for filterID: %s", message.getFilterId());
     }

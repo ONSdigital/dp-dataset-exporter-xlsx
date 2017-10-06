@@ -17,6 +17,8 @@ import java.util.List;
 @Component
 public class XLXSConverter {
 
+
+    private final Formatter formatter = new Formatter();
     /**
      * Convert a V4 file to a XLSX file
      *
@@ -28,30 +30,24 @@ public class XLXSConverter {
         final Workbook wb = new XSSFWorkbook();
         final CellStyle style = createStyle(wb);
         final Sheet sheet = wb.createSheet("Dataset");
-        try (final CSVReader reader = new CSVReader(new InputStreamReader(stream))) {
-            List<String[]> data = reader.readAll();
-            for (int r = 0; r < data.size(); r++){
-                String[] csvRow = data.get(r);
-                final Row row = sheet.createRow(r);
-                for (int c = 0; c < csvRow.length; c++) {
-                    Cell cell = row.createCell(c);
-                    cell.setCellValue(csvRow[c]);
-                    cell.setCellStyle(style);
-                }
-            }
-            final ByteArrayOutputStream os = new ByteArrayOutputStream();
-            wb.write(os);
-            os.flush();
-            return os;
-        }
+
+        final V4File v4File = new V4File(stream);
+
+        formatter.format(sheet, v4File, style);
+
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        wb.write(os);
+        os.flush();
+        return os;
     }
 
     private CellStyle createStyle(Workbook wb) {
         final CellStyle style = wb.createCellStyle();
         final Font font = wb.createFont();
         font.setFontName("Arial");
-        font.setFontHeightInPoints((short)14);
+        font.setFontHeightInPoints((short) 14);
         style.setFont(font);
+        style.setWrapText(true);
         return style;
     }
 

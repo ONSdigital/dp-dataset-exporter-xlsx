@@ -23,9 +23,9 @@ public class XLXSConverterTest {
     public void csvToXlsx() throws IOException {
         try (final InputStream csv = XLXSConverterTest.class.getResourceAsStream("v4_0.csv")) {
             ByteArrayOutputStream xlxs = converter.toXLXS(csv);
-            // For an XLSX file it seems impossible to recreate the same out, as to identical runs will not create
+            // For an XLSX file it seems impossible to recreate the same output, as to identical runs will not create
             // two identical files.
-            assertThat(xlxs.toString().length()).isGreaterThan(3580).isLessThan(3770);
+            assertThat(xlxs.toString().length()).isGreaterThan(3500).isLessThan(3770);
         }
     }
 }

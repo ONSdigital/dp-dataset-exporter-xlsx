@@ -5,3 +5,9 @@ V4_0,Time_codelist,Time,Geography_codelist,Geography,cpi1dim1aggid,Aggregate
 95.6,Month,Jan-96,K02000001,,cpi1dim1G20100,02.1 Alcoholic beverages
 57.2,Month,Jan-96,K02000001,,cpi1dim1G20200,02.2 Tobacco
 163.7,Month,Jan-96,K02000001,,cpi1dim1G30100,03.1 Clothing
+86.9,Month,Feb-96,K02000001,,cpi1dim1A0,CPI (overall index)
+90.6,Month,Feb-96,K02000001,,cpi1dim1G10100,01.1 Food
+93.9,Month,Feb-96,K02000001,,cpi1dim1G10200,01.2 Non-alcoholic beverages
+95.9,Month,Feb-96,K02000001,,cpi1dim1G20100,02.1 Alcoholic beverages
+57.6,Month,Feb-96,K02000001,,cpi1dim1G20200,02.2 Tobacco
+163.5,Month,Feb-96,K02000001,,cpi1dim1G30100,03.1 Clothing
