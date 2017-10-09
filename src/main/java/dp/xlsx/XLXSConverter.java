@@ -1,6 +1,5 @@
 package dp.xlsx;
 
-import au.com.bytecode.opencsv.CSVReader;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
@@ -8,8 +7,6 @@ import org.springframework.stereotype.Component;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.List;
 
 /**
  * A spring componet used to convert a V4 file to a XLSX file
@@ -28,16 +25,16 @@ public class XLXSConverter {
      */
     public ByteArrayOutputStream toXLXS(final InputStream stream) throws IOException {
         final Workbook wb = new XSSFWorkbook();
-        final CellStyle style = createStyle(wb);
+        final CellStyle title = createStyle(wb);
+        final CellStyle number = createNumberStyle(wb);
         final Sheet sheet = wb.createSheet("Dataset");
 
         final V4File v4File = new V4File(stream);
 
-        formatter.format(sheet, v4File, style);
+        formatter.format(sheet, v4File, title, number);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
         wb.write(os);
-        os.flush();
         return os;
     }
 
@@ -46,6 +43,17 @@ public class XLXSConverter {
         final Font font = wb.createFont();
         font.setFontName("Arial");
         font.setFontHeightInPoints((short) 14);
+        style.setFont(font);
+        style.setWrapText(true);
+        return style;
+    }
+
+    private CellStyle createNumberStyle(Workbook wb) {
+        final CellStyle style = wb.createCellStyle();
+        final Font font = wb.createFont();
+        font.setFontName("Arial");
+        font.setFontHeightInPoints((short) 14);
+        style.setDataFormat(wb.createDataFormat().getFormat("##.###"));
         style.setFont(font);
         style.setWrapText(true);
         return style;

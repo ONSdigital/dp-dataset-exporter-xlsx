@@ -1,9 +1,6 @@
 package dp.xlsx;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,19 +24,20 @@ class Formatter {
      *
      * @param sheet The exel sheet to add the data to
      * @param file The v4 file containing the data
-     * @param style The style of the cells
+     * @param titleStyle The style of the cell titles
+     * @param numberStyle The style of the observations
      */
-    void format(Sheet sheet, V4File file, CellStyle style) {
-        List<Group> groups = file.groupData();
+    void format(Sheet sheet, V4File file, CellStyle titleStyle, CellStyle numberStyle) {
+        final List<Group> groups = file.groupData();
+        final List<String> timeLabels = file.getUniqueTimeLabels();
+        final Map<String, Row> timeRows = new HashMap<>();
         int columnOffset = 0;
         int rowOffset = 1;
-        List<String> timeLabels = file.getUniqueTimeLabels();
-        Map<String, Row> timeRows = new HashMap<>();
         // Start off by placing the time on all rows
         for (int i=0; i < timeLabels.size(); i++) {
             Row row = sheet.createRow(i + rowOffset);
             Cell cell = row.createCell(columnOffset);
-            cell.setCellStyle(style);
+            cell.setCellStyle(titleStyle);
             cell.setCellValue(timeLabels.get(i));
             timeRows.put(timeLabels.get(i), row);
         }
@@ -48,15 +46,18 @@ class Formatter {
         // For each group add the title onto the row
         for (int g = 0; g < groups.size(); g++) {
             Cell cell = title.createCell(g + columnOffset);
-            cell.setCellStyle(style);
+            cell.setCellStyle(titleStyle);
             cell.setCellValue(groups.get(g).getTitle());
             sheet.autoSizeColumn(g + columnOffset);
             // For each time label add the observation into the correct row
             for (String timeTitle : timeLabels) {
                 Row row = timeRows.get(timeTitle);
                 Cell obs = row.createCell(g + columnOffset);
-                obs.setCellStyle(style);
-                obs.setCellValue(groups.get(g).getObservation(timeTitle));
+                obs.setCellStyle(numberStyle);
+                final String value = groups.get(g).getObservation(timeTitle);
+                if (value != null) {
+                    obs.setCellValue(Double.parseDouble(value));
+                }
             }
         }
 
