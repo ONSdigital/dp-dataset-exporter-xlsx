@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.AmazonS3URI;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import dp.api.FilterAPIClient;
 import dp.avro.ExportedFile;
 import dp.xlsx.XLXSConverter;
 import org.slf4j.Logger;
@@ -19,7 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**
- * A class used to comsume ExportedFile message from kafka
+ * A class used to consumer ExportedFile message from kafka
  */
 @Component
 public class Handler {
@@ -35,9 +36,12 @@ public class Handler {
     @Autowired
     private XLXSConverter converter;
 
+    @Autowired
+    private FilterAPIClient filterAPIClient;
+
     @KafkaListener(topics = "convert-v4-file")
-    public void listen(final ExportedFile message)  {
-        LOGGER.debug("exporting file to xlsx using filterID: %s", message.getFilterId());
+    public void listen(final ExportedFile message) {
+        LOGGER.info("exporting file to xlsx using filterID: {}", message.getFilterId());
         final AmazonS3URI uri = new AmazonS3URI(message.getS3URL().toString());
         try {
             try (final S3Object object = s3Client.getObject(uri.getBucket(), uri.getKey())) {
@@ -46,13 +50,18 @@ public class Handler {
                     final ObjectMetadata metadata = new ObjectMetadata();
                     metadata.setContentLength(contentLength);
                     final String key = message.getFilterId() + ".xlsx";
-                    s3Client.putObject(new PutObjectRequest(bucket, key, new ByteArrayInputStream(xls.toByteArray()), metadata));
+                    try (final ByteArrayInputStream stream = new ByteArrayInputStream(xls.toByteArray())) {
+                        final PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, key, stream, metadata);
+                        s3Client.putObject(putObjectRequest);
+                        final String downloadUri = s3Client.getUrl(bucket, key).toString();
+                        filterAPIClient.addXLSXFile(message.getFilterId().toString(), downloadUri, contentLength);
+                    }
                 }
             }
-        } catch (IOException | RuntimeException e) {
-            e.printStackTrace();
+        } catch (final IOException e) {
+            LOGGER.error("error when exporting filter {}. exception : {}", message.getFilterId(), e);
         }
-        LOGGER.debug("exported completed for filterID: %s", message.getFilterId());
+        LOGGER.info("exported completed for filterID: {}", message.getFilterId());
     }
 
 }
