@@ -3,6 +3,7 @@ package dp.handler;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import dp.api.FilterAPIClient;
 import dp.avro.ExportedFile;
 import dp.xlsx.XLXSConverter;
 import org.junit.Test;
@@ -14,6 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URL;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -28,6 +30,9 @@ public class HandlerTest {
     @MockBean
     private XLXSConverter converter;
 
+    @MockBean
+    private FilterAPIClient client;
+
     @Autowired
     private Handler handler;
 
@@ -37,6 +42,7 @@ public class HandlerTest {
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
         when(s3Object.getObjectContent()).thenReturn(stream);
         when(s3Client.getObject("bucket", "v4.csv")).thenReturn(s3Object);
+        when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/sdfsdf"));
         when(converter.toXLXS(any())).thenReturn(new ByteArrayOutputStream());
         final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv");
         handler.listen(exportedFile);
