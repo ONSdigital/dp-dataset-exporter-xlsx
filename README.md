@@ -1,30 +1,31 @@
-dp-repo-template
+dp-dataset-exporter-xlsx
 ================
 
-A template git repository for DP repos:
-
-* Standardised files for CHANGELOG, CONTRIBUTING, LICENSE and README
-* Default template for GitHub pull requests
+A service which converts a V4 into a formatted XLSX file
 
 ### Getting started
 
-After creating a new repository on GitHub, use these commands to initialise
-it using this repository as a template:
+* Install maven 3.5+ `brew install maven`
+* Install Java 1.8+
+* Install kafka `brew install kafka` supports versions (0.9, 0.10, 0.11)
 
-* `git clone git@github.com:ONSdigital/dp-repo-template dp-new-repo-name`
-* `cd dp-new-repo-name`
-* `git remote set-url origin git@github.com:ONSdigital/dp-new-repo-name`
-
-Remember to update the [README](README.md) and [CHANGELOG](CHANGELOG.md) files.
+To quickly run the service locally use the `run.sh` script. Make sure AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are
+setup as environment variables.
 
 ### Configuration
 
-An overview of the configuration options available, either as a table of
-environment variables, or with a link to a configuration guide.
+| Environment variable  | Default                              | Description
+| ----------------------| -------------------------------------|---------------------------------
+| PORT                  | 22800                                | Host and port to bind to
+| KAFKA_ADDR            | localhost:9092                       | Kafka address to use
+| KAFKA_GROUP           | dp-dataset-exporter-xlsx             | Kafka consumer group name
+| AWS_ACCESS_KEY_ID     | access-key-id                        | AWS access id for s3 (must be provided)
+| AWS_SECRET_ACCESS_KEY | access-key-secret                    | AWS secret key for s3 (must be provided)
+| S3_REGION             | eu-west-1                            | AWS region for S3
+| S3_BUCKET_NAME        | csv-exported                         | AWS bucket to store the XLSX files
+| FILTER_API_URL        | http://localhost:22100               | Filter api URL
+| FILTER_API_AUTH_TOKEN | FD0108EA-825D-411C-9B1D-41EF7727F465 | Secret token to use the Filter api
 
-| Environment variable | Default | Description
-| -------------------- | ------- | -----------
-| BIND_ADDR            | :8080   | The host and port to bind to
 
 ### Contributing
 

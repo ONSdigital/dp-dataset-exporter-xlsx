@@ -27,7 +27,7 @@ public class Handler {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(Handler.class);
 
-    @Value("${S3_BUCKET:csv-exported}")
+    @Value("${S3_BUCKET_NAME:csv-exported}")
     private String bucket;
 
     @Autowired

@@ -23,7 +23,7 @@ public class KafkaConfiguration {
     @Value("${KAFKA_ADDR:localhost:9092}")
     private String kafkaAddress;
 
-    @Value("${KAFKA_GROUP:dp-dp.dataset-exporter-xlsx}")
+    @Value("${KAFKA_GROUP:dp-dataset-exporter-xlsx}")
     private String kafkaGroup;
 
 
