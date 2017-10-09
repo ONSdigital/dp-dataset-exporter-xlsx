@@ -8,16 +8,17 @@ public class Group {
 
     /**
      * Create a group of dimensions
-     * @param data A row from a V4 file
+     *
+     * @param data   A row from a V4 file
      * @param offset The v4 file offset
      */
     Group(String[] data, int offset) {
         groupValues = new ArrayList<>();
         observations = new HashMap<>();
         int skipTime = offset + 3; // skip time code and label.
-        for(int i = skipTime; i < data.length; i+=2) {
+        for (int i = skipTime; i < data.length; i += 2) {
             String value = data[i];
-            if (value.equals("")) value = data[i-1]; // Get the code.
+            if (value.equals("")) value = data[i - 1]; // Get the code.
             groupValues.add(value);
         }
     }
@@ -25,7 +26,7 @@ public class Group {
     /**
      * Add a observation into the group
      *
-     * @param timeLabel The label used for the time
+     * @param timeLabel   The label used for the time
      * @param observation The observation value
      */
     void addObservation(final String timeLabel, final String observation) {
@@ -36,7 +37,7 @@ public class Group {
         StringBuffer buffer = new StringBuffer();
         groupValues.forEach(v -> buffer.append(v).append("\n"));
         final int size = buffer.toString().length();
-        return buffer.toString().substring(0, size -1);
+        return buffer.toString().substring(0, size - 1);
     }
 
     String getObservation(String time) {
@@ -54,7 +55,7 @@ public class Group {
 
     @Override
     public boolean equals(Object object) {
-        return  this.hashCode() == object.hashCode();
+        return this.hashCode() == object.hashCode();
     }
 
 

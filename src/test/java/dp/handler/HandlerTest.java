@@ -12,7 +12,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -36,8 +37,8 @@ public class HandlerTest {
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
         when(s3Object.getObjectContent()).thenReturn(stream);
         when(s3Client.getObject("bucket", "v4.csv")).thenReturn(s3Object);
-        when(converter.toXLXS(any())).thenReturn(new ByteArrayOutputStream() );
-        final ExportedFile exportedFile = new ExportedFile( "123", "s3://bucket/v4.csv");
+        when(converter.toXLXS(any())).thenReturn(new ByteArrayOutputStream());
+        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv");
         handler.listen(exportedFile);
         verify(s3Client, times(1)).getObject(anyString(), anyString());
         verify(converter, times(1)).toXLXS(any());

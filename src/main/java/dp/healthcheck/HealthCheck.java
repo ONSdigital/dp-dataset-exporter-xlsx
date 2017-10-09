@@ -10,7 +10,7 @@ public class HealthCheck {
 
     @RequestMapping("/healthcheck")
     HttpStatus healthCheck() {
-       return HttpStatus.OK;
+        return HttpStatus.OK;
     }
 
 }

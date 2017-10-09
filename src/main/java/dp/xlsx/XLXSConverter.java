@@ -1,6 +1,9 @@
 package dp.xlsx;
 
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
@@ -14,8 +17,8 @@ import java.io.InputStream;
 @Component
 public class XLXSConverter {
 
-
     private final Formatter formatter = new Formatter();
+
     /**
      * Convert a V4 file to a XLSX file
      *

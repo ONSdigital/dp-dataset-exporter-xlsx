@@ -23,7 +23,7 @@ public class FormatterTest {
             final CellStyle style = createStyle(wb);
             final Sheet sheet = wb.createSheet("Test");
             Formatter formatter = new Formatter();
-            formatter.format(sheet,file,style, style);
+            formatter.format(sheet, file, style, style);
             assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(3);
             assertThat(sheet.getDefaultColumnWidth()).isEqualTo(8);
         }
