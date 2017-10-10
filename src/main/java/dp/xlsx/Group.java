@@ -15,10 +15,12 @@ public class Group {
     Group(String[] data, int offset) {
         groupValues = new ArrayList<>();
         observations = new HashMap<>();
-        int skipTime = offset + 3; // skip time code and label.
-        for (int i = skipTime; i < data.length; i += 2) {
+        int skipTime = offset + 3; // skip the observation, time code and time label
+
+        final int labelOffset = 2; // Skip the code and get the label
+        for (int i = skipTime; i < data.length; i += labelOffset) {
             String value = data[i];
-            if (value.equals("")) value = data[i - 1]; // Get the code.
+            if ("".equals(value)) value = data[i - 1]; // Get the code
             groupValues.add(value);
         }
     }

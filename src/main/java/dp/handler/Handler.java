@@ -39,7 +39,7 @@ public class Handler {
     @Autowired
     private FilterAPIClient filterAPIClient;
 
-    @KafkaListener(topics = "convert-v4-file")
+    @KafkaListener(topics = "${KAFKA_TOPIC:common-output-created}")
     public void listen(final ExportedFile message) {
         LOGGER.info("exporting file to xlsx using filterID: {}", message.getFilterId());
         final AmazonS3URI uri = new AmazonS3URI(message.getS3URL().toString());
