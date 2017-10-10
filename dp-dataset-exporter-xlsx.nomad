@@ -34,7 +34,7 @@ job "dp-dataset-exporter-xlsx" {
           "java",
           "-Xmx2048m",
           "-jar",
-          "dp-dataset-exporter-xlsx-*.jar",
+          "dp-dataset-exporter-xlsx.jar",
         ]
 
         image = "{{ECR_URL}}:concourse-{{REVISION}}"
@@ -93,7 +93,7 @@ job "dp-dataset-exporter-xlsx" {
           "java",
           "-Xmx2048m",
           "-jar",
-          "dp-dataset-exporter-xlsx-*.jar",
+          "dp-dataset-exporter-xlsx.jar",
         ]
 
         image = "{{ECR_URL}}:concourse-{{REVISION}}"
