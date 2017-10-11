@@ -11,5 +11,8 @@ image_resource:
 inputs:
   - name: dp-dataset-exporter-xlsx
 
+outputs:
+  - name: build
+
 run:
   path: dp-dataset-exporter-xlsx/ci/scripts/build.sh
