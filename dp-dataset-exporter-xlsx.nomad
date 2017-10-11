@@ -28,7 +28,7 @@ job "dp-dataset-exporter-xlsx" {
 
         args = [
           "java",
-          "-Xmx220m",
+          "-Xmx512m",
           "-jar",
           "dp-dataset-exporter-xlsx.jar",
         ]
