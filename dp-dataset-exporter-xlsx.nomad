@@ -3,10 +3,6 @@ job "dp-dataset-exporter-xlsx" {
   region      = "eu"
   type        = "service"
 
-  constraint {
-    distinct_hosts = true
-  }
-
   update {
     stagger      = "90s"
     max_parallel = 1
