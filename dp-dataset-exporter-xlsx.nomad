@@ -16,7 +16,7 @@ job "dp-dataset-exporter-xlsx" {
       value     = "publishing"
     }
 
-    task "dp-dataset-exporter-xlsx-publishing" {
+    task "dp-dataset-exporter-xlsx" {
       driver = "docker"
 
       artifact {
@@ -61,7 +61,7 @@ job "dp-dataset-exporter-xlsx" {
       }
 
       vault {
-        policies = ["dp-dataset-exporter-xlsx-publishing"]
+        policies = ["dp-dataset-exporter-xlsx"]
       }
     }
   }
