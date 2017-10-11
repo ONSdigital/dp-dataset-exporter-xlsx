@@ -2,17 +2,17 @@ package dp.api;
 
 public class Downloads {
 
-    private XlSFile xls;
+    private XLSFile xls;
 
-    public Downloads(final XlSFile xls) {
+    public Downloads(final XLSFile xls) {
         this.xls = xls;
     }
 
-    public XlSFile getXls() {
+    public XLSFile getXls() {
         return xls;
     }
 
-    public void setXls(XlSFile xls) {
+    public void setXls(XLSFile xls) {
         this.xls = xls;
     }
 }

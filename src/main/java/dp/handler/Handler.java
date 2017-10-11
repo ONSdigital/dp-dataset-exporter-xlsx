@@ -20,7 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**
- * A class used to consumer ExportedFile message from kafka
+ * A class used to consume ExportedFile message from kafka
  */
 @Component
 public class Handler {

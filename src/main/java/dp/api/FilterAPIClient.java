@@ -36,7 +36,7 @@ public class FilterAPIClient {
         final HttpHeaders headers = new HttpHeaders();
         final String sizeToString = Long.toString(size);
         headers.add("internal-token", token);
-        final Request r = new Request(new Downloads(new XlSFile(s3Location, sizeToString)));
+        final Request r = new Request(new Downloads(new XLSFile(s3Location, sizeToString)));
         try {
             LOGGER.info("updating filter api, url : {}, json : {}", url, objectMapper.writeValueAsString(r));
             restTemplate.put(url, new HttpEntity<>(r, headers));
