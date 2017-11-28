@@ -52,6 +52,7 @@ class Formatter {
             cell.setCellStyle(titleStyle);
             cell.setCellValue(groups.get(g).getTitle());
             sheet.autoSizeColumn(g + columnOffset);
+
             // For each time label add the observation into the correct row
             for (String timeTitle : timeLabels) {
                 Row row = timeRows.get(timeTitle);
@@ -59,7 +60,12 @@ class Formatter {
                 obs.setCellStyle(numberStyle);
                 final String value = groups.get(g).getObservation(timeTitle);
                 if (value != null) {
-                    obs.setCellValue(Double.parseDouble(value));
+                    try {
+                        obs.setCellValue(Double.parseDouble(value));
+                    }
+                    catch (NumberFormatException e) {
+                        obs.setCellValue("");
+                    }
                 }
             }
         }
