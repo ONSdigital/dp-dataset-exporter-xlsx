@@ -41,26 +41,29 @@ public class Handler {
 
     @KafkaListener(topics = "${KAFKA_TOPIC:common-output-created}")
     public void listen(final ExportedFile message) {
+
         LOGGER.info("exporting file to xlsx using filterID: {}", message.getFilterId());
+
         final AmazonS3URI uri = new AmazonS3URI(message.getS3URL().toString());
-        try {
-            try (final S3Object object = s3Client.getObject(uri.getBucket(), uri.getKey())) {
-                try (final ByteArrayOutputStream xls = converter.toXLXS(object.getObjectContent())) {
-                    final long contentLength = xls.toByteArray().length;
-                    final ObjectMetadata metadata = new ObjectMetadata();
-                    metadata.setContentLength(contentLength);
-                    final String key = message.getFilterId() + ".xlsx";
-                    try (final ByteArrayInputStream stream = new ByteArrayInputStream(xls.toByteArray())) {
-                        final PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, key, stream, metadata);
-                        s3Client.putObject(putObjectRequest);
-                        final String downloadUri = s3Client.getUrl(bucket, key).toString();
-                        filterAPIClient.addXLSXFile(message.getFilterId().toString(), downloadUri, contentLength);
-                    }
-                }
-            }
+
+        try (final S3Object object = s3Client.getObject(uri.getBucket(), uri.getKey());
+             final ByteArrayOutputStream xls = converter.toXLXS(object.getObjectContent());
+             final ByteArrayInputStream stream = new ByteArrayInputStream(xls.toByteArray())) {
+
+            final long contentLength = xls.toByteArray().length;
+            final ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(contentLength);
+            final String key = message.getFilterId() + ".xlsx";
+            final PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, key, stream, metadata);
+
+            s3Client.putObject(putObjectRequest);
+            final String downloadUri = s3Client.getUrl(bucket, key).toString();
+            filterAPIClient.addXLSXFile(message.getFilterId().toString(), downloadUri, contentLength);
+
         } catch (final IOException e) {
             LOGGER.error("error when exporting filter {}. exception : {}", message.getFilterId(), e);
         }
+
         LOGGER.info("exported completed for filterID: {}", message.getFilterId());
     }
 
