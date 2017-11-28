@@ -1,5 +1,8 @@
 package dp.api.filter;
 
+/**
+ * The downloads section of a filter.
+ */
 public class Downloads {
 
     private XLSFile xls;

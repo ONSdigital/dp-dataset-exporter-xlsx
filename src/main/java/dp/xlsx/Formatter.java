@@ -1,5 +1,6 @@
 package dp.xlsx;
 
+import dp.api.dataset.Metadata;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
@@ -30,12 +31,14 @@ class Formatter {
      * @param titleStyle  The style of the cell titles
      * @param numberStyle The style of the observations
      */
-    void format(Sheet sheet, V4File file, CellStyle titleStyle, CellStyle numberStyle) {
+    void format(Sheet sheet, V4File file, Metadata datasetMetadata, CellStyle titleStyle, CellStyle numberStyle) {
+
         final List<Group> groups = file.groupData();
         final List<String> timeLabels = file.getUniqueTimeLabels();
         final Map<String, Row> timeRows = new HashMap<>();
         int columnOffset = 0;
         int rowOffset = 1;
+
         // Start off by placing the time on all rows
         for (int i = 0; i < timeLabels.size(); i++) {
             Row row = sheet.createRow(i + rowOffset);
@@ -46,6 +49,7 @@ class Formatter {
         }
         columnOffset += 1;
         Row title = sheet.createRow(0);
+
         // For each group add the title onto the row
         for (int g = 0; g < groups.size(); g++) {
             Cell cell = title.createCell(g + columnOffset);

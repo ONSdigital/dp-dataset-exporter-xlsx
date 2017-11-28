@@ -2,6 +2,9 @@ package dp.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * A generic link representation as used throughout the DP API's.
+ */
 public class Link {
 
     @JsonProperty("id")

@@ -1,5 +1,6 @@
 package dp.xlsx;
 
+import dp.api.dataset.Metadata;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -24,11 +25,12 @@ public class FormatterTest {
         try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_0.csv")) {
 
             final V4File file = new V4File(stream);
+            final Metadata datasetMetadata = new Metadata();
             final Workbook wb = new XSSFWorkbook();
             final CellStyle style = createStyle(wb);
             final Sheet sheet = wb.createSheet("Test");
 
-            formatter.format(sheet, file, style, style);
+            formatter.format(sheet, file, datasetMetadata, style, style);
 
             assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(3);
             assertThat(sheet.getDefaultColumnWidth()).isEqualTo(8);
@@ -46,12 +48,13 @@ public class FormatterTest {
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
 
         final V4File file = new V4File(inputStream);
+        final Metadata datasetMetadata = new Metadata();
         final Workbook wb = new XSSFWorkbook();
         final CellStyle style = createStyle(wb);
         final Sheet sheet = wb.createSheet("Test");
 
         // When format is called
-        formatter.format(sheet, file, style, style);
+        formatter.format(sheet, file, datasetMetadata, style, style);
 
         // Then the empty observation value is in the output
         assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(2);

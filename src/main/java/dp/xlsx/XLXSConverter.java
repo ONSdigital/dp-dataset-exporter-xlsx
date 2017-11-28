@@ -1,5 +1,6 @@
 package dp.xlsx;
 
+import dp.api.dataset.Metadata;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -26,15 +27,15 @@ public class XLXSConverter {
      * @return The converted V4 as XLSX file
      * @throws IOException Failed to convert the V4 file to XLSX
      */
-    public ByteArrayOutputStream toXLXS(final InputStream stream) throws IOException {
+    public ByteArrayOutputStream toXLXS(final InputStream stream, Metadata datasetMetadata) throws IOException {
+
         final Workbook wb = new XSSFWorkbook();
         final CellStyle title = createStyle(wb);
         final CellStyle number = createNumberStyle(wb);
         final Sheet sheet = wb.createSheet("Dataset");
-
         final V4File v4File = new V4File(stream);
 
-        formatter.format(sheet, v4File, title, number);
+        formatter.format(sheet, v4File, datasetMetadata, title, number);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
         wb.write(os);

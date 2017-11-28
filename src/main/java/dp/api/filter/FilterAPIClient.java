@@ -68,6 +68,7 @@ public class FilterAPIClient {
         try {
 
             ResponseEntity<Filter> responseEntity = restTemplate.getForEntity(url, Filter.class);
+            LOGGER.info("filter api get response, url : {}, response {}", url, responseEntity.getStatusCode());
             return responseEntity.getBody();
 
         } catch (RestClientException e) {
