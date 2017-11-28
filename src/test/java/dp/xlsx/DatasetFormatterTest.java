@@ -15,9 +15,9 @@ import java.io.InputStream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-public class FormatterTest {
+public class DatasetFormatterTest {
 
-    private final Formatter formatter = new Formatter();
+    private final DatasetFormatter datasetFormatter = new DatasetFormatter();
 
     @Test
     public void createXlsxFormat() throws IOException {
@@ -30,7 +30,7 @@ public class FormatterTest {
             final CellStyle style = createStyle(wb);
             final Sheet sheet = wb.createSheet("Test");
 
-            formatter.format(sheet, file, datasetMetadata, style, style);
+            datasetFormatter.format(sheet, file, datasetMetadata, style, style);
 
             assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(3);
             assertThat(sheet.getDefaultColumnWidth()).isEqualTo(8);
@@ -54,7 +54,7 @@ public class FormatterTest {
         final Sheet sheet = wb.createSheet("Test");
 
         // When format is called
-        formatter.format(sheet, file, datasetMetadata, style, style);
+        datasetFormatter.format(sheet, file, datasetMetadata, style, style);
 
         // Then the empty observation value is in the output
         assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(2);

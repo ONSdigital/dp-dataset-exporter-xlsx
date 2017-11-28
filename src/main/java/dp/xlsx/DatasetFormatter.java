@@ -14,7 +14,7 @@ import java.util.Map;
  * A class used to format a V4 file into a two dimensional structure for a
  * xlsx file.
  */
-class Formatter {
+class DatasetFormatter {
 
     /**
      * The following function will format a V4 file into a grouped

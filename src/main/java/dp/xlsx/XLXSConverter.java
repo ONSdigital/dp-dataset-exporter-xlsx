@@ -18,7 +18,7 @@ import java.io.InputStream;
 @Component
 public class XLXSConverter {
 
-    private final Formatter formatter = new Formatter();
+    private final DatasetFormatter datasetFormatter = new DatasetFormatter();
 
     /**
      * Convert a V4 file to a XLSX file
@@ -35,7 +35,7 @@ public class XLXSConverter {
         final Sheet sheet = wb.createSheet("Dataset");
         final V4File v4File = new V4File(stream);
 
-        formatter.format(sheet, v4File, datasetMetadata, title, number);
+        datasetFormatter.format(sheet, v4File, datasetMetadata, title, number);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
         wb.write(os);
