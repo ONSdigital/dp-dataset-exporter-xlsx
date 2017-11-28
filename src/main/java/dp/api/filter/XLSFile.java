@@ -1,4 +1,4 @@
-package dp.api;
+package dp.api.filter;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

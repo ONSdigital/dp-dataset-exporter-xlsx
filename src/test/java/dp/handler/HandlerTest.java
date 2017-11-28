@@ -3,7 +3,7 @@ package dp.handler;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import dp.api.FilterAPIClient;
+import dp.api.filter.FilterAPIClient;
 import dp.avro.ExportedFile;
 import dp.xlsx.XLXSConverter;
 import org.junit.Test;
