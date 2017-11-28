@@ -1,8 +1,10 @@
 package dp.xlsx;
 
 import dp.api.dataset.Metadata;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -11,6 +13,7 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DatasetFormatterTest {
 
     private final DatasetFormatter datasetFormatter = new DatasetFormatter();
+    private static final int metadataRows = 2;
 
     @Test
     public void createXlsxFormat() throws IOException {
@@ -32,7 +36,7 @@ public class DatasetFormatterTest {
 
             datasetFormatter.format(sheet, file, datasetMetadata, style, style);
 
-            assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(3);
+            assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 3);
             assertThat(sheet.getDefaultColumnWidth()).isEqualTo(8);
         }
     }
@@ -56,9 +60,28 @@ public class DatasetFormatterTest {
         // When format is called
         datasetFormatter.format(sheet, file, datasetMetadata, style, style);
 
+        printSheet(sheet);
+
         // Then the empty observation value is in the output
-        assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(2);
-        assertThat(sheet.getRow(1).getCell(1).getStringCellValue()).isEqualTo("");
+        assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 2);
+        assertThat(sheet.getRow(metadataRows + 1).getCell(1).getStringCellValue()).isEqualTo("");
+    }
+
+    private void printSheet(Sheet sheet) {
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        while(rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            Iterator<Cell> cellIterator = row.cellIterator();
+
+            while(cellIterator.hasNext()) {
+                System.out.println("Row " + row.getRowNum());
+                Cell cell = cellIterator.next();
+                System.out.println("Column " + cell.getColumnIndex());
+                System.out.println(cell.getStringCellValue() + ",");
+            }
+        }
     }
 
     private CellStyle createStyle(Workbook wb) {

@@ -3,6 +3,7 @@ package dp.xlsx;
 import dp.api.dataset.Metadata;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
@@ -37,18 +38,22 @@ class DatasetFormatter {
         final List<String> timeLabels = file.getUniqueTimeLabels();
         final Map<String, Row> timeRows = new HashMap<>();
         int columnOffset = 0;
-        int rowOffset = 1;
+        int rowOffset = 0;
+
+        rowOffset = addMetadata(sheet, datasetMetadata, titleStyle, columnOffset, rowOffset);
 
         // Start off by placing the time on all rows
         for (int i = 0; i < timeLabels.size(); i++) {
-            Row row = sheet.createRow(i + rowOffset);
+            Row row = sheet.createRow(i + rowOffset + 1);
             Cell cell = row.createCell(columnOffset);
             cell.setCellStyle(titleStyle);
             cell.setCellValue(timeLabels.get(i));
             timeRows.put(timeLabels.get(i), row);
         }
+
         columnOffset += 1;
-        Row title = sheet.createRow(0);
+
+        Row title = sheet.createRow(rowOffset);
 
         // For each group add the title onto the row
         for (int g = 0; g < groups.size(); g++) {
@@ -74,5 +79,26 @@ class DatasetFormatter {
             }
         }
 
+        sheet.autoSizeColumn(0);
+
+    }
+
+    private int addMetadata(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, int columnOffset, int rowOffset) {
+
+        Row row = sheet.createRow(rowOffset);
+
+        Cell cell = row.createCell(columnOffset);
+        cell.setCellStyle(titleStyle);
+        cell.setCellValue("Dataset Title");
+
+        cell = row.createCell(columnOffset + 1);
+        cell.setCellStyle(titleStyle);
+        cell.setCellValue(datasetMetadata.getTitle());
+        rowOffset++;
+
+        // Add a blank row at the bottom of the metadata.
+        sheet.createRow(rowOffset);
+        rowOffset++;
+        return rowOffset;
     }
 }
