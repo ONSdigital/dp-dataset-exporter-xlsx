@@ -13,13 +13,12 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * A spring componet used to convert a V4 file to a XLSX file
+ * A spring component used to convert a V4 file to a XLSX file
  */
 @Component
 public class XLSXConverter {
 
     private final DatasetFormatter datasetFormatter = new DatasetFormatter();
-    private final MetadataFormatter metadataFormatter = new MetadataFormatter();
 
     /**
      * Convert a V4 file to a XLSX file
@@ -33,12 +32,14 @@ public class XLSXConverter {
         final Workbook wb = new XSSFWorkbook();
         final CellStyle titleStyle = createStyle(wb);
         final CellStyle valueStyle = createNumberStyle(wb);
-        final Sheet datasetSheet = wb.createSheet("Dataset");
-        final Sheet metadataSheet = wb.createSheet("Metadata");
-        final V4File v4File = new V4File(stream);
 
+        final Sheet datasetSheet = wb.createSheet("Dataset");
+        final V4File v4File = new V4File(stream);
         datasetFormatter.format(datasetSheet, v4File, datasetMetadata, titleStyle, valueStyle);
-        metadataFormatter.format(metadataSheet, datasetMetadata, titleStyle, valueStyle);
+
+        final Sheet metadataSheet = wb.createSheet("Metadata");
+        MetadataFormatter metadataFormatter = new MetadataFormatter(metadataSheet, datasetMetadata, titleStyle, valueStyle);
+        metadataFormatter.format();
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
         wb.write(os);

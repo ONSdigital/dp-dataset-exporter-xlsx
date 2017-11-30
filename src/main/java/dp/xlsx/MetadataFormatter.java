@@ -14,187 +14,224 @@ import org.apache.poi.ss.usermodel.Sheet;
 
 class MetadataFormatter {
 
-    
-    
-    void format(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, CellStyle valueStyle) {
+    private final Metadata datasetMetadata;
+    private final CellStyle titleStyle;
+    private final CellStyle valueStyle;
+    private final Sheet sheet;
 
-        int rowOffset = 0;
+    private int rowOffset;
 
-        rowOffset = writeIndividualValues(sheet, datasetMetadata, titleStyle, valueStyle, rowOffset);
-        rowOffset = writeContactDetails(sheet, datasetMetadata, titleStyle, valueStyle, rowOffset);
-        rowOffset = writeKeywords(sheet, datasetMetadata, titleStyle, valueStyle, rowOffset);
-        rowOffset = writeAlerts(sheet, datasetMetadata, titleStyle, valueStyle, rowOffset);
-        rowOffset = writeCodeLists(sheet, datasetMetadata, titleStyle, valueStyle, rowOffset);
-        rowOffset = writeDistributions(sheet, datasetMetadata, titleStyle, valueStyle, rowOffset);
-        rowOffset = writeDownloads(sheet, datasetMetadata, titleStyle, valueStyle, rowOffset);
-        rowOffset = writeLatestChanges(sheet, datasetMetadata, titleStyle, valueStyle, rowOffset);
-        rowOffset = writeLinks(sheet, datasetMetadata, titleStyle, valueStyle, rowOffset);
-        rowOffset = writeMethodologies(sheet, datasetMetadata, titleStyle, valueStyle, rowOffset);
-        rowOffset = writePublications(sheet, datasetMetadata, titleStyle, valueStyle, rowOffset);
-        rowOffset = writeQMI(sheet, datasetMetadata, titleStyle, valueStyle, rowOffset);
-        rowOffset = writeRelatedDatasets(sheet, datasetMetadata, titleStyle, valueStyle, rowOffset);
-        writeTemporalFrequencies(sheet, datasetMetadata, titleStyle, valueStyle, rowOffset);
+    public MetadataFormatter(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, CellStyle valueStyle) {
+        this.datasetMetadata = datasetMetadata;
+        this.titleStyle = titleStyle;
+        this.valueStyle = valueStyle;
+        this.sheet = sheet;
+    }
+
+    void format() {
+
+        rowOffset = 0;
+
+        writeIndividualValues();
+        writeContactDetails();
+        writeKeywords();
+        writeAlerts();
+        writeCodeLists();
+        writeDistributions();
+        writeDownloads();
+        writeLatestChanges();
+        writeLinks();
+        writeMethodologies();
+        writePublications();
+        writeQMI();
+        writeRelatedDatasets();
+        writeTemporalFrequencies();
 
         sheet.autoSizeColumn(0);
         sheet.autoSizeColumn(1);
     }
 
-    private void writeTemporalFrequencies(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, CellStyle valueStyle, int rowOffset) {
+    private void writeTemporalFrequencies() {
+
         for (TemporalFrequency frequency : datasetMetadata.getTemporal()) {
-            rowOffset = writeBlankRow(sheet, rowOffset);
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Temporal Frequency", frequency.getFrequency());
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Temporal Start Date", frequency.getStartDate());
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Temporal End Date", frequency.getEndDate());
+            writeBlankRow();
+            writeString("Temporal Frequency", frequency.getFrequency());
+            writeString("Temporal Start Date", frequency.getStartDate());
+            writeString("Temporal End Date", frequency.getEndDate());
         }
     }
 
-    private int writeRelatedDatasets(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, CellStyle valueStyle, int rowOffset) {
+    private int writeRelatedDatasets() {
+
         for (GeneralDetails details : datasetMetadata.getRelatedDatasets()) {
-            rowOffset = writeBlankRow(sheet, rowOffset);
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Related dataset Title", details.getTitle());
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Related dataset Description", details.getDescription());
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Related dataset URL", details.getHref());
+            writeBlankRow();
+            writeString("Related dataset Title", details.getTitle());
+            writeString("Related dataset Description", details.getDescription());
+            writeString("Related dataset URL", details.getHref());
         }
+
         return rowOffset;
     }
 
-    private int writeQMI(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, CellStyle valueStyle, int rowOffset) {
-        rowOffset = writeBlankRow(sheet, rowOffset);
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "QMI Title", datasetMetadata.getQmi().getTitle());
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "QMI Description", datasetMetadata.getQmi().getDescription());
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "QMI URL", datasetMetadata.getQmi().getHref());
+    private int writeQMI() {
+
+        writeBlankRow();
+        writeString("QMI Title", datasetMetadata.getQmi().getTitle());
+        writeString("QMI Description", datasetMetadata.getQmi().getDescription());
+        writeString("QMI URL", datasetMetadata.getQmi().getHref());
+
         return rowOffset;
     }
 
-    private int writePublications(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, CellStyle valueStyle, int rowOffset) {
+    private int writePublications() {
+
         for (GeneralDetails details : datasetMetadata.getPublications()) {
-            rowOffset = writeBlankRow(sheet, rowOffset);
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Publication Title", details.getTitle());
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Publication Description", details.getDescription());
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Publication URL", details.getHref());
+            writeBlankRow();
+            writeString("Publication Title", details.getTitle());
+            writeString("Publication Description", details.getDescription());
+            writeString("Publication URL", details.getHref());
         }
+
         return rowOffset;
     }
 
-    private int writeMethodologies(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, CellStyle valueStyle, int rowOffset) {
+    private int writeMethodologies() {
+
         for (GeneralDetails details : datasetMetadata.getMethodologies()) {
-            rowOffset = writeBlankRow(sheet, rowOffset);
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Methodology Title", details.getTitle());
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Methodology Description", details.getDescription());
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Methodology URL", details.getHref());
+            writeBlankRow();
+            writeString("Methodology Title", details.getTitle());
+            writeString("Methodology Description", details.getDescription());
+            writeString("Methodology URL", details.getHref());
         }
+
         return rowOffset;
     }
 
-    private int writeLinks(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, CellStyle valueStyle, int rowOffset) {
-        rowOffset = writeBlankRow(sheet, rowOffset);
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Access Rights URL", datasetMetadata.getLinks().getAccessRights().getHref());
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Spatial URL", datasetMetadata.getLinks().getSpatial().getHref());
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Dataset Version URL", datasetMetadata.getLinks().getVersion().getHref());
+    private int writeLinks() {
+
+        writeBlankRow();
+        writeString("Access Rights URL", datasetMetadata.getLinks().getAccessRights().getHref());
+        writeString("Spatial URL", datasetMetadata.getLinks().getSpatial().getHref());
+        writeString("Dataset Version URL", datasetMetadata.getLinks().getVersion().getHref());
+
         return rowOffset;
     }
 
-    private int writeLatestChanges(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, CellStyle valueStyle, int rowOffset) {
+    private int writeLatestChanges() {
+
         for (LatestChange change : datasetMetadata.getLatestChanges()) {
 
-            rowOffset = writeBlankRow(sheet, rowOffset);
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Change Name", change.getName());
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Change Type", change.getType());
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Change Description", change.getDescription());
+            writeBlankRow();
+            writeString("Change Name", change.getName());
+            writeString("Change Type", change.getType());
+            writeString("Change Description", change.getDescription());
         }
+
         return rowOffset;
     }
 
-    private int writeDownloads(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, CellStyle valueStyle, int rowOffset) {
-        rowOffset = writeBlankRow(sheet, rowOffset);
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "XLSX URL", datasetMetadata.getDownloads().getXls().getUrl());
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "XLSX File Size (bytes)", datasetMetadata.getDownloads().getXls().getSize());
+    private int writeDownloads() {
 
-        rowOffset = writeBlankRow(sheet, rowOffset);
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "CSV URL", datasetMetadata.getDownloads().getCsv().getUrl());
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "CSV File Size (bytes)", datasetMetadata.getDownloads().getCsv().getSize());
+        writeBlankRow();
+        writeString("XLSX URL", datasetMetadata.getDownloads().getXls().getUrl());
+        writeString("XLSX File Size (bytes)", datasetMetadata.getDownloads().getXls().getSize());
+
+        writeBlankRow();
+        writeString("CSV URL", datasetMetadata.getDownloads().getCsv().getUrl());
+        writeString("CSV File Size (bytes)", datasetMetadata.getDownloads().getCsv().getSize());
+
         return rowOffset;
     }
 
-    private int writeDistributions(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, CellStyle valueStyle, int rowOffset) {
-        rowOffset = writeBlankRow(sheet, rowOffset);
+    private int writeDistributions() {
+
+        writeBlankRow();
         for (String distribution : datasetMetadata.getDistribution()) {
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Distribution", distribution);
+            writeString("Distribution", distribution);
         }
+
         return rowOffset;
     }
 
-    private int writeCodeLists(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, CellStyle valueStyle, int rowOffset) {
+    private int writeCodeLists() {
+
         for (CodeList codelist : datasetMetadata.getDimensions()) {
-            rowOffset = writeBlankRow(sheet, rowOffset);
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Code List Name", codelist.getName());
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Code List Description", codelist.getDescription());
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Code List ID", codelist.getId());
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Code List URL", codelist.getHref());
+            writeBlankRow();
+            writeString("Code List Name", codelist.getName());
+            writeString("Code List Description", codelist.getDescription());
+            writeString("Code List ID", codelist.getId());
+            writeString("Code List URL", codelist.getHref());
         }
+
         return rowOffset;
     }
 
-    private int writeAlerts(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, CellStyle valueStyle, int rowOffset) {
+    private int writeAlerts() {
+
         for (Alert alert : datasetMetadata.getAlerts()) {
 
-            rowOffset = writeBlankRow(sheet, rowOffset);
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Alert Date", alert.getDate());
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Alert Type", alert.getType());
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Alert Description", alert.getDescription());
+            writeBlankRow();
+            writeString("Alert Date", alert.getDate());
+            writeString("Alert Type", alert.getType());
+            writeString("Alert Description", alert.getDescription());
         }
+
         return rowOffset;
     }
 
-    private int writeKeywords(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, CellStyle valueStyle, int rowOffset) {
-        rowOffset = writeBlankRow(sheet, rowOffset);
+    private int writeKeywords() {
+
+        writeBlankRow();
         for (String keyword : datasetMetadata.getKeywords()) {
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Keyword", keyword);
+            writeString("Keyword", keyword);
         }
+
         return rowOffset;
     }
 
-    private int writeContactDetails(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, CellStyle valueStyle, int rowOffset) {
+    private int writeContactDetails() {
+
         for (ContactDetails contact : datasetMetadata.getContacts()) {
 
-            rowOffset = writeBlankRow(sheet, rowOffset);
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Contact Name", contact.getName());
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Contact Telephone", contact.getTelephone());
-            rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Contact Email", contact.getEmail());
+            writeBlankRow();
+            writeString("Contact Name", contact.getName());
+            writeString("Contact Telephone", contact.getTelephone());
+            writeString("Contact Email", contact.getEmail());
         }
+
         return rowOffset;
     }
 
-    private int writeIndividualValues(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, CellStyle valueStyle, int rowOffset) {
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Dataset Title", datasetMetadata.getTitle());
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Description", datasetMetadata.getDescription());
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Release Date", datasetMetadata.getReleaseDate());
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Dataset URL", datasetMetadata.getUri());
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Licence", datasetMetadata.getLicense());
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Theme", datasetMetadata.getTheme());
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Unit of Measure", datasetMetadata.getUnitOfMeasure());
-        rowOffset = writeBooleanProperty(sheet, titleStyle, valueStyle, rowOffset, "National Statistic", datasetMetadata.getNationalStatistic());
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Next Release", datasetMetadata.getNextRelease());
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Release Frequency", datasetMetadata.getReleaseFrequency());
+    private int writeIndividualValues() {
 
-        rowOffset = writeBlankRow(sheet, rowOffset);
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Publisher Name", datasetMetadata.getPublisher().getName());
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Publisher Type", datasetMetadata.getPublisher().getType());
-        rowOffset = writeStringProperty(sheet, titleStyle, valueStyle, rowOffset, "Publisher URL", datasetMetadata.getPublisher().getHref());
+        writeString("Dataset Title", datasetMetadata.getTitle());
+        writeString("Description", datasetMetadata.getDescription());
+        writeString("Release Date", datasetMetadata.getReleaseDate());
+        writeString("Dataset URL", datasetMetadata.getUri());
+        writeString("Licence", datasetMetadata.getLicense());
+        writeString("Theme", datasetMetadata.getTheme());
+        writeString("Unit of Measure", datasetMetadata.getUnitOfMeasure());
+        writeBoolean("National Statistic", datasetMetadata.getNationalStatistic());
+        writeString("Next Release", datasetMetadata.getNextRelease());
+        writeString("Release Frequency", datasetMetadata.getReleaseFrequency());
+
+        writeBlankRow();
+        writeString("Publisher Name", datasetMetadata.getPublisher().getName());
+        writeString("Publisher Type", datasetMetadata.getPublisher().getType());
+        writeString("Publisher URL", datasetMetadata.getPublisher().getHref());
+
         return rowOffset;
     }
 
-    private int writeBlankRow(Sheet sheet, int rowOffset) {
+    private void writeBlankRow() {
         sheet.createRow(rowOffset);
         rowOffset++;
-        return rowOffset;
     }
 
-    private int writeBooleanProperty(Sheet sheet, CellStyle titleStyle, CellStyle valueStyle, int rowOffset, String title, Boolean boolValue) {
-        Row row;
-        Cell cell;
-        row = sheet.createRow(rowOffset);
-        cell = row.createCell(0);
+    private void writeBoolean(String title, Boolean boolValue) {
+
+        Row row = sheet.createRow(rowOffset);
+        Cell cell = row.createCell(0);
         cell.setCellStyle(titleStyle);
         cell.setCellValue(title);
         cell = row.createCell(1);
@@ -203,20 +240,17 @@ class MetadataFormatter {
         String value = boolValue ? "yes" : "no";
         cell.setCellValue(value);
         rowOffset++;
-        return rowOffset;
     }
 
-    private int writeStringProperty(Sheet sheet, CellStyle titleStyle, CellStyle valueStyle, int rowOffset, String title, String value) {
-        Row row;
-        Cell cell;
-        row = sheet.createRow(rowOffset);
-        cell = row.createCell(0);
+    private void writeString(String title, String value) {
+
+        Row row = sheet.createRow(rowOffset);
+        Cell cell = row.createCell(0);
         cell.setCellStyle(titleStyle);
         cell.setCellValue(title);
         cell = row.createCell(1);
         cell.setCellStyle(valueStyle);
         cell.setCellValue(value);
         rowOffset++;
-        return rowOffset;
     }
 }

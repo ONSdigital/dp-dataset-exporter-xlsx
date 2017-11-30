@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class MetadataFormatterTest {
 
-    private final MetadataFormatter metadataFormatter = new MetadataFormatter();
 
     @Test
     public void TestFormat_OutputsMetadata() throws IOException {
@@ -30,8 +29,10 @@ public class MetadataFormatterTest {
         final Sheet sheet = wb.createSheet("Test");
         final CellStyle cellStyle = wb.createCellStyle();
 
+        MetadataFormatter metadataFormatter = new MetadataFormatter(sheet, metadata, cellStyle, cellStyle);
+
         // When format is called
-        metadataFormatter.format(sheet, metadata, cellStyle, cellStyle);
+        metadataFormatter.format();
 
         printSheet(sheet);
 
@@ -50,8 +51,10 @@ public class MetadataFormatterTest {
         final Sheet sheet = wb.createSheet("Test");
         final CellStyle cellStyle = wb.createCellStyle();
 
+        MetadataFormatter metadataFormatter = new MetadataFormatter(sheet, metadata, cellStyle, cellStyle);
+
         // When format is called
-        metadataFormatter.format(sheet, metadata, cellStyle, cellStyle);
+        metadataFormatter.format();
 
         // Then no exceptions are thrown
     }

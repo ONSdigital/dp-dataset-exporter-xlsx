@@ -3,7 +3,6 @@ package dp.xlsx;
 import dp.api.dataset.Metadata;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
@@ -71,8 +70,7 @@ class DatasetFormatter {
                 if (value != null) {
                     try {
                         obs.setCellValue(Double.parseDouble(value));
-                    }
-                    catch (NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                         obs.setCellValue("");
                     }
                 }
