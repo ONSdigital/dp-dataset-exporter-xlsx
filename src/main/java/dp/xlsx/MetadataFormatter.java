@@ -33,6 +33,7 @@ class MetadataFormatter {
         rowOffset = 0;
 
         writeIndividualValues();
+        writePublisher();
         writeContactDetails();
         writeKeywords();
         writeAlerts();
@@ -51,7 +52,21 @@ class MetadataFormatter {
         sheet.autoSizeColumn(1);
     }
 
+    private void writePublisher() {
+
+        if (datasetMetadata.getPublisher() == null)
+            return;
+
+        writeBlankRow();
+        writeString("Publisher Name", datasetMetadata.getPublisher().getName());
+        writeString("Publisher Type", datasetMetadata.getPublisher().getType());
+        writeString("Publisher URL", datasetMetadata.getPublisher().getHref());
+    }
+
     private void writeTemporalFrequencies() {
+
+        if (datasetMetadata.getTemporal() == null)
+            return;
 
         for (TemporalFrequency frequency : datasetMetadata.getTemporal()) {
             writeBlankRow();
@@ -61,7 +76,10 @@ class MetadataFormatter {
         }
     }
 
-    private int writeRelatedDatasets() {
+    private void writeRelatedDatasets() {
+
+        if (datasetMetadata.getRelatedDatasets() == null)
+            return;
 
         for (GeneralDetails details : datasetMetadata.getRelatedDatasets()) {
             writeBlankRow();
@@ -69,21 +87,23 @@ class MetadataFormatter {
             writeString("Related dataset Description", details.getDescription());
             writeString("Related dataset URL", details.getHref());
         }
-
-        return rowOffset;
     }
 
-    private int writeQMI() {
+    private void writeQMI() {
+
+        if (datasetMetadata.getQmi() == null)
+            return;
 
         writeBlankRow();
         writeString("QMI Title", datasetMetadata.getQmi().getTitle());
         writeString("QMI Description", datasetMetadata.getQmi().getDescription());
         writeString("QMI URL", datasetMetadata.getQmi().getHref());
-
-        return rowOffset;
     }
 
-    private int writePublications() {
+    private void writePublications() {
+
+        if (datasetMetadata.getPublications() == null)
+            return;
 
         for (GeneralDetails details : datasetMetadata.getPublications()) {
             writeBlankRow();
@@ -91,11 +111,12 @@ class MetadataFormatter {
             writeString("Publication Description", details.getDescription());
             writeString("Publication URL", details.getHref());
         }
-
-        return rowOffset;
     }
 
-    private int writeMethodologies() {
+    private void writeMethodologies() {
+
+        if (datasetMetadata.getMethodologies() == null)
+            return;
 
         for (GeneralDetails details : datasetMetadata.getMethodologies()) {
             writeBlankRow();
@@ -103,21 +124,23 @@ class MetadataFormatter {
             writeString("Methodology Description", details.getDescription());
             writeString("Methodology URL", details.getHref());
         }
-
-        return rowOffset;
     }
 
-    private int writeLinks() {
+    private void writeLinks() {
+
+        if (datasetMetadata.getLinks() == null)
+            return;
 
         writeBlankRow();
         writeString("Access Rights URL", datasetMetadata.getLinks().getAccessRights().getHref());
         writeString("Spatial URL", datasetMetadata.getLinks().getSpatial().getHref());
         writeString("Dataset Version URL", datasetMetadata.getLinks().getVersion().getHref());
-
-        return rowOffset;
     }
 
-    private int writeLatestChanges() {
+    private void writeLatestChanges() {
+
+        if (datasetMetadata.getLatestChanges() == null)
+            return;
 
         for (LatestChange change : datasetMetadata.getLatestChanges()) {
 
@@ -126,11 +149,12 @@ class MetadataFormatter {
             writeString("Change Type", change.getType());
             writeString("Change Description", change.getDescription());
         }
-
-        return rowOffset;
     }
 
-    private int writeDownloads() {
+    private void writeDownloads() {
+
+        if (datasetMetadata.getDownloads() == null)
+            return;
 
         writeBlankRow();
         writeString("XLSX URL", datasetMetadata.getDownloads().getXls().getUrl());
@@ -139,21 +163,23 @@ class MetadataFormatter {
         writeBlankRow();
         writeString("CSV URL", datasetMetadata.getDownloads().getCsv().getUrl());
         writeString("CSV File Size (bytes)", datasetMetadata.getDownloads().getCsv().getSize());
-
-        return rowOffset;
     }
 
-    private int writeDistributions() {
+    private void writeDistributions() {
+
+        if (datasetMetadata.getDistribution() == null)
+            return;
 
         writeBlankRow();
         for (String distribution : datasetMetadata.getDistribution()) {
             writeString("Distribution", distribution);
         }
-
-        return rowOffset;
     }
 
-    private int writeCodeLists() {
+    private void writeCodeLists() {
+
+        if (datasetMetadata.getDimensions() == null)
+            return;
 
         for (CodeList codelist : datasetMetadata.getDimensions()) {
             writeBlankRow();
@@ -162,11 +188,12 @@ class MetadataFormatter {
             writeString("Code List ID", codelist.getId());
             writeString("Code List URL", codelist.getHref());
         }
-
-        return rowOffset;
     }
 
-    private int writeAlerts() {
+    private void writeAlerts() {
+
+        if (datasetMetadata.getAlerts() == null)
+            return;
 
         for (Alert alert : datasetMetadata.getAlerts()) {
 
@@ -175,21 +202,23 @@ class MetadataFormatter {
             writeString("Alert Type", alert.getType());
             writeString("Alert Description", alert.getDescription());
         }
-
-        return rowOffset;
     }
 
-    private int writeKeywords() {
+    private void writeKeywords() {
+
+        if (datasetMetadata.getKeywords() == null)
+            return;
 
         writeBlankRow();
         for (String keyword : datasetMetadata.getKeywords()) {
             writeString("Keyword", keyword);
         }
-
-        return rowOffset;
     }
 
-    private int writeContactDetails() {
+    private void writeContactDetails() {
+
+        if (datasetMetadata.getContacts() == null)
+            return;
 
         for (ContactDetails contact : datasetMetadata.getContacts()) {
 
@@ -198,11 +227,9 @@ class MetadataFormatter {
             writeString("Contact Telephone", contact.getTelephone());
             writeString("Contact Email", contact.getEmail());
         }
-
-        return rowOffset;
     }
 
-    private int writeIndividualValues() {
+    private void writeIndividualValues() {
 
         writeString("Dataset Title", datasetMetadata.getTitle());
         writeString("Description", datasetMetadata.getDescription());
@@ -214,13 +241,6 @@ class MetadataFormatter {
         writeBoolean("National Statistic", datasetMetadata.getNationalStatistic());
         writeString("Next Release", datasetMetadata.getNextRelease());
         writeString("Release Frequency", datasetMetadata.getReleaseFrequency());
-
-        writeBlankRow();
-        writeString("Publisher Name", datasetMetadata.getPublisher().getName());
-        writeString("Publisher Type", datasetMetadata.getPublisher().getType());
-        writeString("Publisher URL", datasetMetadata.getPublisher().getHref());
-
-        return rowOffset;
     }
 
     private void writeBlankRow() {
@@ -228,7 +248,10 @@ class MetadataFormatter {
         rowOffset++;
     }
 
-    private void writeBoolean(String title, Boolean boolValue) {
+    private void writeBoolean(String title, Boolean value) {
+
+        if (value == null)
+            return;
 
         Row row = sheet.createRow(rowOffset);
         Cell cell = row.createCell(0);
@@ -237,12 +260,15 @@ class MetadataFormatter {
         cell = row.createCell(1);
         cell.setCellStyle(valueStyle);
 
-        String value = boolValue ? "yes" : "no";
-        cell.setCellValue(value);
+        String printValue = value ? "yes" : "no";
+        cell.setCellValue(printValue);
         rowOffset++;
     }
 
     private void writeString(String title, String value) {
+
+        if (value == null)
+            return;
 
         Row row = sheet.createRow(rowOffset);
         Cell cell = row.createCell(0);
