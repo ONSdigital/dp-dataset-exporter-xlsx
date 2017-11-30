@@ -16,6 +16,12 @@ public class Alert {
     @JsonProperty("type")
     private String type;
 
+    public Alert(String date, String description, String type) {
+        this.date = date;
+        this.description = description;
+        this.type = type;
+    }
+
     public String getDate() {
         return date;
     }

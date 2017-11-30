@@ -8,7 +8,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 
 class MetadataFormatter {
 
-    void format(Sheet sheet, Metadata datasetMetadata, CellStyle style) {
+    void format(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, CellStyle valueStyle) {
 
         int columnOffset = 0;
         int rowOffset = 0;
@@ -16,11 +16,11 @@ class MetadataFormatter {
         Row row = sheet.createRow(rowOffset);
 
         Cell cell = row.createCell(columnOffset);
-        cell.setCellStyle(style);
+        cell.setCellStyle(titleStyle);
         cell.setCellValue("Dataset Title");
 
         cell = row.createCell(columnOffset + 1);
-        cell.setCellStyle(style);
+        cell.setCellStyle(valueStyle);
         cell.setCellValue(datasetMetadata.getTitle());
         rowOffset++;
 
@@ -28,5 +28,4 @@ class MetadataFormatter {
         sheet.autoSizeColumn(1);
 
     }
-
 }

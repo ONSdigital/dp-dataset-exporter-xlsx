@@ -13,6 +13,12 @@ public class LatestChange {
     @JsonProperty("type")
     private String type;
 
+    public LatestChange(String name, String description, String type) {
+        this.name = name;
+        this.description = description;
+        this.type = type;
+    }
+
     public String getName() {
         return name;
     }

@@ -16,6 +16,12 @@ public class GeneralDetails {
     @JsonProperty("description")
     private String description;
 
+    public GeneralDetails(String href, String title, String description) {
+        this.href = href;
+        this.title = title;
+        this.description = description;
+    }
+
     public String getHref() {
         return href;
     }

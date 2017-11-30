@@ -9,7 +9,6 @@ import java.util.Collection;
  */
 public class Metadata {
 
-
     @JsonProperty("alerts")
     private Collection<Alert> alerts;
 
@@ -59,7 +58,7 @@ public class Metadata {
     private GeneralDetails qmi;
 
     @JsonProperty("related_datasets")
-    private Collection<GeneralDetails> related_datasets;
+    private Collection<GeneralDetails> relatedDatasets;
 
     @JsonProperty("release_date")
     private String releaseDate;
@@ -82,11 +81,195 @@ public class Metadata {
     @JsonProperty("uri")
     private String uri;
 
+    public Collection<GeneralDetails> getRelatedDatasets() {
+        return relatedDatasets;
+    }
+
+    public void setRelatedDatasets(Collection<GeneralDetails> relatedDatasets) {
+        this.relatedDatasets = relatedDatasets;
+    }
+
     public String getTitle() {
         return title;
     }
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public Collection<Alert> getAlerts() {
+        return alerts;
+    }
+
+    public void setAlerts(Collection<Alert> alerts) {
+        this.alerts = alerts;
+    }
+
+    public Collection<ContactDetails> getContacts() {
+        return contacts;
+    }
+
+    public void setContacts(Collection<ContactDetails> contacts) {
+        this.contacts = contacts;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Collection<CodeList> getDimensions() {
+        return dimensions;
+    }
+
+    public void setDimensions(Collection<CodeList> dimensions) {
+        this.dimensions = dimensions;
+    }
+
+    public Collection<String> getDistribution() {
+        return distribution;
+    }
+
+    public void setDistribution(Collection<String> distribution) {
+        this.distribution = distribution;
+    }
+
+    public DatasetDownloads getDownloads() {
+        return downloads;
+    }
+
+    public void setDownloads(DatasetDownloads downloads) {
+        this.downloads = downloads;
+    }
+
+    public Collection<String> getKeywords() {
+        return keywords;
+    }
+
+    public void setKeywords(Collection<String> keywords) {
+        this.keywords = keywords;
+    }
+
+    public Collection<LatestChange> getLatestChanges() {
+        return latestChanges;
+    }
+
+    public void setLatestChanges(Collection<LatestChange> latestChanges) {
+        this.latestChanges = latestChanges;
+    }
+
+    public String getLicense() {
+        return license;
+    }
+
+    public void setLicense(String license) {
+        this.license = license;
+    }
+
+    public MetadataLinks getLinks() {
+        return links;
+    }
+
+    public void setLinks(MetadataLinks links) {
+        this.links = links;
+    }
+
+    public Collection<GeneralDetails> getMethodologies() {
+        return methodologies;
+    }
+
+    public void setMethodologies(Collection<GeneralDetails> methodologies) {
+        this.methodologies = methodologies;
+    }
+
+    public Boolean getNationalStatistic() {
+        return nationalStatistic;
+    }
+
+    public void setNationalStatistic(Boolean nationalStatistic) {
+        this.nationalStatistic = nationalStatistic;
+    }
+
+    public String getNextRelease() {
+        return nextRelease;
+    }
+
+    public void setNextRelease(String nextRelease) {
+        this.nextRelease = nextRelease;
+    }
+
+    public Collection<GeneralDetails> getPublications() {
+        return publications;
+    }
+
+    public void setPublications(Collection<GeneralDetails> publications) {
+        this.publications = publications;
+    }
+
+    public Publisher getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(Publisher publisher) {
+        this.publisher = publisher;
+    }
+
+    public GeneralDetails getQmi() {
+        return qmi;
+    }
+
+    public void setQmi(GeneralDetails qmi) {
+        this.qmi = qmi;
+    }
+
+    public String getReleaseDate() {
+        return releaseDate;
+    }
+
+    public void setReleaseDate(String releaseDate) {
+        this.releaseDate = releaseDate;
+    }
+
+    public String getReleaseFrequency() {
+        return releaseFrequency;
+    }
+
+    public void setReleaseFrequency(String releaseFrequency) {
+        this.releaseFrequency = releaseFrequency;
+    }
+
+    public Collection<TemporalFrequency> getTemporal() {
+        return temporal;
+    }
+
+    public void setTemporal(Collection<TemporalFrequency> temporal) {
+        this.temporal = temporal;
+    }
+
+    public String getTheme() {
+        return theme;
+    }
+
+    public void setTheme(String theme) {
+        this.theme = theme;
+    }
+
+    public String getUnitOfMeasure() {
+        return unitOfMeasure;
+    }
+
+    public void setUnitOfMeasure(String unitOfMeasure) {
+        this.unitOfMeasure = unitOfMeasure;
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 }

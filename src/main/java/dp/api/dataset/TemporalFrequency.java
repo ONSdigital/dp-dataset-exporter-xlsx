@@ -16,6 +16,12 @@ public class TemporalFrequency {
     @JsonProperty("start_date")
     private String startDate;
 
+    public TemporalFrequency(String endDate, String frequency, String startDate) {
+        this.endDate = endDate;
+        this.frequency = frequency;
+        this.startDate = startDate;
+    }
+
     public String getEndDate() {
         return endDate;
     }

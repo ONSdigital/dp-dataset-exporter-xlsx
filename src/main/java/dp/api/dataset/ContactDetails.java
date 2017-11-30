@@ -16,6 +16,12 @@ public class ContactDetails {
     @JsonProperty("telephone")
     private String telephone;
 
+    public ContactDetails(String email, String name, String telephone) {
+        this.email = email;
+        this.name = name;
+        this.telephone = telephone;
+    }
+
     public String getEmail() {
         return email;
     }

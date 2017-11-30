@@ -16,6 +16,12 @@ public class Publisher {
     @JsonProperty("href")
     private String href;
 
+    public Publisher(String name, String type, String href) {
+        this.name = name;
+        this.type = type;
+        this.href = href;
+    }
+
     public String getName() {
         return name;
     }

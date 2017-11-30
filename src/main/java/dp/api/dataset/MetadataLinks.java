@@ -20,6 +20,13 @@ public class MetadataLinks {
     @JsonProperty("version")
     private Link version;
 
+    public MetadataLinks(Link accessRights, Link self, Link spatial, Link version) {
+        this.accessRights = accessRights;
+        this.self = self;
+        this.spatial = spatial;
+        this.version = version;
+    }
+
     public Link getAccessRights() {
         return accessRights;
     }

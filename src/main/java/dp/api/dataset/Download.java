@@ -13,6 +13,11 @@ public class Download {
     @JsonProperty("size")
     private String size;
 
+    public Download(String url, String size) {
+        this.url = url;
+        this.size = size;
+    }
+
     public String getUrl() {
         return url;
     }

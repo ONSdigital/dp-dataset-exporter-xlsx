@@ -13,6 +13,11 @@ public class DatasetDownloads {
     @JsonProperty("xls")
     private Download xls;
 
+    public DatasetDownloads(Download csv, Download xls) {
+        this.csv = csv;
+        this.xls = xls;
+    }
+
     public Download getCsv() {
         return csv;
     }

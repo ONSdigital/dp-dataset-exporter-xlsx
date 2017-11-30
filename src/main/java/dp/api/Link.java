@@ -13,6 +13,11 @@ public class Link {
     @JsonProperty("href")
     private String href;
 
+    public Link(String id, String href) {
+        this.id = id;
+        this.href = href;
+    }
+
     public String getId() {
         return id;
     }

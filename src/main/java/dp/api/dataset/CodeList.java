@@ -19,6 +19,13 @@ public class CodeList {
     @JsonProperty("href")
     private String href;
 
+    public CodeList(String id, String name, String description, String href) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.href = href;
+    }
+
     public String getId() {
         return id;
     }
