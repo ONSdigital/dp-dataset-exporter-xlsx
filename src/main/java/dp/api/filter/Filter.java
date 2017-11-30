@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class Filter {
 
-    @JsonProperty("version")
+    @JsonProperty("links")
     private FilterLinks links;
 
     public FilterLinks getLinks() {
