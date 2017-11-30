@@ -18,6 +18,8 @@ public class Link {
         this.href = href;
     }
 
+    public Link() {}
+
     public String getId() {
         return id;
     }
