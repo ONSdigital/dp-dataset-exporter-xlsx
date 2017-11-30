@@ -42,6 +42,36 @@ public class DatasetFormatterTest {
     }
 
     @Test
+    public void createXlsxFormat_OutputsMetadata() throws IOException {
+
+        // Given a metadata object with example metadata.
+        final Metadata datasetMetadata = new Metadata();
+        String expectedTitle = "expected title";
+        datasetMetadata.setTitle(expectedTitle);
+
+        String csvHeader = "V4_0,Time_codelist,Time,Geography_codelist,Geography,cpi1dim1aggid,Aggregate\n";
+        String csvRow = ",Month,Jan-96,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvContent = csvHeader + csvRow;
+
+        InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
+
+        final V4File file = new V4File(inputStream);
+        final Workbook wb = new XSSFWorkbook();
+        final CellStyle style = createStyle(wb);
+        final Sheet sheet = wb.createSheet("Test");
+
+        // When format is called
+        datasetFormatter.format(sheet, file, datasetMetadata, style, style);
+
+        printSheet(sheet);
+
+        // Then the expected metadata is output at the top of the XLSX sheet
+        assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 2);
+        assertThat(sheet.getRow(0).getCell(0).getStringCellValue()).isEqualTo("Dataset Title");
+        assertThat(sheet.getRow(0).getCell(1).getStringCellValue()).isEqualTo(expectedTitle);
+    }
+
+    @Test
     public void createXlsxWithEmptyObservation() throws IOException {
 
         // Given some v4 file data with an empty observation field
