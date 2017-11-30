@@ -16,7 +16,7 @@ import java.io.InputStream;
  * A spring componet used to convert a V4 file to a XLSX file
  */
 @Component
-public class XLXSConverter {
+public class XLSXConverter {
 
     private final DatasetFormatter datasetFormatter = new DatasetFormatter();
     private final MetadataFormatter metadataFormatter = new MetadataFormatter();
@@ -28,7 +28,7 @@ public class XLXSConverter {
      * @return The converted V4 as XLSX file
      * @throws IOException Failed to convert the V4 file to XLSX
      */
-    public ByteArrayOutputStream toXLXS(final InputStream stream, Metadata datasetMetadata) throws IOException {
+    public ByteArrayOutputStream toXLSX(final InputStream stream, Metadata datasetMetadata) throws IOException {
 
         final Workbook wb = new XSSFWorkbook();
         final CellStyle titleStyle = createStyle(wb);

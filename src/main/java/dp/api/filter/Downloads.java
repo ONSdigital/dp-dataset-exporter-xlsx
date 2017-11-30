@@ -5,17 +5,17 @@ package dp.api.filter;
  */
 public class Downloads {
 
-    private XLSFile xls;
+    private XLSXFile xls;
 
-    public Downloads(final XLSFile xls) {
+    public Downloads(final XLSXFile xls) {
         this.xls = xls;
     }
 
-    public XLSFile getXls() {
+    public XLSXFile getXls() {
         return xls;
     }
 
-    public void setXls(XLSFile xls) {
+    public void setXls(XLSXFile xls) {
         this.xls = xls;
     }
 }

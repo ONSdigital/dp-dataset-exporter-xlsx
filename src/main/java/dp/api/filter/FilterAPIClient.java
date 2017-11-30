@@ -40,7 +40,7 @@ public class FilterAPIClient {
 
         headers.add("internal-token", token);
 
-        final PutFileRequest r = new PutFileRequest(new Downloads(new XLSFile(s3Location, sizeToString)));
+        final PutFileRequest r = new PutFileRequest(new Downloads(new XLSXFile(s3Location, sizeToString)));
 
         try {
 

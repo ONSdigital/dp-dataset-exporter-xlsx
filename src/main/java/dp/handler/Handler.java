@@ -10,7 +10,7 @@ import dp.api.dataset.Metadata;
 import dp.api.filter.FilterAPIClient;
 import dp.api.filter.Filter;
 import dp.avro.ExportedFile;
-import dp.xlsx.XLXSConverter;
+import dp.xlsx.XLSXConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ public class Handler {
     private AmazonS3 s3Client;
 
     @Autowired
-    private XLXSConverter converter;
+    private XLSXConverter converter;
 
     @Autowired
     private FilterAPIClient filterAPIClient;
@@ -58,7 +58,7 @@ public class Handler {
             String datasetVersionURL = filter.getLinks().getVersion().getHref();
             final Metadata datasetMetadata = datasetAPIClient.getMetadata(datasetVersionURL);
 
-            try (final ByteArrayOutputStream xls = converter.toXLXS(object.getObjectContent(), datasetMetadata)) {
+            try (final ByteArrayOutputStream xls = converter.toXLSX(object.getObjectContent(), datasetMetadata)) {
 
                 final long contentLength = xls.toByteArray().length;
                 final ObjectMetadata metadata = new ObjectMetadata();

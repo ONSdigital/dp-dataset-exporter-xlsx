@@ -3,13 +3,13 @@ package dp.api.filter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class XLSFile {
+public class XLSXFile {
 
     private final String url;
 
     private final String size;
 
-    public XLSFile(String url, String size) {
+    public XLSXFile(String url, String size) {
         this.url = url;
         this.size = size;
     }

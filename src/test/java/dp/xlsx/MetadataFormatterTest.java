@@ -26,7 +26,6 @@ public class MetadataFormatterTest {
         // Given a metadata object with example metadata.
         final Metadata metadata = MetadataTest.createTestMetadata();
 
-
         final Workbook wb = new XSSFWorkbook();
         final Sheet sheet = wb.createSheet("Test");
         final CellStyle cellStyle = wb.createCellStyle();
@@ -41,6 +40,21 @@ public class MetadataFormatterTest {
         assertThat(sheet.getRow(0).getCell(1).getStringCellValue()).isEqualTo(metadata.getTitle());
     }
 
+    @Test
+    public void TestFormat_EmptyMetadata() throws IOException {
+
+        // Given a metadata object with no data.
+        final Metadata metadata = new Metadata();
+
+        final Workbook wb = new XSSFWorkbook();
+        final Sheet sheet = wb.createSheet("Test");
+        final CellStyle cellStyle = wb.createCellStyle();
+
+        // When format is called
+        metadataFormatter.format(sheet, metadata, cellStyle, cellStyle);
+
+        // Then no exceptions are thrown
+    }
 
     private void printSheet(Sheet sheet) {
         Iterator<Row> rowIterator = sheet.rowIterator();

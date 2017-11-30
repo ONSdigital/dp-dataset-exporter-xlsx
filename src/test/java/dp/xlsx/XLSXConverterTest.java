@@ -15,19 +15,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class XLXSConverterTest {
+public class XLSXConverterTest {
 
     @Autowired
-    private XLXSConverter converter;
+    private XLSXConverter converter;
 
     @Test
     public void csvToXlsx() throws IOException {
-        try (final InputStream csv = XLXSConverterTest.class.getResourceAsStream("v4_0.csv")) {
+        try (final InputStream csv = XLSXConverterTest.class.getResourceAsStream("v4_0.csv")) {
 
             Metadata datasetMetadata = new Metadata();
             datasetMetadata.setTitle("test title");
 
-            ByteArrayOutputStream xlxs = converter.toXLXS(csv, datasetMetadata);
+            ByteArrayOutputStream xlxs = converter.toXLSX(csv, datasetMetadata);
 
             // For an XLSX file it seems impossible to recreate the same output, as to identical runs will not create
             // two identical files.

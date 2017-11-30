@@ -10,7 +10,7 @@ import dp.api.filter.Filter;
 import dp.api.filter.FilterAPIClient;
 import dp.api.filter.FilterLinks;
 import dp.avro.ExportedFile;
-import dp.xlsx.XLXSConverter;
+import dp.xlsx.XLSXConverter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +33,7 @@ public class HandlerTest {
     private AmazonS3 s3Client;
 
     @MockBean
-    private XLXSConverter converter;
+    private XLSXConverter converter;
 
     @MockBean
     private FilterAPIClient filterAPI;
@@ -60,7 +60,7 @@ public class HandlerTest {
         Metadata datasetMetadata = new Metadata();
         when(datasetAPI.getMetadata(filter.getLinks().getVersion().getHref())).thenReturn(datasetMetadata);
 
-        when(converter.toXLXS(any(), any())).thenReturn(new ByteArrayOutputStream());
+        when(converter.toXLSX(any(), any())).thenReturn(new ByteArrayOutputStream());
 
         final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv");
 
@@ -69,7 +69,7 @@ public class HandlerTest {
         verify(s3Client, times(1)).getObject(anyString(), anyString());
         verify(filterAPI, times(1)).getFilter(exportedFile.getFilterId().toString());
         verify(datasetAPI, times(1)).getMetadata(filter.getLinks().getVersion().getHref());
-        verify(converter, times(1)).toXLXS(any(), any());
+        verify(converter, times(1)).toXLSX(any(), any());
         verify(s3Client, times(1)).putObject(any());
     }
 
