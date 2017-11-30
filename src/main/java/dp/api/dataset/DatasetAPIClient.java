@@ -1,7 +1,6 @@
 package dp.api.dataset;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dp.api.filter.Filter;
 import dp.exceptions.FilterAPIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +30,7 @@ public class DatasetAPIClient {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public Metadata getMetadata(final String datasetVersionURL)  {
+    public Metadata getMetadata(final String datasetVersionURL) {
 
         final String url = UriComponentsBuilder
                 .fromHttpUrl(datasetVersionURL + "/metadata")
