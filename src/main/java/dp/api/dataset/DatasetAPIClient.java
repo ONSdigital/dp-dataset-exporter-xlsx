@@ -18,7 +18,7 @@ public class DatasetAPIClient {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DatasetAPIClient.class);
 
-    @Value("${DATASET_API_URL:http://localhost:22100}")
+    @Value("${DATASET_API_URL:http://localhost:22000}")
     private String datasetAPIURL;
 
     @Value("${DATASET_API_AUTH_TOKEN:FD0108EA-825D-411C-9B1D-41EF7727F465}")

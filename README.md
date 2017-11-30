@@ -26,6 +26,15 @@ setup as environment variables.
 | S3_BUCKET_NAME        | csv-exported                         | AWS bucket to store the XLSX files
 | FILTER_API_URL        | http://localhost:22100               | Filter api URL
 | FILTER_API_AUTH_TOKEN | FD0108EA-825D-411C-9B1D-41EF7727F465 | Secret token to use the Filter api
+| DATASET_API_URL       | http://localhost:22000               | Dataset api URL
+| DATASET_API_AUTH_TOKEN| FD0108EA-825D-411C-9B1D-41EF7727F465 | Secret token to use the Dataset api
+
+
+    @Value("${DATASET_API_URL:http://localhost:22100}")
+    private String datasetAPIURL;
+
+    @Value("${DATASET_API_AUTH_TOKEN:FD0108EA-825D-411C-9B1D-41EF7727F465}")
+    private String token;
 
 ### Contributing
 
