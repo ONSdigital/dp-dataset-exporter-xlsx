@@ -35,47 +35,19 @@ class MetadataFormatter {
         rowOffset = 0;
 
         writeIndividualValues();
-        writePublisher();
         writeContactDetails();
-        writeKeywords();
         writeAlerts();
-        writeCodeLists();
-        writeDistributions();
-        writeDownloads();
         writeLatestChanges();
+        writeCodeLists();
+        writeDownloads();
         writeLinks();
         writeMethodologies();
         writePublications();
         writeQMI();
         writeRelatedDatasets();
-        writeTemporalFrequencies();
 
         sheet.autoSizeColumn(0);
         sheet.autoSizeColumn(1);
-    }
-
-    private void writePublisher() {
-
-        if (datasetMetadata.getPublisher() == null)
-            return;
-
-        writeBlankRow();
-        writeString("Publisher Name", datasetMetadata.getPublisher().getName());
-        writeString("Publisher Type", datasetMetadata.getPublisher().getType());
-        writeString("Publisher URL", datasetMetadata.getPublisher().getHref());
-    }
-
-    private void writeTemporalFrequencies() {
-
-        if (datasetMetadata.getTemporal() == null)
-            return;
-
-        for (TemporalFrequency frequency : datasetMetadata.getTemporal()) {
-            writeBlankRow();
-            writeString("Temporal Frequency", frequency.getFrequency());
-            writeString("Temporal Start Date", frequency.getStartDate());
-            writeString("Temporal End Date", frequency.getEndDate());
-        }
     }
 
     private void writeRelatedDatasets() {
@@ -174,17 +146,6 @@ class MetadataFormatter {
         writeString("CSV File Size (bytes)", datasetMetadata.getDownloads().getCsv().getSize());
     }
 
-    private void writeDistributions() {
-
-        if (datasetMetadata.getDistribution() == null)
-            return;
-
-        writeBlankRow();
-        for (String distribution : datasetMetadata.getDistribution()) {
-            writeString("Distribution", distribution);
-        }
-    }
-
     private void writeCodeLists() {
 
         if (datasetMetadata.getDimensions() == null)
@@ -210,17 +171,6 @@ class MetadataFormatter {
             writeString("Alert Date", alert.getDate());
             writeString("Alert Type", alert.getType());
             writeString("Alert Description", alert.getDescription());
-        }
-    }
-
-    private void writeKeywords() {
-
-        if (datasetMetadata.getKeywords() == null)
-            return;
-
-        writeBlankRow();
-        for (String keyword : datasetMetadata.getKeywords()) {
-            writeString("Keyword", keyword);
         }
     }
 
