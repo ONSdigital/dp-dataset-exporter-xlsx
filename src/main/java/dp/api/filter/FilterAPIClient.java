@@ -53,15 +53,11 @@ public class FilterAPIClient {
     }
 
 
-    public Filter getFilter(final String filterID)  {
+    public Filter getFilter(final String filterID) {
 
         final String url = UriComponentsBuilder
                 .fromHttpUrl(filterAPIURL + "/filter-outputs/{filterId}")
                 .buildAndExpand(filterID).toUriString();
-
-        final HttpHeaders headers = new HttpHeaders();
-
-        headers.add("internal-token", token);
 
         LOGGER.info("getting filter data from the filter api, url : {}", url);
 
