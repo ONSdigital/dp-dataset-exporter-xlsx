@@ -19,6 +19,8 @@ public class LatestChange {
         this.type = type;
     }
 
+    public LatestChange() {}
+
     public String getName() {
         return name;
     }

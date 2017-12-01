@@ -18,6 +18,8 @@ public class Download {
         this.size = size;
     }
 
+    public Download() {}
+
     public String getUrl() {
         return url;
     }

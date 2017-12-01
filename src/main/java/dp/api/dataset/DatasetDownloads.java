@@ -18,6 +18,8 @@ public class DatasetDownloads {
         this.xls = xls;
     }
 
+    public DatasetDownloads() {}
+
     public Download getCsv() {
         return csv;
     }

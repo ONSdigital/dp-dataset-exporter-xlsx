@@ -26,6 +26,8 @@ public class CodeList {
         this.href = href;
     }
 
+    public CodeList() {}
+
     public String getId() {
         return id;
     }

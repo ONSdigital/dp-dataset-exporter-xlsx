@@ -22,6 +22,8 @@ public class TemporalFrequency {
         this.startDate = startDate;
     }
 
+    public TemporalFrequency() {}
+
     public String getEndDate() {
         return endDate;
     }

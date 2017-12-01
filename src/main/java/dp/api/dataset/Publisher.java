@@ -22,6 +22,8 @@ public class Publisher {
         this.href = href;
     }
 
+    public Publisher() {}
+
     public String getName() {
         return name;
     }

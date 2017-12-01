@@ -22,6 +22,8 @@ public class ContactDetails {
         this.telephone = telephone;
     }
 
+    public ContactDetails() {}
+
     public String getEmail() {
         return email;
     }

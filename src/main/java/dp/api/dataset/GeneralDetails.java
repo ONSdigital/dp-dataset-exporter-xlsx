@@ -22,6 +22,8 @@ public class GeneralDetails {
         this.description = description;
     }
 
+    public GeneralDetails() {}
+
     public String getHref() {
         return href;
     }

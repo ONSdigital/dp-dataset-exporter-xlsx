@@ -22,6 +22,8 @@ public class Alert {
         this.type = type;
     }
 
+    public Alert() {}
+
     public String getDate() {
         return date;
     }

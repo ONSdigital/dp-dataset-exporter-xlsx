@@ -27,6 +27,8 @@ public class MetadataLinks {
         this.version = version;
     }
 
+    public MetadataLinks() {}
+
     public Link getAccessRights() {
         return accessRights;
     }
