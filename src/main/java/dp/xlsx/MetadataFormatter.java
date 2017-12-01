@@ -6,11 +6,13 @@ import dp.api.dataset.ContactDetails;
 import dp.api.dataset.GeneralDetails;
 import dp.api.dataset.LatestChange;
 import dp.api.dataset.Metadata;
+import dp.api.dataset.MetadataLinks;
 import dp.api.dataset.TemporalFrequency;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.springframework.util.StringUtils;
 
 class MetadataFormatter {
 
@@ -128,13 +130,20 @@ class MetadataFormatter {
 
     private void writeLinks() {
 
-        if (datasetMetadata.getLinks() == null)
+        MetadataLinks links = datasetMetadata.getLinks();
+        if (links == null)
             return;
 
         writeBlankRow();
-        writeString("Access Rights URL", datasetMetadata.getLinks().getAccessRights().getHref());
-        writeString("Spatial URL", datasetMetadata.getLinks().getSpatial().getHref());
-        writeString("Dataset Version URL", datasetMetadata.getLinks().getVersion().getHref());
+
+        if (links.getAccessRights() != null)
+            writeString("Access Rights URL", links.getAccessRights().getHref());
+
+        if (links.getSpatial() != null)
+            writeString("Spatial URL", links.getSpatial().getHref());
+
+        if (links.getVersion() != null)
+            writeString("Dataset Version URL", links.getVersion().getHref());
     }
 
     private void writeLatestChanges() {
@@ -267,7 +276,7 @@ class MetadataFormatter {
 
     private void writeString(String title, String value) {
 
-        if (value == null)
+        if (StringUtils.isEmpty(value))
             return;
 
         Row row = sheet.createRow(rowOffset);
