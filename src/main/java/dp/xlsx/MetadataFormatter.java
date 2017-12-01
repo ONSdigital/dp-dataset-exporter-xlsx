@@ -7,9 +7,11 @@ import dp.api.dataset.GeneralDetails;
 import dp.api.dataset.LatestChange;
 import dp.api.dataset.Metadata;
 import dp.api.dataset.MetadataLinks;
-import dp.api.dataset.TemporalFrequency;
+import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Hyperlink;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.util.StringUtils;
@@ -17,17 +19,23 @@ import org.springframework.util.StringUtils;
 class MetadataFormatter {
 
     private final Metadata datasetMetadata;
-    private final CellStyle titleStyle;
-    private final CellStyle valueStyle;
+    private final CellStyle headerStyle;
+    private final CellStyle textStyle;
+    private final CellStyle linkStyle;
     private final Sheet sheet;
 
     private int rowOffset;
 
-    public MetadataFormatter(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, CellStyle valueStyle) {
+    private final CreationHelper createHelper; // used to create hyperlinks
+
+    public MetadataFormatter(Sheet sheet, Metadata datasetMetadata, CellStyle headerStyle, CellStyle textStyle, CellStyle linkStyle) {
         this.datasetMetadata = datasetMetadata;
-        this.titleStyle = titleStyle;
-        this.valueStyle = valueStyle;
+        this.headerStyle = headerStyle;
+        this.textStyle = textStyle;
+        this.linkStyle = linkStyle;
         this.sheet = sheet;
+
+        createHelper = sheet.getWorkbook().getCreationHelper();
     }
 
     void format() {
@@ -39,15 +47,15 @@ class MetadataFormatter {
         writeAlerts();
         writeLatestChanges();
         writeCodeLists();
-        writeDownloads();
-        writeLinks();
         writeMethodologies();
         writePublications();
         writeQMI();
         writeRelatedDatasets();
+        writeLinks();
+        writeDownloads();
 
-        sheet.autoSizeColumn(0);
-        sheet.autoSizeColumn(1);
+        sheet.setColumnWidth(0, 20 * 256); // 20 characters
+        sheet.setColumnWidth(1, 80 * 256); // 80 characters
     }
 
     private void writeRelatedDatasets() {
@@ -55,11 +63,13 @@ class MetadataFormatter {
         if (datasetMetadata.getRelatedDatasets() == null)
             return;
 
+        writeHeader("Related datasets");
+
         for (GeneralDetails details : datasetMetadata.getRelatedDatasets()) {
+            writeString("", details.getTitle());
+            writeString("", details.getDescription());
+            writeLink("", details.getHref());
             writeBlankRow();
-            writeString("Related dataset Title", details.getTitle());
-            writeString("Related dataset Description", details.getDescription());
-            writeString("Related dataset URL", details.getHref());
         }
     }
 
@@ -68,10 +78,11 @@ class MetadataFormatter {
         if (datasetMetadata.getQmi() == null)
             return;
 
+        writeHeader("Quality and methodology information");
+        writeString("", datasetMetadata.getQmi().getTitle());
+        writeString("", datasetMetadata.getQmi().getDescription());
+        writeLink("", datasetMetadata.getQmi().getHref());
         writeBlankRow();
-        writeString("QMI Title", datasetMetadata.getQmi().getTitle());
-        writeString("QMI Description", datasetMetadata.getQmi().getDescription());
-        writeString("QMI URL", datasetMetadata.getQmi().getHref());
     }
 
     private void writePublications() {
@@ -79,11 +90,14 @@ class MetadataFormatter {
         if (datasetMetadata.getPublications() == null)
             return;
 
+        writeHeader("Publications that use this data");
+
         for (GeneralDetails details : datasetMetadata.getPublications()) {
+
+            writeString("", details.getTitle());
+            writeString("", details.getDescription());
+            writeLink("", details.getHref());
             writeBlankRow();
-            writeString("Publication Title", details.getTitle());
-            writeString("Publication Description", details.getDescription());
-            writeString("Publication URL", details.getHref());
         }
     }
 
@@ -92,11 +106,13 @@ class MetadataFormatter {
         if (datasetMetadata.getMethodologies() == null)
             return;
 
+        writeHeader("Methodology");
+
         for (GeneralDetails details : datasetMetadata.getMethodologies()) {
+            writeString("", details.getTitle());
+            writeString("", details.getDescription());
+            writeLink("", details.getHref());
             writeBlankRow();
-            writeString("Methodology Title", details.getTitle());
-            writeString("Methodology Description", details.getDescription());
-            writeString("Methodology URL", details.getHref());
         }
     }
 
@@ -106,16 +122,18 @@ class MetadataFormatter {
         if (links == null)
             return;
 
-        writeBlankRow();
+        writeHeader("Links");
 
         if (links.getAccessRights() != null)
-            writeString("Access Rights URL", links.getAccessRights().getHref());
+            writeLink("Access Rights", links.getAccessRights().getHref());
 
         if (links.getSpatial() != null)
-            writeString("Spatial URL", links.getSpatial().getHref());
+            writeLink("Spatial", links.getSpatial().getHref());
 
         if (links.getVersion() != null)
-            writeString("Dataset Version URL", links.getVersion().getHref());
+            writeLink("Dataset Version", links.getVersion().getHref());
+
+        writeBlankRow();
     }
 
     private void writeLatestChanges() {
@@ -123,12 +141,14 @@ class MetadataFormatter {
         if (datasetMetadata.getLatestChanges() == null)
             return;
 
+        writeHeader("What has changed in this edition");
+
         for (LatestChange change : datasetMetadata.getLatestChanges()) {
 
+            writeString("", change.getName());
+            writeString("", change.getType());
+            writeString("", change.getDescription());
             writeBlankRow();
-            writeString("Change Name", change.getName());
-            writeString("Change Type", change.getType());
-            writeString("Change Description", change.getDescription());
         }
     }
 
@@ -137,13 +157,13 @@ class MetadataFormatter {
         if (datasetMetadata.getDownloads() == null)
             return;
 
-        writeBlankRow();
-        writeString("XLSX URL", datasetMetadata.getDownloads().getXls().getUrl());
-        writeString("XLSX File Size (bytes)", datasetMetadata.getDownloads().getXls().getSize());
+        writeLink("XLSX Download", datasetMetadata.getDownloads().getXls().getUrl());
+        writeString("Size (bytes)", datasetMetadata.getDownloads().getXls().getSize());
 
         writeBlankRow();
-        writeString("CSV URL", datasetMetadata.getDownloads().getCsv().getUrl());
-        writeString("CSV File Size (bytes)", datasetMetadata.getDownloads().getCsv().getSize());
+        writeLink("CSV Download", datasetMetadata.getDownloads().getCsv().getUrl());
+        writeString("Size (bytes)", datasetMetadata.getDownloads().getCsv().getSize());
+        writeBlankRow();
     }
 
     private void writeCodeLists() {
@@ -151,12 +171,13 @@ class MetadataFormatter {
         if (datasetMetadata.getDimensions() == null)
             return;
 
+        writeHeader("In this dataset");
+
         for (CodeList codelist : datasetMetadata.getDimensions()) {
+
+            writeString("", codelist.getName());
+            writeString("", codelist.getDescription());
             writeBlankRow();
-            writeString("Code List Name", codelist.getName());
-            writeString("Code List Description", codelist.getDescription());
-            writeString("Code List ID", codelist.getId());
-            writeString("Code List URL", codelist.getHref());
         }
     }
 
@@ -165,12 +186,14 @@ class MetadataFormatter {
         if (datasetMetadata.getAlerts() == null)
             return;
 
+        writeHeader("Alerts");
+
         for (Alert alert : datasetMetadata.getAlerts()) {
 
+            writeString("", alert.getDate());
+            writeString("", alert.getType());
+            writeString("", alert.getDescription());
             writeBlankRow();
-            writeString("Alert Date", alert.getDate());
-            writeString("Alert Type", alert.getType());
-            writeString("Alert Description", alert.getDescription());
         }
     }
 
@@ -179,27 +202,30 @@ class MetadataFormatter {
         if (datasetMetadata.getContacts() == null)
             return;
 
+        writeHeader("Contacts");
+
         for (ContactDetails contact : datasetMetadata.getContacts()) {
 
+            writeString("", contact.getName());
+            writeString("", contact.getTelephone());
+            writeString("", contact.getEmail());
             writeBlankRow();
-            writeString("Contact Name", contact.getName());
-            writeString("Contact Telephone", contact.getTelephone());
-            writeString("Contact Email", contact.getEmail());
         }
     }
 
     private void writeIndividualValues() {
 
-        writeString("Dataset Title", datasetMetadata.getTitle());
+        writeString("Dataset Title", datasetMetadata.getTitle(), headerStyle, headerStyle);
         writeString("Description", datasetMetadata.getDescription());
         writeString("Release Date", datasetMetadata.getReleaseDate());
-        writeString("Dataset URL", datasetMetadata.getUri());
+        writeString("Next Release", datasetMetadata.getNextRelease());
+        writeString("Release Frequency", datasetMetadata.getReleaseFrequency());
+        writeLink("Dataset URL", datasetMetadata.getUri());
         writeString("Licence", datasetMetadata.getLicense());
         writeString("Theme", datasetMetadata.getTheme());
         writeString("Unit of Measure", datasetMetadata.getUnitOfMeasure());
         writeBoolean("National Statistic", datasetMetadata.getNationalStatistic());
-        writeString("Next Release", datasetMetadata.getNextRelease());
-        writeString("Release Frequency", datasetMetadata.getReleaseFrequency());
+        writeBlankRow();
     }
 
     private void writeBlankRow() {
@@ -214,17 +240,21 @@ class MetadataFormatter {
 
         Row row = sheet.createRow(rowOffset);
         Cell cell = row.createCell(0);
-        cell.setCellStyle(titleStyle);
+        cell.setCellStyle(textStyle);
         cell.setCellValue(title);
         cell = row.createCell(1);
-        cell.setCellStyle(valueStyle);
+        cell.setCellStyle(textStyle);
 
-        String printValue = value ? "yes" : "no";
+        String printValue = value ? "Yes" : "No";
         cell.setCellValue(printValue);
         rowOffset++;
     }
 
     private void writeString(String title, String value) {
+        writeString(title, value, textStyle, textStyle);
+    }
+
+    private void writeString(String title, String value, CellStyle titleStyle, CellStyle valueStyle) {
 
         if (StringUtils.isEmpty(value))
             return;
@@ -236,6 +266,35 @@ class MetadataFormatter {
         cell = row.createCell(1);
         cell.setCellStyle(valueStyle);
         cell.setCellValue(value);
+        rowOffset++;
+    }
+
+    private void writeLink(String value, String href) {
+
+        if (StringUtils.isEmpty(href))
+            return;
+
+        Row row = sheet.createRow(rowOffset);
+        Cell cell = row.createCell(0);
+        cell.setCellStyle(textStyle);
+        cell.setCellValue(value);
+
+        cell = row.createCell(1);
+        cell.setCellStyle(linkStyle);
+        Hyperlink link = createHelper.createHyperlink(HyperlinkType.URL);
+        link.setAddress(href);
+        cell.setHyperlink(link);
+        cell.setCellValue(href);
+
+        rowOffset++;
+    }
+
+    private void writeHeader(String header) {
+
+        Row row = sheet.createRow(rowOffset);
+        Cell cell = row.createCell(0);
+        cell.setCellStyle(headerStyle);
+        cell.setCellValue(header);
         rowOffset++;
     }
 }

@@ -29,7 +29,7 @@ public class MetadataFormatterTest {
         final Sheet sheet = wb.createSheet("Test");
         final CellStyle cellStyle = wb.createCellStyle();
 
-        MetadataFormatter metadataFormatter = new MetadataFormatter(sheet, metadata, cellStyle, cellStyle);
+        MetadataFormatter metadataFormatter = new MetadataFormatter(sheet, metadata, cellStyle, cellStyle,cellStyle);
 
         // When format is called
         metadataFormatter.format();
@@ -51,7 +51,7 @@ public class MetadataFormatterTest {
         final Sheet sheet = wb.createSheet("Test");
         final CellStyle cellStyle = wb.createCellStyle();
 
-        MetadataFormatter metadataFormatter = new MetadataFormatter(sheet, metadata, cellStyle, cellStyle);
+        MetadataFormatter metadataFormatter = new MetadataFormatter(sheet, metadata, cellStyle, cellStyle, cellStyle);
 
         // When format is called
         metadataFormatter.format();

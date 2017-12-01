@@ -31,7 +31,7 @@ class DatasetFormatter {
      * @param titleStyle  The style of the cell titles
      * @param numberStyle The style of the observations
      */
-    void format(Sheet sheet, V4File file, Metadata datasetMetadata, CellStyle titleStyle, CellStyle numberStyle) {
+    void format(Sheet sheet, V4File file, Metadata datasetMetadata, CellStyle headingStyle, CellStyle titleStyle, CellStyle numberStyle) {
 
         final List<Group> groups = file.groupData();
         final List<String> timeLabels = file.getUniqueTimeLabels();
@@ -39,7 +39,7 @@ class DatasetFormatter {
         int columnOffset = 0;
         int rowOffset = 0;
 
-        rowOffset = addMetadata(sheet, datasetMetadata, titleStyle, columnOffset, rowOffset);
+        rowOffset = addMetadata(sheet, datasetMetadata, headingStyle, columnOffset, rowOffset);
 
         // Start off by placing the time on all rows
         for (int i = 0; i < timeLabels.size(); i++) {
@@ -81,16 +81,16 @@ class DatasetFormatter {
 
     }
 
-    private int addMetadata(Sheet sheet, Metadata datasetMetadata, CellStyle titleStyle, int columnOffset, int rowOffset) {
+    private int addMetadata(Sheet sheet, Metadata datasetMetadata, CellStyle headingStyle, int columnOffset, int rowOffset) {
 
         Row row = sheet.createRow(rowOffset);
 
         Cell cell = row.createCell(columnOffset);
-        cell.setCellStyle(titleStyle);
+        cell.setCellStyle(headingStyle);
         cell.setCellValue("Dataset Title");
 
         cell = row.createCell(columnOffset + 1);
-        cell.setCellStyle(titleStyle);
+        cell.setCellStyle(headingStyle);
         cell.setCellValue(datasetMetadata.getTitle());
         rowOffset++;
 

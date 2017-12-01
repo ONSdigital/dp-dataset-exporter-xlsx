@@ -34,7 +34,7 @@ public class DatasetFormatterTest {
             final CellStyle style = createStyle(wb);
             final Sheet sheet = wb.createSheet("Test");
 
-            datasetFormatter.format(sheet, file, datasetMetadata, style, style);
+            datasetFormatter.format(sheet, file, datasetMetadata, style, style, style);
 
             assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 3);
             assertThat(sheet.getDefaultColumnWidth()).isEqualTo(8);
@@ -61,7 +61,7 @@ public class DatasetFormatterTest {
         final Sheet sheet = wb.createSheet("Test");
 
         // When format is called
-        datasetFormatter.format(sheet, file, datasetMetadata, style, style);
+        datasetFormatter.format(sheet, file, datasetMetadata, style, style, style);
 
         printSheet(sheet);
 
@@ -88,7 +88,7 @@ public class DatasetFormatterTest {
         final Sheet sheet = wb.createSheet("Test");
 
         // When format is called
-        datasetFormatter.format(sheet, file, datasetMetadata, style, style);
+        datasetFormatter.format(sheet, file, datasetMetadata, style, style, style);
 
         printSheet(sheet);
 
