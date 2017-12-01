@@ -11,6 +11,7 @@ import dp.api.filter.FilterAPIClient;
 import dp.api.filter.FilterLinks;
 import dp.avro.ExportedFile;
 import dp.xlsx.XLSXConverter;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +19,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -60,7 +64,7 @@ public class HandlerTest {
         Metadata datasetMetadata = new Metadata();
         when(datasetAPI.getMetadata(filter.getLinks().getVersion().getHref())).thenReturn(datasetMetadata);
 
-        when(converter.toXLSX(any(), any())).thenReturn(new ByteArrayOutputStream());
+        when(converter.toXLSX(any(), any())).thenReturn(new XSSFWorkbook());
 
         final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv");
 

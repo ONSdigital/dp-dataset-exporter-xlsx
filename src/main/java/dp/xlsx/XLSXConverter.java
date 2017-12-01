@@ -8,7 +8,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -27,23 +26,21 @@ public class XLSXConverter {
      * @return The converted V4 as XLSX file
      * @throws IOException Failed to convert the V4 file to XLSX
      */
-    public ByteArrayOutputStream toXLSX(final InputStream stream, Metadata datasetMetadata) throws IOException {
+    public Workbook toXLSX(final InputStream stream, Metadata datasetMetadata) throws IOException {
 
-        final Workbook wb = new XSSFWorkbook();
-        final CellStyle titleStyle = createStyle(wb);
-        final CellStyle valueStyle = createNumberStyle(wb);
+        final Workbook workbook = new XSSFWorkbook();
+        final CellStyle titleStyle = createStyle(workbook);
+        final CellStyle valueStyle = createNumberStyle(workbook);
 
-        final Sheet datasetSheet = wb.createSheet("Dataset");
+        final Sheet datasetSheet = workbook.createSheet("Dataset");
         final V4File v4File = new V4File(stream);
         datasetFormatter.format(datasetSheet, v4File, datasetMetadata, titleStyle, valueStyle);
 
-        final Sheet metadataSheet = wb.createSheet("Metadata");
+        final Sheet metadataSheet = workbook.createSheet("Metadata");
         MetadataFormatter metadataFormatter = new MetadataFormatter(metadataSheet, datasetMetadata, titleStyle, valueStyle);
         metadataFormatter.format();
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        wb.write(os);
-        return os;
+        return workbook;
     }
 
     private CellStyle createStyle(Workbook wb) {

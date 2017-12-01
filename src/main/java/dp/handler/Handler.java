@@ -11,6 +11,7 @@ import dp.api.filter.FilterAPIClient;
 import dp.api.filter.Filter;
 import dp.avro.ExportedFile;
 import dp.xlsx.XLSXConverter;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,14 +59,21 @@ public class Handler {
             String datasetVersionURL = filter.getLinks().getVersion().getHref();
             final Metadata datasetMetadata = datasetAPIClient.getMetadata(datasetVersionURL);
 
-            try (final ByteArrayOutputStream xls = converter.toXLSX(object.getObjectContent(), datasetMetadata)) {
 
-                final long contentLength = xls.toByteArray().length;
+            try (final Workbook workbook = converter.toXLSX(object.getObjectContent(), datasetMetadata);
+                 final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();) {
+
+                workbook.write(outputStream);
+
+                byte[] xlsxBytes = outputStream.toByteArray();
+
+                final long contentLength = xlsxBytes.length;
                 final ObjectMetadata metadata = new ObjectMetadata();
+
                 metadata.setContentLength(contentLength);
                 final String key = message.getFilterId() + ".xlsx";
 
-                try (final ByteArrayInputStream stream = new ByteArrayInputStream(xls.toByteArray())) {
+                try (final ByteArrayInputStream stream = new ByteArrayInputStream(xlsxBytes)) {
 
                     final PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, key, stream, metadata);
                     s3Client.putObject(putObjectRequest);
