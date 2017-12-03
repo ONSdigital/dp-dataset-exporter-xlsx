@@ -1,16 +1,19 @@
 package dp.xlsx;
 
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -78,8 +81,58 @@ public class FormatterTest {
         // When format is called
         formatter.format(sheet, file, style, style);
 
-        assertThat(sheet.getRow( 1).getCell(0).getStringCellValue()).isEqualTo("Feb-96");
-        assertThat(sheet.getRow( 2).getCell(0).getStringCellValue()).isEqualTo("Jan-96");
+        printSheet(sheet);
+
+        assertThat(sheet.getRow(1).getCell(0).getStringCellValue()).isEqualTo("Feb-96");
+        assertThat(sheet.getRow(2).getCell(0).getStringCellValue()).isEqualTo("Jan-96");
+    }
+
+    @Test
+    public void dimensionValuesAreOrderedAlphabetically() throws IOException {
+
+        // Given some V4 input data
+        String csvHeader = "V4_0,Time_codelist,Time,Geography_codelist,Geography,cpi1dim1aggid,Aggregate\n";
+        String csvRow = "45.2,Month,Jan-96,K02000002,Wales,cpi1dim1A1,AAA\n";
+        String csvRow2 = "86.9,Month,Jan-96,K02000003,England,cpi1dim1A2,BBB\n";
+        String csvContent = csvHeader + csvRow + csvRow2;
+
+        InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
+
+        final V4File file = new V4File(inputStream);
+        final Workbook wb = new XSSFWorkbook();
+        final CellStyle style = createStyle(wb);
+        final Sheet sheet = wb.createSheet("Test");
+
+        // When format is called
+        formatter.format(sheet, file, style, style);
+
+        printSheet(sheet);
+
+        assertThat(sheet.getRow(0).getCell(1).getStringCellValue()).isEqualTo("England\nBBB");
+        assertThat(sheet.getRow(0).getCell(2).getStringCellValue()).isEqualTo("Wales\nAAA");
+    }
+
+    private void printSheet(Sheet sheet) {
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            Iterator<Cell> cellIterator = row.cellIterator();
+
+            while (cellIterator.hasNext()) {
+
+                Cell cell = cellIterator.next();
+
+                if (cell.getCellTypeEnum().equals(CellType.NUMERIC)) {
+                    System.out.print(cell.getNumericCellValue() + ",");
+                } else {
+                    System.out.print(cell.getStringCellValue().replace("\n", ":") + ",");
+                }
+            }
+
+            System.out.println();
+        }
     }
 
     private CellStyle createStyle(Workbook wb) {

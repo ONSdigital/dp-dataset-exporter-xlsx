@@ -1,11 +1,15 @@
 package dp.xlsx;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A single unique combination of dimension options, and its associated observations.
  */
-public class Group {
+public class Group implements Comparable<Group> {
 
     private List<String> groupValues; // the unique dimension options
     private Map<String, String> observations; // time: observation
@@ -65,4 +69,25 @@ public class Group {
     }
 
 
+    @Override
+    public int compareTo(Group o) {
+
+        int compared = 0;
+
+        // if the group arrays differ in length do not try and compare.
+        if (this.groupValues.size() != o.groupValues.size())
+            return 0;
+
+        // Order by each group value in turn
+        for (int i = 0; i < groupValues.size(); ++i) {
+
+            compared = this.groupValues.get(i).compareTo(o.groupValues.get(i));
+
+            // return if we can determine order from this dimension option
+            if (compared != 0)
+                return compared;
+        }
+
+        return compared;
+    }
 }
