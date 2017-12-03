@@ -3,6 +3,7 @@ package dp.xlsx;
 import dp.api.dataset.Metadata;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -106,11 +107,17 @@ public class DatasetFormatterTest {
             Iterator<Cell> cellIterator = row.cellIterator();
 
             while(cellIterator.hasNext()) {
-                System.out.println("Row " + row.getRowNum());
+
                 Cell cell = cellIterator.next();
-                System.out.println("Column " + cell.getColumnIndex());
-                System.out.println(cell.getStringCellValue() + ",");
+
+                if (cell.getCellTypeEnum().equals(CellType.NUMERIC)) {
+                    System.out.print(cell.getNumericCellValue() + ",");
+                } else {
+                    System.out.print(cell.getStringCellValue().replace("\n", ":") + ",");
+                }
             }
+
+            System.out.println();
         }
     }
 
