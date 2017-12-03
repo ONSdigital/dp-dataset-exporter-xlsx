@@ -2,9 +2,13 @@ package dp.xlsx;
 
 import java.util.*;
 
+/**
+ * A single unique combination of dimension options, and its associated observations.
+ */
 public class Group {
-    private List<String> groupValues;
-    private Map<String, String> observations;
+
+    private List<String> groupValues; // the unique dimension options
+    private Map<String, String> observations; // time: observation
 
     /**
      * Create a group of dimensions

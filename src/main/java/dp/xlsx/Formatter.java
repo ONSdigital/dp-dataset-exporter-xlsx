@@ -5,6 +5,7 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,8 +32,11 @@ class Formatter {
      * @param numberStyle The style of the observations
      */
     void format(Sheet sheet, V4File file, CellStyle titleStyle, CellStyle numberStyle) {
+
         final List<Group> groups = file.groupData();
         final List<String> timeLabels = file.getUniqueTimeLabels();
+        timeLabels.sort(Comparator.comparing(Object::toString));
+
         final Map<String, Row> timeRows = new HashMap<>();
         int columnOffset = 0;
         int rowOffset = 1;

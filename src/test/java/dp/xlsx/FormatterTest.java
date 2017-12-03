@@ -59,6 +59,29 @@ public class FormatterTest {
         assertThat(sheet.getRow(1).getCell(1).getStringCellValue()).isEqualTo("");
     }
 
+    @Test
+    public void timeValuesAreOrderedAlphabetically() throws IOException {
+
+        // Given some V4 input data
+        String csvHeader = "V4_0,Time_codelist,Time,Geography_codelist,Geography,cpi1dim1aggid,Aggregate\n";
+        String csvRow = "45.2,Month,Jan-96,K02000001,Great Britain,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow2 = "86.9,Month,Feb-96,K02000001,Great Britain,cpi1dim1A0,CPI (overall index)\n";
+        String csvContent = csvHeader + csvRow + csvRow2;
+
+        InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
+
+        final V4File file = new V4File(inputStream);
+        final Workbook wb = new XSSFWorkbook();
+        final CellStyle style = createStyle(wb);
+        final Sheet sheet = wb.createSheet("Test");
+
+        // When format is called
+        formatter.format(sheet, file, style, style);
+
+        assertThat(sheet.getRow( 1).getCell(0).getStringCellValue()).isEqualTo("Feb-96");
+        assertThat(sheet.getRow( 2).getCell(0).getStringCellValue()).isEqualTo("Jan-96");
+    }
+
     private CellStyle createStyle(Workbook wb) {
         final CellStyle style = wb.createCellStyle();
         final Font font = wb.createFont();

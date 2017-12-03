@@ -12,11 +12,15 @@ import java.util.*;
  */
 class V4File {
 
-    private final List<String[]> data;
+    private final List<String[]> data; // v4 CSV rows
 
     private final int headerOffset;
 
     private Set<String> uniqueTimeValues;
+
+    // todo: order the time values - use a ordered set when parsing file?
+    // todo order the groups - use a tree map when parsing the file?
+
 
     V4File(final InputStream inputStream) throws IOException {
         try (final CSVReader reader = new CSVReader(new InputStreamReader(inputStream))) {
@@ -43,16 +47,23 @@ class V4File {
      * @return A list of all groups within the v4 file
      */
     List<Group> groupData() {
-        data.remove(0);
+
+        data.remove(0); // remove header
+
         final Map<Group, Group> groups = new HashMap<>();
+
         data.stream().forEach(row -> {
+
             final Group group = new Group(row, headerOffset);
             final String timeValue = row[headerOffset + 1];
             final String observation = row[0];
+
             if (groups.containsKey(group)) {
+
                 uniqueTimeValues.add(timeValue);
                 groups.get(group).addObservation(timeValue, observation);
             } else {
+
                 uniqueTimeValues.add(timeValue);
                 group.addObservation(timeValue, observation);
                 groups.put(group, group);
