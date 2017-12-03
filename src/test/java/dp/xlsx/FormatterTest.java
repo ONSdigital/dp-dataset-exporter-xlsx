@@ -108,8 +108,8 @@ public class FormatterTest {
 
         printSheet(sheet);
 
-        assertThat(sheet.getRow(0).getCell(1).getStringCellValue()).isEqualTo("England\nBBB");
-        assertThat(sheet.getRow(0).getCell(2).getStringCellValue()).isEqualTo("Wales\nAAA");
+        assertThat(sheet.getRow(0).getCell(1).getStringCellValue()).isEqualTo("England (K02000003)\nBBB (cpi1dim1A2)");
+        assertThat(sheet.getRow(0).getCell(2).getStringCellValue()).isEqualTo("Wales (K02000002)\nAAA (cpi1dim1A1)");
     }
 
     private void printSheet(Sheet sheet) {

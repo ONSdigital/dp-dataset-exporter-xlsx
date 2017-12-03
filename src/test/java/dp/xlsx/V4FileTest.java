@@ -1,6 +1,5 @@
 package dp.xlsx;
 
-
 import org.junit.Test;
 
 import java.io.IOException;
@@ -33,7 +32,7 @@ public class V4FileTest {
         try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_0.csv")) {
             final V4File file = new V4File(stream);
             final Group group = file.groupData().get(0);
-            assertThat(group.getTitle()).isEqualTo("K02000001\n" + "CPI (overall index)");
+            assertThat(group.getTitle()).isEqualTo("K02000001\n" + "CPI (overall index) (cpi1dim1A0)");
         }
     }
 
@@ -42,7 +41,7 @@ public class V4FileTest {
         try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_0.csv")) {
             final V4File file = new V4File(stream);
             final Group group = file.groupData().get(0);
-            assertThat(group.getTitle()).isEqualTo("K02000001\n" + "CPI (overall index)");
+            assertThat(group.getTitle()).isEqualTo("K02000001\n" + "CPI (overall index) (cpi1dim1A0)");
         }
     }
 }
