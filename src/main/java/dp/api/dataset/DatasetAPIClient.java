@@ -11,7 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 @Component
 public class DatasetAPIClient {
@@ -30,14 +32,10 @@ public class DatasetAPIClient {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public Metadata getMetadata(final String datasetVersionURL) {
+    public Metadata getMetadata(final String datasetVersionURL) throws MalformedURLException {
 
-        final String url = UriComponentsBuilder
-                .fromHttpUrl(datasetVersionURL + "/metadata")
-                .build().toUriString();
-
-        final HttpHeaders headers = new HttpHeaders();
-        headers.add("internal-token", token);
+        final String versionPath = new URL(datasetVersionURL).getPath();
+        final String url = new URL(datasetAPIURL + versionPath + "/metadata").toString();
 
         LOGGER.info("getting dataset version data from the dataset api, url : {}", url);
 
