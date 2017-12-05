@@ -1,5 +1,6 @@
 package dp.xlsx;
 
+import dp.api.dataset.Metadata;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
@@ -14,7 +15,7 @@ import java.util.Map;
  * A class used to format a V4 file into a two dimensional structure for a
  * xlsx file.
  */
-class Formatter {
+class DatasetFormatter {
 
     /**
      * The following function will format a V4 file into a grouped
@@ -31,7 +32,7 @@ class Formatter {
      * @param titleStyle  The style of the cell titles
      * @param numberStyle The style of the observations
      */
-    void format(Sheet sheet, V4File file, CellStyle titleStyle, CellStyle numberStyle) {
+    void format(Sheet sheet, V4File file, Metadata datasetMetadata, CellStyle headingStyle, CellStyle titleStyle, CellStyle numberStyle) {
 
         final List<Group> groups = file.groupData();
         Collections.sort(groups);
@@ -41,17 +42,23 @@ class Formatter {
 
         final Map<String, Row> timeRows = new HashMap<>();
         int columnOffset = 0;
-        int rowOffset = 1;
+        int rowOffset = 0;
+
+        rowOffset = addMetadata(sheet, datasetMetadata, headingStyle, columnOffset, rowOffset);
+
         // Start off by placing the time on all rows
         for (int i = 0; i < timeLabels.size(); i++) {
-            Row row = sheet.createRow(i + rowOffset);
+            Row row = sheet.createRow(i + rowOffset + 1);
             Cell cell = row.createCell(columnOffset);
             cell.setCellStyle(titleStyle);
             cell.setCellValue(timeLabels.get(i));
             timeRows.put(timeLabels.get(i), row);
         }
+
         columnOffset += 1;
-        Row title = sheet.createRow(0);
+
+        Row title = sheet.createRow(rowOffset);
+
         // For each group add the title onto the row
         for (int g = 0; g < groups.size(); g++) {
             Cell cell = title.createCell(g + columnOffset);
@@ -75,5 +82,26 @@ class Formatter {
             }
         }
 
+        sheet.autoSizeColumn(0);
+
+    }
+
+    private int addMetadata(Sheet sheet, Metadata datasetMetadata, CellStyle headingStyle, int columnOffset, int rowOffset) {
+
+        Row row = sheet.createRow(rowOffset);
+
+        Cell cell = row.createCell(columnOffset);
+        cell.setCellStyle(headingStyle);
+        cell.setCellValue("Dataset Title");
+
+        cell = row.createCell(columnOffset + 1);
+        cell.setCellStyle(headingStyle);
+        cell.setCellValue(datasetMetadata.getTitle());
+        rowOffset++;
+
+        // Add a blank row at the bottom of the metadata.
+        sheet.createRow(rowOffset);
+        rowOffset++;
+        return rowOffset;
     }
 }
