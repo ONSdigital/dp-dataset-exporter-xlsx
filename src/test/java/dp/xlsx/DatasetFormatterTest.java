@@ -29,7 +29,26 @@ public class DatasetFormatterTest {
     final Sheet sheet = wb.createSheet("Test");
 
     @Test
-    public void timeValuesAreOrderedAlphabetically() throws IOException {
+    public void timeValuesAreOrderedAlphabeticallyWhenUnrecognised() throws IOException {
+
+        // Given some V4 input data
+        String csvHeader = "V4_0,Time_codelist,Time,Geography_codelist,Geography,cpi1dim1aggid,Aggregate\n";
+        String csvRow = "45.2,Month,January-96,K02000001,Great Britain,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow2 = "86.9,Month,February-96,K02000001,Great Britain,cpi1dim1A0,CPI (overall index)\n";
+        String csvContent = csvHeader + csvRow + csvRow2;
+
+        InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
+        final V4File file = new V4File(inputStream);
+
+        // When format is called
+        datasetFormatter.format(sheet, file, datasetMetadata, style, style, style);
+
+        assertThat(sheet.getRow(metadataRows + 1).getCell(0).getStringCellValue()).isEqualTo("February-96");
+        assertThat(sheet.getRow(metadataRows + 2).getCell(0).getStringCellValue()).isEqualTo("January-96");
+    }
+
+    @Test
+    public void timeValuesAreOrderedChronologicallyWhenRecognised() throws IOException {
 
         // Given some V4 input data
         String csvHeader = "V4_0,Time_codelist,Time,Geography_codelist,Geography,cpi1dim1aggid,Aggregate\n";
@@ -43,8 +62,8 @@ public class DatasetFormatterTest {
         // When format is called
         datasetFormatter.format(sheet, file, datasetMetadata, style, style, style);
 
-        assertThat(sheet.getRow(metadataRows + 1).getCell(0).getStringCellValue()).isEqualTo("Feb-96");
-        assertThat(sheet.getRow(metadataRows + 2).getCell(0).getStringCellValue()).isEqualTo("Jan-96");
+        assertThat(sheet.getRow(metadataRows + 1).getCell(0).getStringCellValue()).isEqualTo("Jan-96");
+        assertThat(sheet.getRow(metadataRows + 2).getCell(0).getStringCellValue()).isEqualTo("Feb-96");
     }
 
     @Test
@@ -144,7 +163,7 @@ public class DatasetFormatterTest {
         Cell cell = sheet.getRow(metadataRows + 1).getCell(1);
 
         assertThat(cell.getCellTypeEnum()).isEqualTo(CellType.NUMERIC);
-        assertThat(cell.getNumericCellValue()).isEqualTo("88.0");
+        assertThat(cell.getNumericCellValue()).isEqualTo(88.0);
     }
 
     @Test
@@ -166,7 +185,7 @@ public class DatasetFormatterTest {
         Cell cell = sheet.getRow(metadataRows + 1).getCell(1);
 
         assertThat(cell.getCellTypeEnum()).isEqualTo(CellType.NUMERIC);
-        assertThat(cell.getNumericCellValue()).isEqualTo(88);
+        assertThat(cell.getNumericCellValue()).isEqualTo(88.0);
     }
 
     private CellStyle createStyle(Workbook wb) {
