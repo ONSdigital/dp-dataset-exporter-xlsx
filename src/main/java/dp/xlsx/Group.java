@@ -20,18 +20,32 @@ public class Group implements Comparable<Group> {
      * @param offset The v4 file offset
      */
     Group(String[] data, int offset) {
+
+        final int labelOffset = 2; // Skip the code and get the label when iterating columns
         groupValues = new ArrayList<>();
         observations = new HashMap<>();
-        int skipTime = offset + 3; // skip the observation, time code and time label
+        int columnOffset = offset + 3; // skip the observation, time code and time label
 
-        final int labelOffset = 2; // Skip the code and get the label
-        for (int i = skipTime; i < data.length; i += labelOffset) {
-            String value = data[i];
-            if ("".equals(value)) {
+        // read geography code and label
+        String value = data[columnOffset];
+
+        if ("".equals(value)) {
+            value = data[columnOffset - 1]; // Just use the code
+        } else {
+            value = String.format("%s (%s)", value, data[columnOffset - 1]); // Append the code to the label
+        }
+
+        groupValues.add(value);
+        columnOffset += labelOffset;
+
+        // add all other dimensions
+        for (int i = columnOffset; i < data.length; i += labelOffset) {
+
+            value = data[i];
+
+            if ("".equals(value))
                 value = data[i - 1]; // Just use the code
-            } else {
-                value = String.format("%s (%s)", value, data[i - 1]); // Append the code to the label
-            }
+
             groupValues.add(value);
         }
     }
