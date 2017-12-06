@@ -88,7 +88,7 @@ public class XLSXConverter {
         final Font font = wb.createFont();
         font.setFontName("Arial-Number");
         font.setFontHeightInPoints((short) 14);
-        style.setDataFormat(wb.createDataFormat().getFormat(".#############################"));
+        style.setDataFormat(wb.createDataFormat().getFormat("0.0############################"));
         style.setFont(font);
         style.setWrapText(true);
         style.setVerticalAlignment(VerticalAlignment.TOP);

@@ -5,6 +5,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.springframework.util.StringUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -70,14 +71,24 @@ class DatasetFormatter {
             for (String timeTitle : timeLabels) {
                 Row row = timeRows.get(timeTitle);
                 Cell obs = row.createCell(g + columnOffset);
-                obs.setCellStyle(numberStyle);
+
                 final String value = groups.get(g).getObservation(timeTitle);
-                if (value != null) {
-                    try {
-                        obs.setCellValue(Double.parseDouble(value));
-                    } catch (NumberFormatException e) {
-                        obs.setCellValue("");
-                    }
+
+                if (StringUtils.isEmpty(value)) {
+                    obs.setCellValue("");
+                    continue;
+                }
+
+                if (value.contains(".")) {
+                    obs.setCellStyle(numberStyle); // apply decimal formatting if there is a decimal
+                } else {
+                    obs.setCellStyle(titleStyle);
+                }
+
+                try {
+                    obs.setCellValue(Double.parseDouble(value));
+                } catch (NumberFormatException e) {
+                    obs.setCellValue("");
                 }
             }
         }
