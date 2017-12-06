@@ -41,7 +41,7 @@ public class DatasetFormatterTest {
         final V4File file = new V4File(inputStream);
 
         // When format is called
-        datasetFormatter.format(sheet, file, datasetMetadata, style, style, style);
+        datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
 
         assertThat(sheet.getRow(metadataRows + 1).getCell(0).getStringCellValue()).isEqualTo("February-96");
         assertThat(sheet.getRow(metadataRows + 2).getCell(0).getStringCellValue()).isEqualTo("January-96");
@@ -60,7 +60,7 @@ public class DatasetFormatterTest {
         final V4File file = new V4File(inputStream);
 
         // When format is called
-        datasetFormatter.format(sheet, file, datasetMetadata, style, style, style);
+        datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
 
         assertThat(sheet.getRow(metadataRows + 1).getCell(0).getStringCellValue()).isEqualTo("Jan-96");
         assertThat(sheet.getRow(metadataRows + 2).getCell(0).getStringCellValue()).isEqualTo("Feb-96");
@@ -79,7 +79,7 @@ public class DatasetFormatterTest {
         final V4File file = new V4File(inputStream);
 
         // When format is called
-        datasetFormatter.format(sheet, file, datasetMetadata, style, style, style);
+        datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
 
         assertThat(sheet.getRow(metadataRows + 0).getCell(1).getStringCellValue()).isEqualTo("England (K02000003)\nBBB");
         assertThat(sheet.getRow(metadataRows + 0).getCell(2).getStringCellValue()).isEqualTo("Wales (K02000002)\nAAA");
@@ -92,7 +92,7 @@ public class DatasetFormatterTest {
 
             final V4File file = new V4File(stream);
 
-            datasetFormatter.format(sheet, file, datasetMetadata, style, style, style);
+            datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
 
             assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 3);
             assertThat(sheet.getDefaultColumnWidth()).isEqualTo(8);
@@ -115,7 +115,7 @@ public class DatasetFormatterTest {
         final V4File file = new V4File(inputStream);
 
         // When format is called
-        datasetFormatter.format(sheet, file, datasetMetadata, style, style, style);
+        datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
 
         // Then the expected metadata is output at the top of the XLSX sheet
         assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 2);
@@ -135,7 +135,7 @@ public class DatasetFormatterTest {
         final V4File file = new V4File(inputStream);
 
         // When format is called
-        datasetFormatter.format(sheet, file, datasetMetadata, style, style, style);
+        datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
 
         // Then the empty observation value is in the output
         assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 2);
@@ -155,7 +155,7 @@ public class DatasetFormatterTest {
         final V4File file = new V4File(inputStream);
 
         // When format is called
-        datasetFormatter.format(sheet, file, datasetMetadata, style, style, numberStyle);
+        datasetFormatter.format(sheet, file, datasetMetadata, style, style, numberStyle, style, style);
 
         // Then the value in the output has the decimal place
         assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 2);
@@ -178,7 +178,7 @@ public class DatasetFormatterTest {
         final V4File file = new V4File(inputStream);
 
         // When format is called
-        datasetFormatter.format(sheet, file, datasetMetadata, style, style, numberStyle);
+        datasetFormatter.format(sheet, file, datasetMetadata, style, style, numberStyle, style, style);
 
         // Then the value in the output has the decimal place
         assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 2);

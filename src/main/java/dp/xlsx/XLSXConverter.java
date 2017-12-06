@@ -3,6 +3,7 @@ package dp.xlsx;
 import dp.api.dataset.Metadata;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
@@ -31,17 +32,19 @@ public class XLSXConverter {
     public Workbook toXLSX(final InputStream stream, Metadata datasetMetadata) throws IOException {
 
         final Workbook workbook = new XSSFWorkbook();
-        final CellStyle headerStyle = createHeaderStyle(workbook);
-        final CellStyle titleStyle = createStyle(workbook);
+        final CellStyle headerStyle = createBoldStyle(workbook);
+        final CellStyle headerRightAlignStyle = createBoldRightAlignStyle(workbook);
+        final CellStyle valueStyle = createStyle(workbook);
+        final CellStyle valueRightAlignStyle = createRightAlignStyle(workbook);
         final CellStyle linkStyle = createLinkStyle(workbook);
-        final CellStyle valueStyle = createNumberStyle(workbook);
+        final CellStyle numberStyle = createNumberStyle(workbook);
 
         final Sheet datasetSheet = workbook.createSheet("Dataset");
         final V4File v4File = new V4File(stream);
-        datasetFormatter.format(datasetSheet, v4File, datasetMetadata, headerStyle, titleStyle, valueStyle);
+        datasetFormatter.format(datasetSheet, v4File, datasetMetadata, headerStyle, headerRightAlignStyle, valueStyle, valueRightAlignStyle, numberStyle);
 
         final Sheet metadataSheet = workbook.createSheet("Metadata");
-        MetadataFormatter metadataFormatter = new MetadataFormatter(metadataSheet, datasetMetadata, headerStyle, titleStyle, linkStyle);
+        MetadataFormatter metadataFormatter = new MetadataFormatter(metadataSheet, datasetMetadata, headerStyle, valueStyle, linkStyle);
         metadataFormatter.format();
 
         return workbook;
@@ -54,6 +57,18 @@ public class XLSXConverter {
         font.setFontHeightInPoints((short) 14);
         style.setFont(font);
         style.setWrapText(true);
+        style.setVerticalAlignment(VerticalAlignment.TOP);
+        return style;
+    }
+
+    private CellStyle createRightAlignStyle(Workbook wb) {
+        final CellStyle style = wb.createCellStyle();
+        final Font font = wb.createFont();
+        font.setFontName("Arial");
+        font.setFontHeightInPoints((short) 14);
+        style.setFont(font);
+        style.setWrapText(true);
+        style.setAlignment(HorizontalAlignment.RIGHT);
         style.setVerticalAlignment(VerticalAlignment.TOP);
         return style;
     }
@@ -71,14 +86,27 @@ public class XLSXConverter {
         return style;
     }
 
-    private CellStyle createHeaderStyle(Workbook wb) {
+    private CellStyle createBoldStyle(Workbook wb) {
         final CellStyle style = wb.createCellStyle();
         final Font font = wb.createFont();
         font.setFontName("Arial-Bold");
         font.setBold(true);
         font.setFontHeightInPoints((short) 14);
         style.setFont(font);
-        style.setWrapText(true);
+        style.setWrapText(false);
+        style.setVerticalAlignment(VerticalAlignment.TOP);
+        return style;
+    }
+
+    private CellStyle createBoldRightAlignStyle(Workbook wb) {
+        final CellStyle style = wb.createCellStyle();
+        final Font font = wb.createFont();
+        font.setFontName("Arial-Bold");
+        font.setBold(true);
+        font.setFontHeightInPoints((short) 14);
+        style.setFont(font);
+        style.setWrapText(false);
+        style.setAlignment(HorizontalAlignment.RIGHT);
         style.setVerticalAlignment(VerticalAlignment.TOP);
         return style;
     }
