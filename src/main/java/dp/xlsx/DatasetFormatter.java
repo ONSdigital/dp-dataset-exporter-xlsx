@@ -7,6 +7,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.util.StringUtils;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -38,8 +39,7 @@ class DatasetFormatter {
         final List<Group> groups = file.groupData();
         Collections.sort(groups);
 
-        final List<String> timeLabels = file.getUniqueTimeLabels();
-        Collections.sort(timeLabels);
+        final Collection<String> timeLabels = file.getOrderedTimeLabels();
 
         final Map<String, Row> timeRows = new HashMap<>();
         int columnOffset = 0;
@@ -48,12 +48,15 @@ class DatasetFormatter {
         rowOffset = addMetadata(sheet, datasetMetadata, headingStyle, columnOffset, rowOffset);
 
         // Start off by placing the time on all rows
-        for (int i = 0; i < timeLabels.size(); i++) {
+
+        int i = 0;
+        for (String timeLabel : timeLabels) {
             Row row = sheet.createRow(i + rowOffset + 1);
             Cell cell = row.createCell(columnOffset);
             cell.setCellStyle(titleStyle);
-            cell.setCellValue(timeLabels.get(i));
-            timeRows.put(timeLabels.get(i), row);
+            cell.setCellValue(timeLabel);
+            timeRows.put(timeLabel, row);
+            i++;
         }
 
         columnOffset += 1;
@@ -115,4 +118,5 @@ class DatasetFormatter {
         rowOffset++;
         return rowOffset;
     }
+
 }
