@@ -56,7 +56,8 @@ public class MetadataTest {
                 new Link("accessRights", "http://localhost:22400/accessRights"),
                 new Link("self", "http://localhost:22400/self"),
                 new Link("spatial", "http://localhost:22400/spatial"),
-                new Link("version", "http://localhost:22400/version")
+                new Link("version", "http://localhost:22400/version"),
+                new Link("version", "http://localhost:20000/version")
         ));
 
         metadata.setMethodologies(Arrays.asList(

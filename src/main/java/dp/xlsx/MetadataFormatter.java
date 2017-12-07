@@ -130,8 +130,8 @@ class MetadataFormatter {
         if (links.getSpatial() != null)
             writeLink("Spatial", links.getSpatial().getHref());
 
-        if (links.getVersion() != null)
-            writeLink("Dataset Version", links.getVersion().getHref());
+        if (links.getWebsiteVersion() != null)
+            writeLink("Dataset Version", links.getWebsiteVersion().getHref());
 
         writeBlankRow();
     }
