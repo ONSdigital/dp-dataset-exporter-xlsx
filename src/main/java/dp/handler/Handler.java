@@ -8,14 +8,15 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dp.api.dataset.DatasetAPIClient;
-import dp.api.dataset.Download;
-import dp.api.dataset.DownloadsList;
 import dp.api.dataset.MessageType;
-import dp.api.dataset.Metadata;
 import dp.api.dataset.WorkbookDetails;
+import dp.api.dataset.models.Download;
+import dp.api.dataset.models.DownloadsList;
+import dp.api.dataset.models.Metadata;
 import dp.api.filter.Filter;
 import dp.api.filter.FilterAPIClient;
 import dp.avro.ExportedFile;
+import dp.exceptions.FilterAPIException;
 import dp.xlsx.XLSXConverter;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
@@ -71,13 +72,16 @@ public class Handler {
             } else {
                 handlePrePublishMessage(message, object);
             }
-        } catch (final IOException e) {
+        } catch (final IOException | FilterAPIException e) {
             if (FILTER.equals(messageType)) {
                 LOGGER.error("error when exporting filter {}. exception : {}", message.getFilterId(), e);
             } else {
                 LOGGER.error("error when exporting pre publish message {}. exception : {}",
                         message.getFilename().toString(), e);
             }
+            return;
+        } catch (Exception e) {
+            LOGGER.error("unexpected error throw while attempting to process message, {}", e.getMessage());
         }
         LOGGER.info("exported completed for filterID: {}", message.getFilterId());
     }
@@ -92,9 +96,16 @@ public class Handler {
 
         try {
             metadataURL = new URL(filter.getLinks().getVersion().getHref());
-            datasetMetadata = datasetAPIClient.getMetadata(metadataURL);
         } catch (MalformedURLException e) {
-            LOGGER.error("dataset api client get metadatda returned error for filter messge, filterID: {}, URL: {}",
+            LOGGER.error("error while attempting to create metadata URL, filterID {}, value: {}",
+                    message.getFilterId().toString(), filter.getLinks().getVersion().getHref());
+            throw e;
+        }
+
+        try {
+            datasetMetadata = datasetAPIClient.getMetadata(metadataURL);
+        } catch (FilterAPIException e) {
+            LOGGER.error("dataset api get metadata returned error. filterID {}, uri: {}",
                     message.getFilterId().toString(), metadataURL.toString());
             throw e;
         }
@@ -126,7 +137,7 @@ public class Handler {
         Metadata metadata = null;
         try {
             metadata = datasetAPIClient.getMetadata(versionURL);
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException | FilterAPIException e) {
             LOGGER.error("dataset api client error while attempting to get metadata, URL: {}", versionURL);
             throw e;
         }
@@ -145,7 +156,7 @@ public class Handler {
                     String.valueOf(details.getContentLength())), null);
 
             datasetAPIClient.putVersionDownloads(versionURL, downloadsList);
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException | FilterAPIException e) {
             LOGGER.error("dataset api PUT version returned error, filename: {}, URL: {}",
                     message.getFilename().toString(), versionURL);
             throw e;
@@ -154,7 +165,7 @@ public class Handler {
 
     private WorkbookDetails createWorkbook(S3Object object, Metadata datasetMetadata, String filename) throws IOException {
         try (final Workbook workbook = converter.toXLSX(object.getObjectContent(), datasetMetadata);
-             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();) {
+             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
             workbook.write(outputStream);
 
@@ -173,7 +184,7 @@ public class Handler {
             } catch (SdkClientException e) {
                 LOGGER.error("error while attempting PUT XLSX workbook to S3 bucket, filename: {}, bucket: {}",
                         key, bucket);
-                throw e;
+                throw new FilterAPIException("error while attempting PUT XLSX workbook to S3 bucket", e);
             }
         } catch (IOException e) {
             LOGGER.error("error while attempting create XLSX workbook, filename: {}, bucket: {}", filename);

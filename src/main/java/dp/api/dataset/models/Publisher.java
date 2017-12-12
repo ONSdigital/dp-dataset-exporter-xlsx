@@ -1,4 +1,4 @@
-package dp.api.dataset;
+package dp.api.dataset.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

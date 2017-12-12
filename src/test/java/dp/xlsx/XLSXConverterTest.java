@@ -1,6 +1,6 @@
 package dp.xlsx;
 
-import dp.api.dataset.Metadata;
+import dp.api.dataset.models.Metadata;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
