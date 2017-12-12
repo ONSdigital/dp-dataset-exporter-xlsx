@@ -64,16 +64,7 @@ class DatasetFormatter {
         // add dimension names in the corner of the table
         Cell cell = title.createCell(columnOffset);
         cell.setCellStyle(valueRightAlign);
-
-        if (datasetMetadata.getDimensions() != null) {
-            String dimensionNames = datasetMetadata.getDimensions()
-                    .stream()
-                    .skip(1) // skip geography dimension
-                    .map(d -> StringUtils.capitalize(d.getName()))
-                    .collect(Collectors.joining("\n"));
-
-            cell.setCellValue(dimensionNames);
-        }
+        cell.setCellValue(file.getDimensionsTitle());
 
         columnOffset += 1;
 
