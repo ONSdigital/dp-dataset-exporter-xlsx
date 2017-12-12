@@ -66,7 +66,7 @@ public class HandlerTest {
 
         when(converter.toXLSX(any(), any())).thenReturn(new XSSFWorkbook());
 
-        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv");
+        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "", "", "", "", "");
 
         handler.listen(exportedFile);
 

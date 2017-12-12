@@ -153,17 +153,21 @@ class MetadataFormatter {
     }
 
     private void writeDownloads() {
-
-        if (datasetMetadata.getDownloads() == null)
+        if (datasetMetadata.getDownloads() == null) {
             return;
+        }
 
-        writeLink("XLSX Download", datasetMetadata.getDownloads().getXls().getUrl());
-        writeString("Size (bytes)", datasetMetadata.getDownloads().getXls().getSize());
+        if (datasetMetadata.getDownloads().getXls() != null) {
+            writeLink("XLSX Download", datasetMetadata.getDownloads().getXls().getUrl());
+            writeString("Size (bytes)", datasetMetadata.getDownloads().getXls().getSize());
+            writeBlankRow();
+        }
 
-        writeBlankRow();
-        writeLink("CSV Download", datasetMetadata.getDownloads().getCsv().getUrl());
-        writeString("Size (bytes)", datasetMetadata.getDownloads().getCsv().getSize());
-        writeBlankRow();
+        if (datasetMetadata.getDownloads().getCsv() != null) {
+            writeLink("CSV Download", datasetMetadata.getDownloads().getCsv().getUrl());
+            writeString("Size (bytes)", datasetMetadata.getDownloads().getCsv().getSize());
+            writeBlankRow();
+        }
     }
 
     private void writeCodeLists() {

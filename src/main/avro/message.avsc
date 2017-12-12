@@ -3,6 +3,11 @@
  "name": "ExportedFile",
  "fields": [
      {"name": "filterId", "type": "string"},
-     {"name": "s3URL",  "type": "string"}
+     {"name": "s3URL",  "type": "string"},
+     {"name": "instance_id", "type": "string"},
+     {"name": "dataset_id", "type": "string"},
+     {"name": "edition", "type": "string"},
+     {"name": "version", "type": "string"},
+     {"name": "filename", "type": "string"}
  ]
 }
