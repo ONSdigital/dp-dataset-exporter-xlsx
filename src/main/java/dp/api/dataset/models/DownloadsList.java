@@ -12,6 +12,9 @@ public class DownloadsList {
     @JsonProperty("CSV")
     private Download csv;
 
+    public DownloadsList() {
+    }
+
     public DownloadsList(Download xls, Download csv) {
         this.xls = xls;
         this.csv = csv;

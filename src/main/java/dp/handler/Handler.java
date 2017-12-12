@@ -46,7 +46,7 @@ public class Handler {
 
     private static final String VERSION_DOWNLOADS_URL = "/datasets/{0}/editions/{1}/versions/{2}";
 
-    @Value("${S3_BUCKET_NAME:csv-exported-test}")
+    @Value("${S3_BUCKET_NAME:csv-exported}")
     private String bucket;
 
     @Autowired
