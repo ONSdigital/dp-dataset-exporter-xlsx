@@ -1,11 +1,16 @@
 package dp.xlsx;
 
 import au.com.bytecode.opencsv.CSVReader;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 
 /**
  * A class used to extract information from a V4 file.
@@ -18,9 +23,6 @@ class V4File {
 
     private Set<String> uniqueTimeValues;
 
-    // todo: order the time values - use a ordered set when parsing file?
-    // todo order the groups - use a tree map when parsing the file?
-
 
     V4File(final InputStream inputStream) throws IOException {
         try (final CSVReader reader = new CSVReader(new InputStreamReader(inputStream))) {
@@ -30,15 +32,6 @@ class V4File {
         final String v4Code = header[0];
         headerOffset = Integer.parseInt(v4Code.split("V4_")[1]) + 1;
         uniqueTimeValues = new HashSet<>();
-    }
-
-    /**
-     * Get all unique time labels found in the v4 file
-     *
-     * @return
-     */
-    List<String> getUniqueTimeLabels() {
-        return new ArrayList<>(uniqueTimeValues);
     }
 
     /**
@@ -71,6 +64,50 @@ class V4File {
         });
 
         return new ArrayList<>(groups.values());
+    }
+
+
+    /**
+     * Get all unique time labels found in the v4 file
+     *
+     * @return
+     */
+    List<String> getUniqueTimeLabels() {
+        return new ArrayList<>(uniqueTimeValues);
+    }
+
+    /**
+     * Return the time labels in chronological order if the format is recognised, else
+     * returns the labels in alphabetical order.
+     * @return
+     */
+    Collection<String> getOrderedTimeLabels() {
+
+        String first = uniqueTimeValues.iterator().next();
+        String format = DateLabel.determineDateFormat(first);
+
+        // if the format is not recognised - just sort alphabetically.
+        if (StringUtils.isEmpty(format)) {
+            List<String> timeLabels = getUniqueTimeLabels();
+            Collections.sort(timeLabels);
+            return timeLabels;
+        }
+
+        DateFormat dateFormat = new SimpleDateFormat(format);
+        Map<Date,String> dates = new TreeMap<>();
+
+        for (String timeValue : uniqueTimeValues) {
+            Date date;
+            try {
+                date = dateFormat.parse(timeValue);
+            } catch (ParseException e) {
+                date = new Date(); // cannot sort it if we cannot parse it.
+            }
+
+            dates.put(date, timeValue);
+        }
+
+        return dates.values();
     }
 }
 

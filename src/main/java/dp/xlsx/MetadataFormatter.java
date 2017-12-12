@@ -130,8 +130,8 @@ class MetadataFormatter {
         if (links.getSpatial() != null)
             writeLink("Spatial", links.getSpatial().getHref());
 
-        if (links.getVersion() != null)
-            writeLink("Dataset Version", links.getVersion().getHref());
+        if (links.getWebsiteVersion() != null)
+            writeLink("Dataset Version", links.getWebsiteVersion().getHref());
 
         writeBlankRow();
     }
@@ -179,7 +179,7 @@ class MetadataFormatter {
 
         for (CodeList codelist : datasetMetadata.getDimensions()) {
 
-            writeString("", codelist.getName());
+            writeString("", StringUtils.capitalize(codelist.getName()));
             writeString("", codelist.getDescription());
             writeBlankRow();
         }
