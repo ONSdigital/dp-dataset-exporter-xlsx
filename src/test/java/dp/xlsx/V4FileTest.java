@@ -25,8 +25,8 @@ public class V4FileTest {
         try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_0.csv")) {
             final V4File file = new V4File(stream);
             final Group group = file.groupData().get(0);
-            assertThat(group.getObservation("Jan-96")).isEqualTo("86.8");
-            assertThat(group.getObservation("Feb-96")).isEqualTo("86.9");
+            assertThat(group.getObservation("Jan-96")).isEqualTo("93.8");
+            assertThat(group.getObservation("Feb-96")).isEqualTo("93.9");
         }
     }
 
@@ -35,17 +35,29 @@ public class V4FileTest {
         try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_0.csv")) {
             final V4File file = new V4File(stream);
             final Group group = file.groupData().get(0);
-            assertThat(group.getTitle()).isEqualTo("K02000001\n" + "CPI (overall index)");
+            assertThat(group.getTitle()).isEqualTo("01.2 Non-alcoholic beverages\nK02000001");
         }
     }
 
     @Test
-    public void timeTitles() throws IOException {
-        try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_0.csv")) {
-            final V4File file = new V4File(stream);
-            final Group group = file.groupData().get(0);
-            assertThat(group.getTitle()).isEqualTo("K02000001\n" + "CPI (overall index)");
-        }
+    public void orderedDimensionTitle() throws IOException {
+
+        // Given v4 data.
+        String csvHeader = "V4_0,Time_codelist,Time,Geography_codelist,Geography,cpi1dim1aggid,Aggregate\n";
+        String csvRow1 = "88,Month,Oct-00,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow2 = "88,Month,Jan-96,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow3 = "88,Month,Apr-17,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvContent = csvHeader + csvRow1 + csvRow2 + csvRow3;
+
+        InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
+        final V4File file = new V4File(inputStream);
+        file.groupData();
+
+        // When getDimensionsTitle is called.
+        String dimensionsTitle = file.getDimensionsTitle();
+
+        // Then the dimensions are returned in alphabetical order
+        assertThat(dimensionsTitle).isEqualTo("Aggregate\nGeography");
     }
 
     @Test

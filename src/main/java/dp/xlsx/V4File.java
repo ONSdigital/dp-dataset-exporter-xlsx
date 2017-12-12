@@ -11,6 +11,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A class used to extract information from a V4 file.
@@ -18,8 +19,8 @@ import java.util.List;
 class V4File {
 
     private final List<String[]> data; // v4 CSV rows
-
     private final int headerOffset;
+    final String[] header;
 
     private Set<String> uniqueTimeValues;
 
@@ -28,10 +29,28 @@ class V4File {
         try (final CSVReader reader = new CSVReader(new InputStreamReader(inputStream))) {
             data = reader.readAll();
         }
-        final String[] header = data.get(0);
+
+        header  = data.get(0);
         final String v4Code = header[0];
         headerOffset = Integer.parseInt(v4Code.split("V4_")[1]) + 1;
         uniqueTimeValues = new HashSet<>();
+    }
+
+    public String getDimensionsTitle() {
+
+        final int labelOffset = 2; // Skip the code and get the label when iterating columns
+        final int offset = headerOffset + 1; // an additional one for the observation column
+        List<String> dimensions = new ArrayList<>();
+
+        for (int i = offset; i < header.length; i += labelOffset) {
+            dimensions.add(header[i]);
+        }
+
+        return dimensions.stream()
+                .skip(1) // skip geography dimension
+                .map(d -> StringUtils.capitalize(d))
+                .sorted()
+                .collect(Collectors.joining("\n"));
     }
 
     /**
@@ -41,13 +60,11 @@ class V4File {
      */
     List<Group> groupData() {
 
-        data.remove(0); // remove header
-
         final Map<Group, Group> groups = new HashMap<>();
 
-        data.stream().forEach(row -> {
+        data.stream().skip(1).forEach(row -> {
 
-            final Group group = new Group(row, headerOffset);
+            final Group group = new Group(row, header, headerOffset);
             final String timeValue = row[headerOffset + 1];
             final String observation = row[0];
 
