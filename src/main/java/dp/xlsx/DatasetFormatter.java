@@ -38,7 +38,14 @@ class DatasetFormatter {
     void format(Sheet sheet, V4File file, Metadata datasetMetadata, CellStyle headingStyle, CellStyle headingRightAlignStyle, CellStyle valueStyle, CellStyle valueRightAlign, CellStyle numberStyle) {
 
         final List<Group> groups = file.groupData();
-        Collections.sort(groups);
+        Map<Integer, Integer> sortedPositionMapping = file.getSortedPositionMapping();
+
+        final List<SortedGroup> sortedGroups = groups
+                .stream()
+                .map(group -> new SortedGroup(group, sortedPositionMapping))
+                .sorted()
+                .collect(Collectors.toList());
+
 
         final Collection<String> timeLabels = file.getOrderedTimeLabels();
 
@@ -66,10 +73,10 @@ class DatasetFormatter {
         cell.setCellStyle(valueRightAlign);
 
         if (datasetMetadata.getDimensions() != null) {
-            String dimensionNames = datasetMetadata.getDimensions()
+            String dimensionNames = file.getDimensions()
                     .stream()
-                    .skip(1) // skip geography dimension
-                    .map(d -> StringUtils.capitalize(d.getName()))
+                    .map(d -> StringUtils.capitalize(d))
+                    .sorted()
                     .collect(Collectors.joining("\n"));
 
             cell.setCellValue(dimensionNames);
@@ -78,11 +85,11 @@ class DatasetFormatter {
         columnOffset += 1;
 
         // For each group add the title onto the row
-        for (int g = 0; g < groups.size(); g++) {
+        for (int g = 0; g < sortedGroups.size(); g++) {
 
             cell = title.createCell(g + columnOffset);
             cell.setCellStyle(valueStyle);
-            Group group = groups.get(g);
+            SortedGroup group = sortedGroups.get(g);
             cell.setCellValue(group.getTitle());
             sheet.autoSizeColumn(g + columnOffset);
 
@@ -117,6 +124,7 @@ class DatasetFormatter {
 
         sheet.autoSizeColumn(0);
     }
+
 
     private int addMetadataRows(Sheet sheet, int rowOffset) {
 

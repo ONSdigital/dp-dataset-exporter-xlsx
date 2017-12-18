@@ -81,8 +81,8 @@ public class DatasetFormatterTest {
         // When format is called
         datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
 
-        assertThat(sheet.getRow(metadataRows + 0).getCell(1).getStringCellValue()).isEqualTo("England (K02000003)\nBBB");
-        assertThat(sheet.getRow(metadataRows + 0).getCell(2).getStringCellValue()).isEqualTo("Wales (K02000002)\nAAA");
+        assertThat(sheet.getRow(metadataRows + 0).getCell(1).getStringCellValue()).isEqualTo("AAA\nWales (K02000002)");
+        assertThat(sheet.getRow(metadataRows + 0).getCell(2).getStringCellValue()).isEqualTo("BBB\nEngland (K02000003)");
     }
 
     @Test

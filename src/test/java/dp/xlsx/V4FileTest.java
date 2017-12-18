@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,24 +28,6 @@ public class V4FileTest {
             final Group group = file.groupData().get(0);
             assertThat(group.getObservation("Jan-96")).isEqualTo("86.8");
             assertThat(group.getObservation("Feb-96")).isEqualTo("86.9");
-        }
-    }
-
-    @Test
-    public void groupTitles() throws IOException {
-        try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_0.csv")) {
-            final V4File file = new V4File(stream);
-            final Group group = file.groupData().get(0);
-            assertThat(group.getTitle()).isEqualTo("K02000001\n" + "CPI (overall index)");
-        }
-    }
-
-    @Test
-    public void timeTitles() throws IOException {
-        try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_0.csv")) {
-            final V4File file = new V4File(stream);
-            final Group group = file.groupData().get(0);
-            assertThat(group.getTitle()).isEqualTo("K02000001\n" + "CPI (overall index)");
         }
     }
 
@@ -92,5 +75,35 @@ public class V4FileTest {
         assertThat(labels.get(0)).isEqualTo("01-96");
         assertThat(labels.get(1)).isEqualTo("10-00");
         assertThat(labels.get(2)).isEqualTo("11-17");
+    }
+
+    @Test
+    public void getDimensions_ReturnsAllButFirstTimeDimension() throws Exception {
+
+        String csvHeader = "V4_0,Time_codelist,Time,Geography_codelist,Geography,cpi1dim1aggid,Aggregate\n";
+        String csvRow1 = "88,Month,10-00,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvContent = csvHeader + csvRow1;
+
+        InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
+        final V4File file = new V4File(inputStream);
+        List<String> dimensions = file.getDimensions();
+
+        assertThat(dimensions.get(0)).isEqualTo("Geography");
+        assertThat(dimensions.get(1)).isEqualTo("Aggregate");
+    }
+
+    @Test
+    public void getSortedPositionMapping() throws Exception {
+
+        String csvHeader = "V4_0,Time_codelist,Time,Geography_codelist,Geography,cpi1dim1aggid,Aggregate\n";
+        String csvRow1 = "88,Month,10-00,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvContent = csvHeader + csvRow1;
+
+        InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
+        final V4File file = new V4File(inputStream);
+        Map<Integer, Integer> sortedPositionMapping = file.getSortedPositionMapping();
+
+        assertThat(sortedPositionMapping.get(0)).isEqualTo(1);
+        assertThat(sortedPositionMapping.get(1)).isEqualTo(0);
     }
 }
