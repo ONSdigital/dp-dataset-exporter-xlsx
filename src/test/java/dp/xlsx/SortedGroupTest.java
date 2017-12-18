@@ -98,4 +98,20 @@ public class SortedGroupTest {
         // Then the groups are considered to have the same order
         Assertions.assertThat(compared).isEqualTo(0);
     }
+
+    @Test
+    public void testSortedGroup_getTitleWidth() throws Exception {
+
+        String longestDimensionOption = "The is a very long dimension option name";
+
+        // Given a sorted group
+        Group group = new Group(new String[]{"86.8", "Month", "Jan-96", "K02000001", "AAA", "cpi1dim1A0", longestDimensionOption}, 1);
+        SortedGroup sortedGroup = new SortedGroup(group, positionMapping);
+
+        // When getTitleWidth is called
+        int compared = sortedGroup.getTitleWidth();
+
+        // Then the value returned is the length of the longest dimension option
+        Assertions.assertThat(compared).isEqualTo(longestDimensionOption.length());
+    }
 }
