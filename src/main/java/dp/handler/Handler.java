@@ -97,34 +97,30 @@ public class Handler {
         try {
             metadataURL = new URL(filter.getLinks().getVersion().getHref());
         } catch (MalformedURLException e) {
-            LOGGER.error("error while attempting to create metadata URL, filterID {}, value: {}",
-                    message.getFilterId().toString(), filter.getLinks().getVersion().getHref());
-            throw e;
+            throw new IOException(java.text.MessageFormat.format("error while attempting to create metadata URL, filterID {}, value: {}",
+                    message.getFilterId().toString(), filter.getLinks().getVersion().getHref()), e);
         }
 
         try {
             datasetMetadata = datasetAPIClient.getMetadata(metadataURL);
         } catch (FilterAPIException e) {
-            LOGGER.error("dataset api get metadata returned error. filterID {}, uri: {}",
-                    message.getFilterId().toString(), metadataURL.toString());
-            throw e;
+            throw new IOException(java.text.MessageFormat.format("dataset api get metadata returned error. filterID {}, uri: {}",
+                    message.getFilterId().toString(), metadataURL.toString()), e);
         }
 
         try {
             details = createWorkbook(object, datasetMetadata, message.getFilename().toString());
         } catch (IOException e) {
-            LOGGER.error("error while attempting to create XLSX workbook, filterID: {}, filename: {}",
-                    message.getFilterId().toString(), message.getFilename().toString());
-            throw e;
+            throw new IOException(java.text.MessageFormat.format("error while attempting to create XLSX workbook, filterID: {}, filename: {}",
+                    message.getFilterId().toString(), message.getFilename().toString()), e);
         }
 
         try {
             filterAPIClient.addXLSXFile(message.getFilterId().toString(), details.getDowloadURI(), details
                     .getContentLength());
         } catch (JsonProcessingException e) {
-            LOGGER.error("filter api client addXLSXFile returned error, filterID: {}",
-                    message.getFilterId().toString());
-            throw e;
+            throw new IOException(java.text.MessageFormat.format("filter api client addXLSXFile returned error, filterID: {}",
+                    message.getFilterId().toString()), e);
         }
     }
 
