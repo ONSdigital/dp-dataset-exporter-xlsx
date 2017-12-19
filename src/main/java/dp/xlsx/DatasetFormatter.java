@@ -8,7 +8,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.util.StringUtils;
 
 import java.util.Collection;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -54,19 +54,62 @@ class DatasetFormatter {
 
         int rowOffset = 0;
 
+        // Maintain a map of column index to width. As we write rows see if the width needs to be larger.
+        Map<Integer, Integer> columnWidths = new HashMap<>();
+
         rowOffset = addMetadata(sheet, datasetMetadata, headingStyle, headingRightAlignStyle, rowOffset);
-        rowOffset = createHeaderRow(sheet, file, datasetMetadata, valueStyle, timeLabels, rowOffset);
+
+
+        int columnOffset = 0;
+
+        Row headerRow = sheet.createRow(rowOffset);
+
+        if (datasetMetadata.getDimensions() != null) {
+
+            final List<String> dimensionNames = file.getDimensions()
+                    .stream()
+                    .map(d -> StringUtils.capitalize(d))
+                    .sorted()
+                    .collect(Collectors.toList());
+
+            for (String dimensionName : dimensionNames) {
+
+                Cell cell = headerRow.createCell(columnOffset);
+                cell.setCellStyle(valueStyle);
+                cell.setCellValue(dimensionName);
+                columnWidths.put(columnOffset, dimensionName.length());
+                columnOffset++;
+            }
+        }
+
+        // write time labels across the title row
+        for (String timeLabel : timeLabels) {
+            Cell cell = headerRow.createCell(columnOffset);
+            cell.setCellStyle(valueStyle);
+            cell.setCellValue(timeLabel);
+            columnOffset++;
+        }
+
+        rowOffset++;
+
 
         for (SortedGroup group : sortedGroups) {
 
-            int columnOffset = 0;
+            columnOffset = 0;
 
-            // add dimensions label
             Row row = sheet.createRow(rowOffset);
-            Cell cell = row.createCell(columnOffset);
-            cell.setCellStyle(valueStyle);
-            cell.setCellValue(group.getTitle());
-            columnOffset++;
+
+            for (String dimensionOptionName : group.getGroupValues()) {
+
+                Cell cell = row.createCell(columnOffset);
+                cell.setCellStyle(valueStyle);
+                cell.setCellValue(dimensionOptionName);
+
+                if (dimensionOptionName.length() > columnWidths.get(columnOffset))
+                    columnWidths.put(columnOffset, dimensionOptionName.length());
+
+                columnOffset++;
+            }
 
             for (String timeTitle : timeLabels) {
 
@@ -78,12 +121,10 @@ class DatasetFormatter {
             rowOffset++;
         }
 
-        final int widestGroupTitle = sortedGroups.stream()
-                .mapToInt(g -> g.getTitleWidth())
-                .max()
-                .getAsInt();
+        for (Map.Entry<Integer, Integer> columnWidth : columnWidths.entrySet()) {
+            sheet.setColumnWidth(columnWidth.getKey(), (columnWidth.getValue() + 4) * 256);
+        }
 
-        sheet.setColumnWidth(0, widestGroupTitle * 256);
     }
 
     private void setObservationCellValue(CellStyle valueStyle, CellStyle numberStyle, SortedGroup group, String timeTitle, Cell obs) {
@@ -107,40 +148,6 @@ class DatasetFormatter {
         }
     }
 
-    private int createHeaderRow(Sheet sheet, V4File file, Metadata datasetMetadata, CellStyle valueStyle, Collection<String> timeLabels, int rowOffset) {
-
-        int columnOffset = 0;
-
-        Row headerRow = sheet.createRow(rowOffset);
-
-        // add dimension names in the corner of the table
-        Cell cell = headerRow.createCell(columnOffset);
-        cell.setCellStyle(valueStyle);
-
-        if (datasetMetadata.getDimensions() != null) {
-            String dimensionNames = file.getDimensions()
-                    .stream()
-                    .map(d -> StringUtils.capitalize(d))
-                    .sorted()
-                    .collect(Collectors.joining("\n"));
-
-            cell.setCellValue(dimensionNames);
-        }
-
-        columnOffset++;
-
-        // write time labels across the title row
-        for (String timeLabel : timeLabels) {
-            cell = headerRow.createCell(columnOffset);
-            cell.setCellStyle(valueStyle);
-            cell.setCellValue(timeLabel);
-            columnOffset++;
-        }
-
-        rowOffset++;
-
-        return rowOffset;
-    }
 
     private int addMetadata(Sheet sheet, Metadata datasetMetadata, CellStyle headingStyle, CellStyle headingRightAlignStyle, int rowOffset) {
 
