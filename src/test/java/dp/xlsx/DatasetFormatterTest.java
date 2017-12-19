@@ -43,8 +43,8 @@ public class DatasetFormatterTest {
         // When format is called
         datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
 
-        assertThat(sheet.getRow(metadataRows + 1).getCell(0).getStringCellValue()).isEqualTo("February-96");
-        assertThat(sheet.getRow(metadataRows + 2).getCell(0).getStringCellValue()).isEqualTo("January-96");
+        assertThat(sheet.getRow(metadataRows + 0).getCell(1).getStringCellValue()).isEqualTo("February-96");
+        assertThat(sheet.getRow(metadataRows + 0).getCell(2).getStringCellValue()).isEqualTo("January-96");
     }
 
     @Test
@@ -62,8 +62,8 @@ public class DatasetFormatterTest {
         // When format is called
         datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
 
-        assertThat(sheet.getRow(metadataRows + 1).getCell(0).getStringCellValue()).isEqualTo("Jan-96");
-        assertThat(sheet.getRow(metadataRows + 2).getCell(0).getStringCellValue()).isEqualTo("Feb-96");
+        assertThat(sheet.getRow(metadataRows + 0).getCell(1).getStringCellValue()).isEqualTo("Jan-96");
+        assertThat(sheet.getRow(metadataRows + 0).getCell(2).getStringCellValue()).isEqualTo("Feb-96");
     }
 
     @Test
@@ -81,8 +81,8 @@ public class DatasetFormatterTest {
         // When format is called
         datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
 
-        assertThat(sheet.getRow(metadataRows + 0).getCell(1).getStringCellValue()).isEqualTo("AAA\nWales (K02000002)");
-        assertThat(sheet.getRow(metadataRows + 0).getCell(2).getStringCellValue()).isEqualTo("BBB\nEngland (K02000003)");
+        assertThat(sheet.getRow(metadataRows + 1).getCell(0).getStringCellValue()).isEqualTo("AAA\nWales (K02000002)");
+        assertThat(sheet.getRow(metadataRows + 2).getCell(0).getStringCellValue()).isEqualTo("BBB\nEngland (K02000003)");
     }
 
     @Test
@@ -94,8 +94,7 @@ public class DatasetFormatterTest {
 
             datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
 
-            assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 3);
-            assertThat(sheet.getDefaultColumnWidth()).isEqualTo(8);
+            assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 7);
         }
     }
 
