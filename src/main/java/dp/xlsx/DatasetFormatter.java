@@ -20,6 +20,7 @@ class DatasetFormatter {
 
 
     private final int COLUMN_WIDTH_PADDING_CHARS = 3;
+    private final int EXCEL_CHAR_WIDTH_FACTOR = 256;
 
     /**
      * The following function will format a V4 file into a grouped
@@ -70,7 +71,8 @@ class DatasetFormatter {
             for (String timeTitle : timeLabels) {
 
                 Cell obs = row.createCell(columnOffset);
-                setObservationCellValue(valueStyle, numberStyle, group, timeTitle, obs);
+                final String value = group.getObservation(timeTitle);
+                setObservationCellValue(valueStyle, numberStyle, obs, value);
                 columnOffset++;
             }
 
@@ -82,11 +84,10 @@ class DatasetFormatter {
                 .max()
                 .getAsInt();
 
-        sheet.setColumnWidth(0, widestGroupTitle * 256);
+        sheet.setColumnWidth(0, widestGroupTitle * EXCEL_CHAR_WIDTH_FACTOR);
     }
 
-    private void setObservationCellValue(CellStyle valueStyle, CellStyle numberStyle, SortedGroup group, String timeTitle, Cell obs) {
-        final String value = group.getObservation(timeTitle);
+    private void setObservationCellValue(CellStyle valueStyle, CellStyle numberStyle, Cell obs, String value) {
 
         if (StringUtils.isEmpty(value)) {
             obs.setCellValue("");
@@ -105,6 +106,7 @@ class DatasetFormatter {
             obs.setCellValue("");
         }
     }
+
 
     private int createHeaderRow(Sheet sheet, V4File file, Metadata datasetMetadata, CellStyle valueStyle, Collection<String> timeLabels, int rowOffset) {
 
