@@ -66,7 +66,7 @@ public class DatasetFormatterTest {
     }
 
     @Test
-    public void dimensionValuesAreOrderedAlphabetically() throws IOException {
+    public void dimensionsAreOrderedByV4FileOrder() throws IOException {
 
         // Given some V4 input data
         String csvRow = "45.2,Month,Jan-96,K02000002,Wales,cpi1dim1A1,AAA\n";
@@ -79,12 +79,13 @@ public class DatasetFormatterTest {
         // When format is called
         datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
 
-        assertThat(sheet.getRow(metadataRows + 1).getCell(0).getStringCellValue()).isEqualTo("AAA");
-        assertThat(sheet.getRow(metadataRows + 1).getCell(1).getStringCellValue()).isEqualTo("Wales");
-        assertThat(sheet.getRow(metadataRows + 1).getCell(2).getStringCellValue()).isEqualTo("K02000002");
-        assertThat(sheet.getRow(metadataRows + 2).getCell(0).getStringCellValue()).isEqualTo("BBB");
-        assertThat(sheet.getRow(metadataRows + 2).getCell(1).getStringCellValue()).isEqualTo("England");
-        assertThat(sheet.getRow(metadataRows + 2).getCell(2).getStringCellValue()).isEqualTo("K02000003");
+        // Then the dimensions should be in the same order as the input file.
+        assertThat(sheet.getRow(metadataRows + 1).getCell(0).getStringCellValue()).isEqualTo("England");
+        assertThat(sheet.getRow(metadataRows + 1).getCell(1).getStringCellValue()).isEqualTo("K02000003");
+        assertThat(sheet.getRow(metadataRows + 1).getCell(2).getStringCellValue()).isEqualTo("BBB");
+        assertThat(sheet.getRow(metadataRows + 2).getCell(0).getStringCellValue()).isEqualTo("Wales");
+        assertThat(sheet.getRow(metadataRows + 2).getCell(1).getStringCellValue()).isEqualTo("K02000002");
+        assertThat(sheet.getRow(metadataRows + 2).getCell(2).getStringCellValue()).isEqualTo("AAA");
     }
 
     @Test

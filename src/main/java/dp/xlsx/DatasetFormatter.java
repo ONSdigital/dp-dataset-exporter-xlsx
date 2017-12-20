@@ -44,26 +44,23 @@ class DatasetFormatter {
         }
 
         final List<Group> groups = file.groupData();
-        Map<Integer, Integer> sortedPositionMapping = file.getSortedPositionMapping();
-
-        final List<SortedGroup> sortedGroups = groups.stream()
-                .map(group -> new SortedGroup(group, sortedPositionMapping))
-                .sorted()
-                .collect(Collectors.toList());
-
         final Collection<String> timeLabels = file.getOrderedTimeLabels();
-
         // start with the column width of the first time header, then later check if any observations are longer.
         int widestDataColumn = timeLabels.iterator().next().length();
         int rowOffset = 0;
+
+        List<Group> sortedGroups = groups.stream().sorted().collect(Collectors.toList());
 
         // Maintain a map of column index to width. As we write rows see if the width needs to be larger.
         Map<Integer, Integer> dimensionColumnWidths = new HashMap<>();
 
         rowOffset = addMetadata(sheet, datasetMetadata, headingStyle, headingRightAlignStyle, rowOffset, dimensionColumnWidths);
-        rowOffset = createHeaderRow(sheet, file, valueStyle, valueRightAlign, timeLabels, rowOffset, dimensionColumnWidths);
 
-        for (SortedGroup group : sortedGroups) {
+        Row headerRow = sheet.createRow(rowOffset);
+        populateHeaderRow(valueStyle, valueRightAlign, timeLabels, dimensionColumnWidths, headerRow, file.getDimensions());
+        rowOffset++;
+
+        for (Group group : sortedGroups) {
 
             int columnOffset = 0;
 
@@ -116,21 +113,6 @@ class DatasetFormatter {
         for (Map.Entry<Integer, Integer> columnWidth : dimensionColumnWidths.entrySet()) {
             sheet.setColumnWidth(columnWidth.getKey(), (columnWidth.getValue() + 5) * 256);
         }
-    }
-
-    private int createHeaderRow(Sheet sheet, V4File file, CellStyle valueStyle, CellStyle valueRightAlign, Collection<String> timeLabels, int rowOffset, Map<Integer, Integer> dimensionColumnWidths) {
-
-        Row headerRow = sheet.createRow(rowOffset);
-
-        final List<DimensionData> dimensions = file.getDimensions()
-                .stream()
-                .sorted()
-                .collect(Collectors.toList());
-
-        populateHeaderRow(valueStyle, valueRightAlign, timeLabels, dimensionColumnWidths, headerRow, dimensions);
-        rowOffset++;
-
-        return rowOffset;
     }
 
     private void populateHeaderRow(CellStyle valueStyle, CellStyle valueRightAlign, Collection<String> timeLabels, Map<Integer, Integer> dimensionColumnWidths, Row headerRow, List<DimensionData> dimensions) {

@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * A single unique combination of dimension options, and its associated observations.
  */
-public class Group {
+public class Group implements Comparable<Group> {
 
     private List<DimensionData> groupValues; // the unique dimension options
     private Map<String, String> observations; // <time, observation>
@@ -69,5 +69,27 @@ public class Group {
 
     protected List<DimensionData> getGroupValues() {
         return this.groupValues;
+    }
+
+    @Override
+    public int compareTo(Group o) {
+
+        int compared = 0;
+
+        // if the group arrays differ in length do not try and compare.
+        if (getGroupValues().size() != o.getGroupValues().size())
+            return 0;
+
+        // Order by each group value in turn
+        for (int i = 0; i < getGroupValues().size(); ++i) {
+
+            compared = getGroupValues().get(i).compareTo(o.getGroupValues().get(i));
+
+            // return if we can determine order from this dimension option
+            if (compared != 0)
+                return compared;
+        }
+
+        return compared;
     }
 }

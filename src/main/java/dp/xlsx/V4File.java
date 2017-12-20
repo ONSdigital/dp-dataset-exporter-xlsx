@@ -88,41 +88,6 @@ class V4File {
     }
 
     /**
-     * Return a map containing the original position of the dimensions mapped to their sorted position.
-     * This is done once to save having to sort each heading of the XLSX columns by dimension names.
-     * By calculating the mapping once we can app
-     */
-    public Map<Integer, Integer> getSortedPositionMapping() {
-
-        List<DimensionData> dimensions = getDimensions();
-        Set<DimensionData> sortedDimensions = new TreeSet<>();
-
-        Map<Integer, Integer> positionMappings = new HashMap<>();
-
-        // populate a sorted set of dimensions.
-        for (DimensionData dimension : dimensions) {
-            sortedDimensions.add(dimension);
-        }
-
-        // determine where the new position of each dimension is after sorting.
-        for (int i = 0; i < dimensions.size(); ++i) {
-
-            int j = 0;
-            Iterator<DimensionData> iterator = sortedDimensions.iterator();
-
-            while (iterator.hasNext()) {
-                if (iterator.next().equals(dimensions.get(i))) {
-                    positionMappings.put(i, j);
-                    break;
-                }
-                j++;
-            }
-        }
-
-        return positionMappings;
-    }
-
-    /**
      * Get all unique time labels found in the v4 file
      *
      * @return
