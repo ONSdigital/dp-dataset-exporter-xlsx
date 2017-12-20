@@ -39,59 +39,34 @@ class DatasetFormatter {
      */
     void format(Sheet sheet, V4File file, Metadata datasetMetadata, CellStyle headingStyle, CellStyle headingRightAlignStyle, CellStyle valueStyle, CellStyle valueRightAlign, CellStyle numberStyle) {
 
+        if (file.getDimensions() == null) {
+            throw new IllegalArgumentException("dimensions in dataset cannot be null");
+        }
+
         final List<Group> groups = file.groupData();
         Map<Integer, Integer> sortedPositionMapping = file.getSortedPositionMapping();
 
-        final List<SortedGroup> sortedGroups = groups
-                .stream()
+        final List<SortedGroup> sortedGroups = groups.stream()
                 .map(group -> new SortedGroup(group, sortedPositionMapping))
                 .sorted()
                 .collect(Collectors.toList());
 
         final Collection<String> timeLabels = file.getOrderedTimeLabels();
 
-        sheet.setDefaultColumnWidth(timeLabels.iterator().next().length() + COLUMN_WIDTH_PADDING_CHARS);
-
+        // start with the column width of the first time header, then later check if any observations are longer.
+        int widestDataColumn = timeLabels.iterator().next().length();
         int rowOffset = 0;
 
         // Maintain a map of column index to width. As we write rows see if the width needs to be larger.
-        Map<Integer, Integer> columnWidths = new HashMap<>();
+        Map<Integer, Integer> dimensionColumnWidths = new HashMap<>();
 
         rowOffset = addMetadata(sheet, datasetMetadata, headingStyle, headingRightAlignStyle, rowOffset);
 
-
-        int columnOffset = 0;
-
         Row headerRow = sheet.createRow(rowOffset);
-
-        if (datasetMetadata.getDimensions() != null) {
-
-            final List<String> dimensionNames = file.getDimensions()
-                    .stream()
-                    .map(d -> StringUtils.capitalize(d))
-                    .sorted()
-                    .collect(Collectors.toList());
-
-            for (String dimensionName : dimensionNames) {
-
-                Cell cell = headerRow.createCell(columnOffset);
-                cell.setCellStyle(valueStyle);
-                cell.setCellValue(dimensionName);
-                columnWidths.put(columnOffset, dimensionName.length());
-                columnOffset++;
-            }
-        }
-
-        // write time labels across the title row
-        for (String timeLabel : timeLabels) {
-            Cell cell = headerRow.createCell(columnOffset);
-            cell.setCellStyle(valueStyle);
-            cell.setCellValue(timeLabel);
-            columnOffset++;
-        }
+        populateHeaderRow(file, valueStyle, valueRightAlign, timeLabels, dimensionColumnWidths, headerRow);
+        int columnOffset;
 
         rowOffset++;
-
 
         for (SortedGroup group : sortedGroups) {
 
@@ -105,8 +80,9 @@ class DatasetFormatter {
                 cell.setCellStyle(valueStyle);
                 cell.setCellValue(dimensionOptionName);
 
-                if (dimensionOptionName.length() > columnWidths.get(columnOffset))
-                    columnWidths.put(columnOffset, dimensionOptionName.length());
+                final Integer width = dimensionColumnWidths.get(columnOffset);
+                if (width == null || dimensionOptionName.length() > width)
+                    dimensionColumnWidths.put(columnOffset, dimensionOptionName.length());
 
                 columnOffset++;
             }
@@ -114,21 +90,61 @@ class DatasetFormatter {
             for (String timeTitle : timeLabels) {
 
                 Cell obs = row.createCell(columnOffset);
-                setObservationCellValue(valueStyle, numberStyle, group, timeTitle, obs);
+                final String value = group.getObservation(timeTitle);
+                setObservationCellValue(valueStyle, numberStyle, obs, value);
+
+                if (value != null && value.length() > widestDataColumn)
+                    widestDataColumn = value.length();
+
                 columnOffset++;
             }
 
             rowOffset++;
         }
 
-        for (Map.Entry<Integer, Integer> columnWidth : columnWidths.entrySet()) {
+
+        sheet.setDefaultColumnWidth(widestDataColumn + COLUMN_WIDTH_PADDING_CHARS);
+
+        for (Map.Entry<Integer, Integer> columnWidth : dimensionColumnWidths.entrySet()) {
             sheet.setColumnWidth(columnWidth.getKey(), (columnWidth.getValue() + 4) * 256);
         }
 
     }
 
-    private void setObservationCellValue(CellStyle valueStyle, CellStyle numberStyle, SortedGroup group, String timeTitle, Cell obs) {
-        final String value = group.getObservation(timeTitle);
+    private void populateHeaderRow(V4File file,
+                                   CellStyle valueStyle,
+                                   CellStyle valueRightAlign,
+                                   Collection<String> timeLabels,
+                                   Map<Integer, Integer> dimensionColumnWidths,
+                                   Row headerRow) {
+
+        int columnOffset = 0;
+
+        final List<String> dimensionNames = file.getDimensions()
+                .stream()
+                .map(d -> StringUtils.capitalize(d))
+                .sorted()
+                .collect(Collectors.toList());
+
+        for (String dimensionName : dimensionNames) {
+
+            Cell cell = headerRow.createCell(columnOffset);
+            cell.setCellStyle(valueStyle);
+            cell.setCellValue(dimensionName);
+            dimensionColumnWidths.put(columnOffset, dimensionName.length());
+            columnOffset++;
+        }
+
+        // write time labels across the title row
+        for (String timeLabel : timeLabels) {
+            Cell cell = headerRow.createCell(columnOffset);
+            cell.setCellStyle(valueRightAlign);
+            cell.setCellValue(timeLabel);
+            columnOffset++;
+        }
+    }
+
+    private void setObservationCellValue(CellStyle valueStyle, CellStyle numberStyle, Cell obs, String value) {
 
         if (StringUtils.isEmpty(value)) {
             obs.setCellValue("");
@@ -147,7 +163,6 @@ class DatasetFormatter {
             obs.setCellValue("");
         }
     }
-
 
     private int addMetadata(Sheet sheet, Metadata datasetMetadata, CellStyle headingStyle, CellStyle headingRightAlignStyle, int rowOffset) {
 
