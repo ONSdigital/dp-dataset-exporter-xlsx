@@ -32,7 +32,7 @@ class DatasetFormatter {
      * jan-97  |  99       | 77
      * feb-97  |  88       | 55
      *
-     * @param sheet       The exel sheet to add the data to
+     * @param sheet       The excel sheet to add the data to
      * @param file        The v4 file containing the data
      * @param valueStyle  The style of the cell titles
      * @param numberStyle The style of the observations
@@ -60,7 +60,7 @@ class DatasetFormatter {
         // Maintain a map of column index to width. As we write rows see if the width needs to be larger.
         Map<Integer, Integer> dimensionColumnWidths = new HashMap<>();
 
-        rowOffset = addMetadata(sheet, datasetMetadata, headingStyle, headingRightAlignStyle, rowOffset);
+        rowOffset = addMetadata(sheet, datasetMetadata, headingStyle, headingRightAlignStyle, rowOffset, dimensionColumnWidths);
 
         Row headerRow = sheet.createRow(rowOffset);
         populateHeaderRow(file, valueStyle, valueRightAlign, timeLabels, dimensionColumnWidths, headerRow);
@@ -131,7 +131,11 @@ class DatasetFormatter {
             Cell cell = headerRow.createCell(columnOffset);
             cell.setCellStyle(valueStyle);
             cell.setCellValue(dimensionName);
-            dimensionColumnWidths.put(columnOffset, dimensionName.length());
+
+            final Integer width = dimensionColumnWidths.get(columnOffset);
+            if (width == null || dimensionName.length() > width)
+                dimensionColumnWidths.put(columnOffset, dimensionName.length());
+
             columnOffset++;
         }
 
@@ -164,7 +168,7 @@ class DatasetFormatter {
         }
     }
 
-    private int addMetadata(Sheet sheet, Metadata datasetMetadata, CellStyle headingStyle, CellStyle headingRightAlignStyle, int rowOffset) {
+    private int addMetadata(Sheet sheet, Metadata datasetMetadata, CellStyle headingStyle, CellStyle headingRightAlignStyle, int rowOffset, Map<Integer, Integer> dimensionColumnWidths) {
 
         int columnOffset = 0;
 
@@ -172,7 +176,10 @@ class DatasetFormatter {
         Row row = sheet.createRow(rowOffset);
         Cell cell = row.createCell(columnOffset);
         cell.setCellStyle(headingRightAlignStyle);
-        cell.setCellValue("Dataset Title");
+        final String titleLabel = "Dataset Title";
+        cell.setCellValue(titleLabel);
+
+        dimensionColumnWidths.put(columnOffset, titleLabel.length());
 
         cell = row.createCell(columnOffset + 1);
         cell.setCellStyle(headingStyle);
