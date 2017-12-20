@@ -29,20 +29,20 @@ class V4File {
 
     private final List<String[]> data; // v4 CSV rows
     private final int headerOffset;
-    private final String[] header;
-
+    final Group headerGroup;
     private Set<String> uniqueTimeValues;
-
 
     V4File(final InputStream inputStream) throws IOException {
         try (final CSVReader reader = new CSVReader(new InputStreamReader(inputStream))) {
             data = reader.readAll();
         }
 
-        header = data.get(0);
+        final String[] header = data.get(0);
         final String v4Code = header[0];
+
         headerOffset = Integer.parseInt(v4Code.split("V4_")[1]) + 1;
         uniqueTimeValues = new HashSet<>();
+        headerGroup = new Group(header, headerOffset);
     }
 
     /**
@@ -82,17 +82,9 @@ class V4File {
      * (not including the time dimension or whichever other dimension is not shown along the rows.)
      * @return
      */
-    List<String> getDimensions() {
+    List<DimensionData> getDimensions() {
 
-        int offset = headerOffset + 3; // skip the observation, time code and time label
-        final int labelOffset = 2; // Skip the code and get the label when iterating columns
-        List<String> dimensions = new ArrayList<>();
-
-        for (int i = offset; i < header.length; i += labelOffset) {
-            dimensions.add(header[i]);
-        }
-
-        return dimensions;
+        return headerGroup.getGroupValues();
     }
 
     /**
@@ -102,13 +94,13 @@ class V4File {
      */
     public Map<Integer, Integer> getSortedPositionMapping() {
 
-        List<String> dimensions = getDimensions();
-        Set<String> sortedDimensions = new TreeSet<>();
+        List<DimensionData> dimensions = getDimensions();
+        Set<DimensionData> sortedDimensions = new TreeSet<>();
 
         Map<Integer, Integer> positionMappings = new HashMap<>();
 
         // populate a sorted set of dimensions.
-        for (String dimension : dimensions) {
+        for (DimensionData dimension : dimensions) {
             sortedDimensions.add(dimension);
         }
 
@@ -116,7 +108,7 @@ class V4File {
         for (int i = 0; i < dimensions.size(); ++i) {
 
             int j = 0;
-            Iterator<String> iterator = sortedDimensions.iterator();
+            Iterator<DimensionData> iterator = sortedDimensions.iterator();
 
             while (iterator.hasNext()) {
                 if (iterator.next().equals(dimensions.get(i))) {

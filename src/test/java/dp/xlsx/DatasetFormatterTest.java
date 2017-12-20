@@ -43,8 +43,8 @@ public class DatasetFormatterTest {
         // When format is called
         datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
 
-        assertThat(sheet.getRow(metadataRows + 0).getCell(2).getStringCellValue()).isEqualTo("February-96");
-        assertThat(sheet.getRow(metadataRows + 0).getCell(3).getStringCellValue()).isEqualTo("January-96");
+        assertThat(sheet.getRow(metadataRows + 0).getCell(3).getStringCellValue()).isEqualTo("February-96");
+        assertThat(sheet.getRow(metadataRows + 0).getCell(4).getStringCellValue()).isEqualTo("January-96");
     }
 
     @Test
@@ -61,8 +61,8 @@ public class DatasetFormatterTest {
         // When format is called
         datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
 
-        assertThat(sheet.getRow(metadataRows + 0).getCell(2).getStringCellValue()).isEqualTo("Jan-96");
-        assertThat(sheet.getRow(metadataRows + 0).getCell(3).getStringCellValue()).isEqualTo("Feb-96");
+        assertThat(sheet.getRow(metadataRows + 0).getCell(3).getStringCellValue()).isEqualTo("Jan-96");
+        assertThat(sheet.getRow(metadataRows + 0).getCell(4).getStringCellValue()).isEqualTo("Feb-96");
     }
 
     @Test
@@ -80,9 +80,11 @@ public class DatasetFormatterTest {
         datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
 
         assertThat(sheet.getRow(metadataRows + 1).getCell(0).getStringCellValue()).isEqualTo("AAA");
-        assertThat(sheet.getRow(metadataRows + 1).getCell(1).getStringCellValue()).isEqualTo("Wales (K02000002)");
+        assertThat(sheet.getRow(metadataRows + 1).getCell(1).getStringCellValue()).isEqualTo("Wales");
+        assertThat(sheet.getRow(metadataRows + 1).getCell(2).getStringCellValue()).isEqualTo("K02000002");
         assertThat(sheet.getRow(metadataRows + 2).getCell(0).getStringCellValue()).isEqualTo("BBB");
-        assertThat(sheet.getRow(metadataRows + 2).getCell(1).getStringCellValue()).isEqualTo("England (K02000003)");
+        assertThat(sheet.getRow(metadataRows + 2).getCell(1).getStringCellValue()).isEqualTo("England");
+        assertThat(sheet.getRow(metadataRows + 2).getCell(2).getStringCellValue()).isEqualTo("K02000003");
     }
 
     @Test
@@ -117,7 +119,7 @@ public class DatasetFormatterTest {
 
         // Then the expected metadata is output at the top of the XLSX sheet
         assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 2);
-        assertThat(sheet.getRow(0).getCell(0).getStringCellValue()).isEqualTo("Dataset Title");
+        assertThat(sheet.getRow(0).getCell(0).getStringCellValue()).isEqualTo("Title");
         assertThat(sheet.getRow(0).getCell(1).getStringCellValue()).isEqualTo(expectedTitle);
     }
 
@@ -136,7 +138,7 @@ public class DatasetFormatterTest {
 
         // Then the empty observation value is in the output
         assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 2);
-        Cell cell = sheet.getRow(metadataRows + 1).getCell(2);
+        Cell cell = sheet.getRow(metadataRows + 1).getCell(3);
         assertThat(cell.getStringCellValue()).isEqualTo("");
     }
 
@@ -156,7 +158,7 @@ public class DatasetFormatterTest {
         // Then the value in the output has the decimal place
         assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 2);
 
-        Cell cell = sheet.getRow(metadataRows + 1).getCell(2);
+        Cell cell = sheet.getRow(metadataRows + 1).getCell(3);
 
         assertThat(cell.getCellTypeEnum()).isEqualTo(CellType.NUMERIC);
         assertThat(cell.getNumericCellValue()).isEqualTo(88.0);
@@ -177,7 +179,7 @@ public class DatasetFormatterTest {
 
         // Then the value in the output has the decimal place
         assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 2);
-        Cell cell = sheet.getRow(metadataRows + 1).getCell(2);
+        Cell cell = sheet.getRow(metadataRows + 1).getCell(3);
 
         assertThat(cell.getCellTypeEnum()).isEqualTo(CellType.NUMERIC);
         assertThat(cell.getNumericCellValue()).isEqualTo(88.0);

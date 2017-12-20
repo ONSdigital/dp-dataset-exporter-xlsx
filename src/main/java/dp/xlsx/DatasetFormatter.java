@@ -61,30 +61,39 @@ class DatasetFormatter {
         Map<Integer, Integer> dimensionColumnWidths = new HashMap<>();
 
         rowOffset = addMetadata(sheet, datasetMetadata, headingStyle, headingRightAlignStyle, rowOffset, dimensionColumnWidths);
-
-        Row headerRow = sheet.createRow(rowOffset);
-        populateHeaderRow(file, valueStyle, valueRightAlign, timeLabels, dimensionColumnWidths, headerRow);
-        int columnOffset;
-
-        rowOffset++;
+        rowOffset = createHeaderRow(sheet, file, valueStyle, valueRightAlign, timeLabels, rowOffset, dimensionColumnWidths);
 
         for (SortedGroup group : sortedGroups) {
 
-            columnOffset = 0;
+            int columnOffset = 0;
 
             Row row = sheet.createRow(rowOffset);
 
-            for (String dimensionOptionName : group.getGroupValues()) {
+            for (DimensionData dimension : group.getGroupValues()) {
 
                 Cell cell = row.createCell(columnOffset);
                 cell.setCellStyle(valueStyle);
-                cell.setCellValue(dimensionOptionName);
+                cell.setCellValue(dimension.getValue());
 
                 final Integer width = dimensionColumnWidths.get(columnOffset);
-                if (width == null || dimensionOptionName.length() > width)
-                    dimensionColumnWidths.put(columnOffset, dimensionOptionName.length());
+                if (width == null || dimension.getValue().length() > width)
+                    dimensionColumnWidths.put(columnOffset, dimension.getValue().length());
 
                 columnOffset++;
+
+                // For geography create another column / cell for the geographic code.
+                if (dimension.getDimensionType().equals(DimensionType.GEOGRAPHY)) {
+
+                    cell = row.createCell(columnOffset);
+                    cell.setCellStyle(valueStyle);
+                    cell.setCellValue(dimension.getCode());
+
+                    final Integer geoCodeColumnWidth = dimensionColumnWidths.get(columnOffset);
+                    if (geoCodeColumnWidth == null || dimension.getCode().length() > geoCodeColumnWidth)
+                        dimensionColumnWidths.put(columnOffset, dimension.getCode().length());
+
+                    columnOffset++;
+                }
             }
 
             for (String timeTitle : timeLabels) {
@@ -102,41 +111,60 @@ class DatasetFormatter {
             rowOffset++;
         }
 
-
         sheet.setDefaultColumnWidth(widestDataColumn + COLUMN_WIDTH_PADDING_CHARS);
 
         for (Map.Entry<Integer, Integer> columnWidth : dimensionColumnWidths.entrySet()) {
-            sheet.setColumnWidth(columnWidth.getKey(), (columnWidth.getValue() + 4) * 256);
+            sheet.setColumnWidth(columnWidth.getKey(), (columnWidth.getValue() + 5) * 256);
         }
-
     }
 
-    private void populateHeaderRow(V4File file,
-                                   CellStyle valueStyle,
-                                   CellStyle valueRightAlign,
-                                   Collection<String> timeLabels,
-                                   Map<Integer, Integer> dimensionColumnWidths,
-                                   Row headerRow) {
+    private int createHeaderRow(Sheet sheet, V4File file, CellStyle valueStyle, CellStyle valueRightAlign, Collection<String> timeLabels, int rowOffset, Map<Integer, Integer> dimensionColumnWidths) {
 
-        int columnOffset = 0;
+        Row headerRow = sheet.createRow(rowOffset);
 
-        final List<String> dimensionNames = file.getDimensions()
+        final List<DimensionData> dimensions = file.getDimensions()
                 .stream()
-                .map(d -> StringUtils.capitalize(d))
                 .sorted()
                 .collect(Collectors.toList());
 
-        for (String dimensionName : dimensionNames) {
+        populateHeaderRow(valueStyle, valueRightAlign, timeLabels, dimensionColumnWidths, headerRow, dimensions);
+        rowOffset++;
+
+        return rowOffset;
+    }
+
+    private void populateHeaderRow(CellStyle valueStyle, CellStyle valueRightAlign, Collection<String> timeLabels, Map<Integer, Integer> dimensionColumnWidths, Row headerRow, List<DimensionData> dimensions) {
+
+        int columnOffset = 0;
+
+        for (DimensionData dimensionData : dimensions) {
+
+            String dimensionName = StringUtils.capitalize(dimensionData.getValue());
 
             Cell cell = headerRow.createCell(columnOffset);
             cell.setCellStyle(valueStyle);
             cell.setCellValue(dimensionName);
 
-            final Integer width = dimensionColumnWidths.get(columnOffset);
+            Integer width = dimensionColumnWidths.get(columnOffset);
             if (width == null || dimensionName.length() > width)
                 dimensionColumnWidths.put(columnOffset, dimensionName.length());
 
             columnOffset++;
+
+            // For geography create another column / cell for the geographic code.
+            if (dimensionData.getDimensionType().equals(DimensionType.GEOGRAPHY)) {
+
+                String header = dimensionName + " code";
+                cell = headerRow.createCell(columnOffset);
+                cell.setCellStyle(valueStyle);
+                cell.setCellValue(header);
+
+                width = dimensionColumnWidths.get(columnOffset);
+                if (width == null || header.length() > width)
+                    dimensionColumnWidths.put(columnOffset, header.length());
+
+                columnOffset++;
+            }
         }
 
         // write time labels across the title row
@@ -147,6 +175,7 @@ class DatasetFormatter {
             columnOffset++;
         }
     }
+
 
     private void setObservationCellValue(CellStyle valueStyle, CellStyle numberStyle, Cell obs, String value) {
 
@@ -176,7 +205,7 @@ class DatasetFormatter {
         Row row = sheet.createRow(rowOffset);
         Cell cell = row.createCell(columnOffset);
         cell.setCellStyle(headingRightAlignStyle);
-        final String titleLabel = "Dataset Title";
+        final String titleLabel = "Title";
         cell.setCellValue(titleLabel);
 
         dimensionColumnWidths.put(columnOffset, titleLabel.length());

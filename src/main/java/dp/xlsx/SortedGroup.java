@@ -1,17 +1,13 @@
 package dp.xlsx;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 class SortedGroup implements Comparable<SortedGroup> {
 
     private final Group group;
-    private final List<String> groupValues; // the unique dimension options
-
-    final Comparator<String> stringLenComparator = Comparator.comparingInt(String::length);
+    private final List<DimensionData> groupValues; // the unique dimension options
 
     /**
      * Groups are by default ordered by the original order in the v4 file.
@@ -25,7 +21,7 @@ class SortedGroup implements Comparable<SortedGroup> {
 
         // apply position mappings to the group values
 
-        List<String> unsortedGroupValues = group.getGroupValues();
+        List<DimensionData> unsortedGroupValues = group.getGroupValues();
         groupValues = new ArrayList<>(unsortedGroupValues);
 
         for (int i = 0; i < unsortedGroupValues.size(); ++i) {
@@ -33,21 +29,6 @@ class SortedGroup implements Comparable<SortedGroup> {
             int sortedPosition = positionMapping.get(i);
             groupValues.set(sortedPosition, unsortedGroupValues.get(i));
         }
-    }
-
-    String getTitle() {
-        return getGroupValues().stream()
-                .collect(Collectors.joining("\n"));
-    }
-
-    /**
-     * Return the length of the longest title line.
-     */
-    int getTitleWidth() {
-
-        return getGroupValues().stream()
-                .max(stringLenComparator)
-                .get().length();
     }
 
     String getObservation(String time) {
@@ -76,7 +57,7 @@ class SortedGroup implements Comparable<SortedGroup> {
         return compared;
     }
 
-    List<String> getGroupValues() {
+    List<DimensionData> getGroupValues() {
         return groupValues;
     }
 }

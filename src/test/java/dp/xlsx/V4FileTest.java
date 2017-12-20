@@ -86,10 +86,10 @@ public class V4FileTest {
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
         final V4File file = new V4File(inputStream);
-        List<String> dimensions = file.getDimensions();
+        List<DimensionData> dimensions = file.getDimensions();
 
-        assertThat(dimensions.get(0)).isEqualTo("Geography");
-        assertThat(dimensions.get(1)).isEqualTo("Aggregate");
+        assertThat(dimensions.get(0).getValue()).isEqualTo("Geography");
+        assertThat(dimensions.get(1).getValue()).isEqualTo("Aggregate");
     }
 
     @Test
