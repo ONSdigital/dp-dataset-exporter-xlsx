@@ -10,8 +10,8 @@ import java.util.Map;
  */
 public class Group {
 
-    private List<String> groupValues; // the unique dimension options
-    private Map<String, String> observations; // time: observation
+    private List<DimensionData> groupValues; // the unique dimension options
+    private Map<String, String> observations; // <time, observation>
 
     /**
      * Create a group of dimensions
@@ -27,26 +27,19 @@ public class Group {
         int columnOffset = offset + 3; // skip the observation, time code and time label
 
         // read geography code and label
-        String value = data[columnOffset];
+        String label = data[columnOffset];
+        String code = data[columnOffset -1];
 
-        if ("".equals(value)) {
-            value = data[columnOffset - 1]; // Just use the code
-        } else {
-            value = String.format("%s (%s)", value, data[columnOffset - 1]); // Append the code to the label
-        }
-
-        getGroupValues().add(value);
+        getGroupValues().add(new DimensionData(DimensionType.GEOGRAPHY, label, code));
         columnOffset += labelOffset;
 
         // add all other dimensions
         for (int i = columnOffset; i < data.length; i += labelOffset) {
 
-            value = data[i];
+            label = data[i];
+            code = data[i -1];
 
-            if ("".equals(value))
-                value = data[i - 1]; // Just use the code
-
-            getGroupValues().add(value);
+            getGroupValues().add(new DimensionData(DimensionType.OTHER, label, code));
         }
     }
 
@@ -74,7 +67,7 @@ public class Group {
         return this.hashCode() == object.hashCode();
     }
 
-    protected List<String> getGroupValues() {
+    protected List<DimensionData> getGroupValues() {
         return this.groupValues;
     }
 }
