@@ -16,16 +16,13 @@ import java.io.InputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 public class DatasetFormatterTest {
 
-    private final DatasetFormatter datasetFormatter = new DatasetFormatter();
     private static final int metadataRows = 2;
     private static final String csvHeader = "V4_0,Time_codelist,Time,Geography_codelist,Geography,cpi1dim1aggid,Aggregate\n";
 
     final Metadata datasetMetadata = new Metadata();
     final Workbook wb = new XSSFWorkbook();
-    final CellStyle numberStyle = createNumberStyle(wb);
     final CellStyle style = createStyle(wb);
     final Sheet sheet = wb.createSheet("Test");
 
@@ -40,8 +37,10 @@ public class DatasetFormatterTest {
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
         final V4File file = new V4File(inputStream);
 
+        final DatasetFormatter datasetFormatter = new DatasetFormatter(style, style, style, style, style, sheet, file, datasetMetadata);
+
         // When format is called
-        datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
+        datasetFormatter.format();
 
         assertThat(sheet.getRow(metadataRows + 0).getCell(3).getStringCellValue()).isEqualTo("February-96");
         assertThat(sheet.getRow(metadataRows + 0).getCell(4).getStringCellValue()).isEqualTo("January-96");
@@ -57,9 +56,10 @@ public class DatasetFormatterTest {
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
         final V4File file = new V4File(inputStream);
+        final DatasetFormatter datasetFormatter = new DatasetFormatter(style, style, style, style, style, sheet, file, datasetMetadata);
 
         // When format is called
-        datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
+        datasetFormatter.format();
 
         assertThat(sheet.getRow(metadataRows + 0).getCell(3).getStringCellValue()).isEqualTo("Jan-96");
         assertThat(sheet.getRow(metadataRows + 0).getCell(4).getStringCellValue()).isEqualTo("Feb-96");
@@ -75,9 +75,10 @@ public class DatasetFormatterTest {
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
         final V4File file = new V4File(inputStream);
+        final DatasetFormatter datasetFormatter = new DatasetFormatter(style, style, style, style, style, sheet, file, datasetMetadata);
 
         // When format is called
-        datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
+        datasetFormatter.format();
 
         // Then the dimensions should be in the same order as the input file.
         assertThat(sheet.getRow(metadataRows + 1).getCell(0).getStringCellValue()).isEqualTo("England");
@@ -94,8 +95,9 @@ public class DatasetFormatterTest {
         try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_0.csv")) {
 
             final V4File file = new V4File(stream);
+            final DatasetFormatter datasetFormatter = new DatasetFormatter(style, style, style, style, style, sheet, file, datasetMetadata);
 
-            datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
+            datasetFormatter.format();
 
             assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 7);
         }
@@ -114,9 +116,10 @@ public class DatasetFormatterTest {
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
 
         final V4File file = new V4File(inputStream);
+        final DatasetFormatter datasetFormatter = new DatasetFormatter(style, style, style, style, style, sheet, file, datasetMetadata);
 
         // When format is called
-        datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
+        datasetFormatter.format();
 
         // Then the expected metadata is output at the top of the XLSX sheet
         assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 2);
@@ -133,9 +136,10 @@ public class DatasetFormatterTest {
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
         final V4File file = new V4File(inputStream);
+        final DatasetFormatter datasetFormatter = new DatasetFormatter(style, style, style, style, style, sheet, file, datasetMetadata);
 
         // When format is called
-        datasetFormatter.format(sheet, file, datasetMetadata, style, style, style, style, style);
+        datasetFormatter.format();
 
         // Then the empty observation value is in the output
         assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 2);
@@ -152,9 +156,10 @@ public class DatasetFormatterTest {
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
         final V4File file = new V4File(inputStream);
+        final DatasetFormatter datasetFormatter = new DatasetFormatter(style, style, style, style, style, sheet, file, datasetMetadata);
 
         // When format is called
-        datasetFormatter.format(sheet, file, datasetMetadata, style, style, numberStyle, style, style);
+        datasetFormatter.format();
 
         // Then the value in the output has the decimal place
         assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 2);
@@ -174,9 +179,10 @@ public class DatasetFormatterTest {
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
         final V4File file = new V4File(inputStream);
+        final DatasetFormatter datasetFormatter = new DatasetFormatter(style, style, style, style, style, sheet, file, datasetMetadata);
 
         // When format is called
-        datasetFormatter.format(sheet, file, datasetMetadata, style, style, numberStyle, style, style);
+        datasetFormatter.format();
 
         // Then the value in the output has the decimal place
         assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 2);
@@ -190,17 +196,6 @@ public class DatasetFormatterTest {
         final CellStyle style = wb.createCellStyle();
         final Font font = wb.createFont();
         font.setFontName("Arial");
-        font.setFontHeightInPoints((short) 14);
-        style.setFont(font);
-        style.setWrapText(true);
-        return style;
-    }
-
-    private CellStyle createNumberStyle(Workbook wb) {
-        final CellStyle style = wb.createCellStyle();
-        final Font font = wb.createFont();
-        font.setFontName("Arial");
-        style.setDataFormat(wb.createDataFormat().getFormat("0.0############################"));
         font.setFontHeightInPoints((short) 14);
         style.setFont(font);
         style.setWrapText(true);

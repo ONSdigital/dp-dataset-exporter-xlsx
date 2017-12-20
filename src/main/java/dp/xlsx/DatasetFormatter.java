@@ -19,91 +19,59 @@ import java.util.stream.Collectors;
  */
 class DatasetFormatter {
 
-
     private final int COLUMN_WIDTH_PADDING_CHARS = 3;
 
-    /**
-     * The following function will format a V4 file into a grouped
-     * 2 dimensional structure.
-     * eg;
-     * K02000001   |  K02000001
-     * Food        |  Clothing
-     * ------------|-----------
-     * jan-97  |  99       | 77
-     * feb-97  |  88       | 55
-     *
-     * @param sheet       The excel sheet to add the data to
-     * @param file        The v4 file containing the data
-     * @param valueStyle  The style of the cell titles
-     * @param numberStyle The style of the observations
-     */
-    void format(Sheet sheet, V4File file, Metadata datasetMetadata, CellStyle headingStyle, CellStyle headingRightAlignStyle, CellStyle valueStyle, CellStyle valueRightAlign, CellStyle numberStyle) {
+    private final CellStyle headingStyle;
+    private final CellStyle headingRightAlignStyle;
+    private final CellStyle valueStyle;
+    private final CellStyle valueRightAlign;
+    private final CellStyle numberStyle;
+
+    private final Sheet sheet;
+    private final V4File file;
+    private final Metadata datasetMetadata;
+
+    // Maintain a map of column index to width. As we write rows see if the width needs to be larger.
+    private final Map<Integer, Integer> dimensionColumnWidths = new HashMap<>();
+
+    private int rowOffset = 0;
+
+    public DatasetFormatter(CellStyle headingStyle, CellStyle headingRightAlignStyle, CellStyle valueStyle, CellStyle valueRightAlign, CellStyle numberStyle, Sheet sheet, V4File file, Metadata datasetMetadata) {
+
+        this.headingStyle = headingStyle;
+        this.headingRightAlignStyle = headingRightAlignStyle;
+        this.valueStyle = valueStyle;
+        this.valueRightAlign = valueRightAlign;
+        this.numberStyle = numberStyle;
+        this.sheet = sheet;
+        this.file = file;
+        this.datasetMetadata = datasetMetadata;
+    }
+
+    void format() {
 
         if (file.getDimensions() == null) {
-            throw new IllegalArgumentException("dimensions in dataset cannot be null");
+            throw new IllegalArgumentException("dimensions in the dataset cannot be null");
         }
 
         final List<Group> groups = file.groupData();
         final Collection<String> timeLabels = file.getOrderedTimeLabels();
-        // start with the column width of the first time header, then later check if any observations are longer.
-        int widestDataColumn = timeLabels.iterator().next().length();
-        int rowOffset = 0;
 
         List<Group> sortedGroups = groups.stream().sorted().collect(Collectors.toList());
 
-        // Maintain a map of column index to width. As we write rows see if the width needs to be larger.
-        Map<Integer, Integer> dimensionColumnWidths = new HashMap<>();
+        addMetadata();
+        addHeaderRow(timeLabels);
 
-        rowOffset = addMetadata(sheet, datasetMetadata, headingStyle, headingRightAlignStyle, rowOffset, dimensionColumnWidths);
-
-        Row headerRow = sheet.createRow(rowOffset);
-        populateHeaderRow(valueStyle, valueRightAlign, timeLabels, dimensionColumnWidths, headerRow, file.getDimensions());
-        rowOffset++;
+        // start with the column width of the first time header, then later check if any observations are wider.
+        int widestDataColumn = timeLabels.iterator().next().length();
 
         for (Group group : sortedGroups) {
 
             int columnOffset = 0;
-
             Row row = sheet.createRow(rowOffset);
 
-            for (DimensionData dimension : group.getGroupValues()) {
-
-                Cell cell = row.createCell(columnOffset);
-                cell.setCellStyle(valueStyle);
-                cell.setCellValue(dimension.getValue());
-
-                final Integer width = dimensionColumnWidths.get(columnOffset);
-                if (width == null || dimension.getValue().length() > width)
-                    dimensionColumnWidths.put(columnOffset, dimension.getValue().length());
-
-                columnOffset++;
-
-                // For geography create another column / cell for the geographic code.
-                if (dimension.getDimensionType().equals(DimensionType.GEOGRAPHY)) {
-
-                    cell = row.createCell(columnOffset);
-                    cell.setCellStyle(valueStyle);
-                    cell.setCellValue(dimension.getCode());
-
-                    final Integer geoCodeColumnWidth = dimensionColumnWidths.get(columnOffset);
-                    if (geoCodeColumnWidth == null || dimension.getCode().length() > geoCodeColumnWidth)
-                        dimensionColumnWidths.put(columnOffset, dimension.getCode().length());
-
-                    columnOffset++;
-                }
-            }
-
-            for (String timeTitle : timeLabels) {
-
-                Cell obs = row.createCell(columnOffset);
-                final String value = group.getObservation(timeTitle);
-                setObservationCellValue(valueStyle, numberStyle, obs, value);
-
-                if (value != null && value.length() > widestDataColumn)
-                    widestDataColumn = value.length();
-
-                columnOffset++;
-            }
+            columnOffset = addDimensionOptionCells(group, columnOffset, row);
+            widestDataColumn = addObservationCells(timeLabels, widestDataColumn, group, columnOffset, row);
 
             rowOffset++;
         }
@@ -115,39 +83,79 @@ class DatasetFormatter {
         }
     }
 
-    private void populateHeaderRow(CellStyle valueStyle, CellStyle valueRightAlign, Collection<String> timeLabels, Map<Integer, Integer> dimensionColumnWidths, Row headerRow, List<DimensionData> dimensions) {
+    private int addObservationCells(Collection<String> timeLabels, int widestDataColumn, Group group, int columnOffset, Row row) {
+
+        for (String timeTitle : timeLabels) {
+
+            Cell obs = row.createCell(columnOffset);
+            final String value = group.getObservation(timeTitle);
+            setObservationCellValue(obs, value);
+
+            if (value != null && value.length() > widestDataColumn)
+                widestDataColumn = value.length();
+
+            columnOffset++;
+        }
+
+        return widestDataColumn;
+    }
+
+    private int addDimensionOptionCells(Group group, int columnOffset, Row row) {
+
+        for (DimensionData dimension : group.getGroupValues()) {
+
+            addHeaderCell(columnOffset, row, dimension.getValue());
+            columnOffset++;
+
+            // For geography create another column / cell for the geographic code.
+            if (dimension.getDimensionType().equals(DimensionType.GEOGRAPHY)) {
+                addHeaderCell(columnOffset, row, dimension.getCode());
+                columnOffset++;
+            }
+        }
+
+        return columnOffset;
+    }
+
+    private void addHeaderCell(int columnOffset, Row row, String header) {
+
+        Cell cell = row.createCell(columnOffset);
+        cell.setCellStyle(valueStyle);
+        cell.setCellValue(header);
+
+        final Integer geoCodeColumnWidth = dimensionColumnWidths.get(columnOffset);
+        if (geoCodeColumnWidth == null || header.length() > geoCodeColumnWidth)
+            dimensionColumnWidths.put(columnOffset, header.length());
+
+    }
+
+    private void addHeaderRow(Collection<String> timeLabels) {
+
+        Row headerRow = sheet.createRow(rowOffset);
 
         int columnOffset = 0;
 
-        for (DimensionData dimensionData : dimensions) {
+        for (DimensionData dimensionData : file.getDimensions()) {
 
             String dimensionName = StringUtils.capitalize(dimensionData.getValue());
-
-            Cell cell = headerRow.createCell(columnOffset);
-            cell.setCellStyle(valueStyle);
-            cell.setCellValue(dimensionName);
-
-            Integer width = dimensionColumnWidths.get(columnOffset);
-            if (width == null || dimensionName.length() > width)
-                dimensionColumnWidths.put(columnOffset, dimensionName.length());
-
+            addHeaderCell(columnOffset, headerRow, dimensionName);
             columnOffset++;
 
             // For geography create another column / cell for the geographic code.
             if (dimensionData.getDimensionType().equals(DimensionType.GEOGRAPHY)) {
 
                 String header = dimensionName + " code";
-                cell = headerRow.createCell(columnOffset);
-                cell.setCellStyle(valueStyle);
-                cell.setCellValue(header);
-
-                width = dimensionColumnWidths.get(columnOffset);
-                if (width == null || header.length() > width)
-                    dimensionColumnWidths.put(columnOffset, header.length());
-
+                addHeaderCell(columnOffset, headerRow, header);
                 columnOffset++;
             }
         }
+
+        addTimeLabelCells(timeLabels, headerRow, columnOffset);
+
+        rowOffset++;
+    }
+
+    private void addTimeLabelCells(Collection<String> timeLabels, Row headerRow, int columnOffset) {
 
         // write time labels across the title row
         for (String timeLabel : timeLabels) {
@@ -159,7 +167,7 @@ class DatasetFormatter {
     }
 
 
-    private void setObservationCellValue(CellStyle valueStyle, CellStyle numberStyle, Cell obs, String value) {
+    private void setObservationCellValue(Cell obs, String value) {
 
         if (StringUtils.isEmpty(value)) {
             obs.setCellValue("");
@@ -179,7 +187,7 @@ class DatasetFormatter {
         }
     }
 
-    private int addMetadata(Sheet sheet, Metadata datasetMetadata, CellStyle headingStyle, CellStyle headingRightAlignStyle, int rowOffset, Map<Integer, Integer> dimensionColumnWidths) {
+    private void addMetadata() {
 
         int columnOffset = 0;
 
@@ -200,7 +208,5 @@ class DatasetFormatter {
         // Add a blank row at the bottom of the metadata.
         sheet.createRow(rowOffset);
         rowOffset++;
-        return rowOffset;
     }
-
 }

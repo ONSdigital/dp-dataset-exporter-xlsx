@@ -20,8 +20,6 @@ import java.io.InputStream;
 @Component
 public class XLSXConverter {
 
-    private final DatasetFormatter datasetFormatter = new DatasetFormatter();
-
     /**
      * Convert a V4 file to a XLSX file
      *
@@ -32,19 +30,36 @@ public class XLSXConverter {
     public Workbook toXLSX(final InputStream stream, Metadata datasetMetadata) throws IOException {
 
         final Workbook workbook = new XSSFWorkbook();
-        final CellStyle headerStyle = createBoldStyle(workbook);
+        final CellStyle headingStyle = createBoldStyle(workbook);
         final CellStyle headerRightAlignStyle = createBoldRightAlignStyle(workbook);
         final CellStyle valueStyle = createStyle(workbook);
         final CellStyle valueRightAlignStyle = createRightAlignStyle(workbook);
         final CellStyle linkStyle = createLinkStyle(workbook);
         final CellStyle numberStyle = createNumberStyle(workbook);
 
-        final Sheet datasetSheet = workbook.createSheet("Dataset");
         final V4File v4File = new V4File(stream);
-        datasetFormatter.format(datasetSheet, v4File, datasetMetadata, headerStyle, headerRightAlignStyle, valueStyle, valueRightAlignStyle, numberStyle);
+
+        final Sheet datasetSheet = workbook.createSheet("Dataset");
+        final DatasetFormatter datasetFormatter = new DatasetFormatter(
+                headingStyle,
+                headerRightAlignStyle,
+                valueStyle,
+                valueRightAlignStyle,
+                numberStyle,
+                datasetSheet,
+                v4File,
+                datasetMetadata);
+
+        datasetFormatter.format();
 
         final Sheet metadataSheet = workbook.createSheet("Metadata");
-        MetadataFormatter metadataFormatter = new MetadataFormatter(metadataSheet, datasetMetadata, headerStyle, valueStyle, linkStyle);
+        final MetadataFormatter metadataFormatter = new MetadataFormatter(
+                metadataSheet,
+                datasetMetadata,
+                headingStyle,
+                valueStyle,
+                linkStyle);
+
         metadataFormatter.format();
 
         return workbook;

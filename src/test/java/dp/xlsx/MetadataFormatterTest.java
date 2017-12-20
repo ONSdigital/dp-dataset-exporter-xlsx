@@ -15,9 +15,7 @@ import java.util.Iterator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 public class MetadataFormatterTest {
-
 
     @Test
     public void TestFormat_OutputsMetadata() throws IOException {
@@ -29,7 +27,7 @@ public class MetadataFormatterTest {
         final Sheet sheet = wb.createSheet("Test");
         final CellStyle cellStyle = wb.createCellStyle();
 
-        MetadataFormatter metadataFormatter = new MetadataFormatter(sheet, metadata, cellStyle, cellStyle,cellStyle);
+        MetadataFormatter metadataFormatter = new MetadataFormatter(sheet, metadata, cellStyle, cellStyle, cellStyle);
 
         // When format is called
         metadataFormatter.format();
