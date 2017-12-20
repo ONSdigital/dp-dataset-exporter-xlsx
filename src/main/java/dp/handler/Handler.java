@@ -83,7 +83,12 @@ public class Handler {
         } catch (Exception e) {
             LOGGER.error("unexpected error throw while attempting to process message, {}", e.getMessage());
         }
-        LOGGER.info("exported completed for filterID: {}", message.getFilterId());
+        if (FILTER.equals(messageType)) {
+            LOGGER.info("exported completed for filterID: {}",message.getFilterId());
+        } else {
+            LOGGER.info("exported completed for instance: datasetID: {}, edition: {}, version: {}",
+                message.getDatasetId(), message.getEdition(), message.getVersion());
+        }
     }
 
     private void handleFilterMessage(ExportedFile message, S3Object object) throws IOException {
