@@ -215,7 +215,7 @@ class MetadataFormatter {
 
     private void writeIndividualValues() {
 
-        writeString("Dataset Title", datasetMetadata.getTitle(), headerStyle, headerStyle);
+        writeString("Title", datasetMetadata.getTitle(), headerStyle, headerStyle);
         writeString("Description", datasetMetadata.getDescription());
         writeString("Release Date", datasetMetadata.getReleaseDate());
         writeString("Next Release", datasetMetadata.getNextRelease());

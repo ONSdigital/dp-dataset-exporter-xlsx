@@ -37,7 +37,7 @@ public class MetadataFormatterTest {
         printSheet(sheet);
 
         // Then the expected metadata is output in the XLSX sheet
-        assertThat(sheet.getRow(0).getCell(0).getStringCellValue()).isEqualTo("Dataset Title");
+        assertThat(sheet.getRow(0).getCell(0).getStringCellValue()).isEqualTo("Title");
         assertThat(sheet.getRow(0).getCell(1).getStringCellValue()).isEqualTo(metadata.getTitle());
     }
 
