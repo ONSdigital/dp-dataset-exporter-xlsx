@@ -50,7 +50,8 @@ class DatasetFormatter {
 
         final Collection<String> timeLabels = file.getOrderedTimeLabels();
 
-        sheet.setDefaultColumnWidth(timeLabels.iterator().next().length() + COLUMN_WIDTH_PADDING_CHARS);
+        // start with the column width of the first time header, then later check if any observations are longer.
+        int widestDataColumn = timeLabels.iterator().next().length();
 
         int rowOffset = 0;
 
@@ -73,11 +74,17 @@ class DatasetFormatter {
                 Cell obs = row.createCell(columnOffset);
                 final String value = group.getObservation(timeTitle);
                 setObservationCellValue(valueStyle, numberStyle, obs, value);
+
+                if (value != null && value.length() > widestDataColumn)
+                    widestDataColumn = value.length();
+
                 columnOffset++;
             }
 
             rowOffset++;
         }
+
+        sheet.setDefaultColumnWidth(widestDataColumn + COLUMN_WIDTH_PADDING_CHARS);
 
         final int widestGroupTitle = sortedGroups.stream()
                 .mapToInt(g -> g.getTitleWidth())
