@@ -15,12 +15,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * A class used to extract information from a V4 file.
@@ -29,7 +27,7 @@ class V4File {
 
     private final List<String[]> data; // v4 CSV rows
     private final int headerOffset;
-    final Group headerGroup;
+    private final Group headerGroup;
     private Set<String> uniqueTimeValues;
 
     V4File(final InputStream inputStream) throws IOException {
@@ -80,6 +78,7 @@ class V4File {
     /**
      * Return the list of dimensions that will be displayed along the columns of the XLSX output.
      * (not including the time dimension or whichever other dimension is not shown along the rows.)
+     *
      * @return
      */
     List<DimensionData> getDimensions() {

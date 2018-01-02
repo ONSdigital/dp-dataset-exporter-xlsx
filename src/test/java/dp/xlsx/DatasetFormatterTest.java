@@ -9,12 +9,15 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class DatasetFormatterTest {
 
@@ -190,6 +193,19 @@ public class DatasetFormatterTest {
 
         assertThat(cell.getCellTypeEnum()).isEqualTo(CellType.NUMERIC);
         assertThat(cell.getNumericCellValue()).isEqualTo(88.0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void constructor_NullDimensions_ThrowsException() throws Exception {
+
+        // Given a mock V4File that returns nil for its dimensions
+        final V4File file = mock(V4File.class);
+        when(file.getDimensions()).thenReturn(null);
+
+        // When the DatsetFormatter constructor is called
+        new DatasetFormatter(style, style, style, style, style, sheet, file, datasetMetadata);
+
+        // Then the expected exception is thrown
     }
 
     private CellStyle createStyle(Workbook wb) {

@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 class DatasetFormatter {
 
     private final int COLUMN_WIDTH_PADDING_CHARS = 3;
+    private final int DIMENSION_WIDTH_PADDING_CHARS = 5;
+    private final int EXCEL_CHARS_TO_WIDTH_FACTOR = 256;
 
     private final CellStyle headingStyle;
     private final CellStyle headingRightAlignStyle;
@@ -38,6 +40,10 @@ class DatasetFormatter {
 
     public DatasetFormatter(CellStyle headingStyle, CellStyle headingRightAlignStyle, CellStyle valueStyle, CellStyle valueRightAlign, CellStyle numberStyle, Sheet sheet, V4File file, Metadata datasetMetadata) {
 
+        if (file.getDimensions() == null) {
+            throw new IllegalArgumentException("dimensions in the dataset cannot be null");
+        }
+
         this.headingStyle = headingStyle;
         this.headingRightAlignStyle = headingRightAlignStyle;
         this.valueStyle = valueStyle;
@@ -49,10 +55,6 @@ class DatasetFormatter {
     }
 
     void format() {
-
-        if (file.getDimensions() == null) {
-            throw new IllegalArgumentException("dimensions in the dataset cannot be null");
-        }
 
         final List<Group> groups = file.groupData();
         final Collection<String> timeLabels = file.getOrderedTimeLabels();
@@ -79,7 +81,8 @@ class DatasetFormatter {
         sheet.setDefaultColumnWidth(widestDataColumn + COLUMN_WIDTH_PADDING_CHARS);
 
         for (Map.Entry<Integer, Integer> columnWidth : dimensionColumnWidths.entrySet()) {
-            sheet.setColumnWidth(columnWidth.getKey(), (columnWidth.getValue() + 5) * 256);
+            sheet.setColumnWidth(columnWidth.getKey(),
+                    (columnWidth.getValue() + DIMENSION_WIDTH_PADDING_CHARS) * EXCEL_CHARS_TO_WIDTH_FACTOR);
         }
     }
 
