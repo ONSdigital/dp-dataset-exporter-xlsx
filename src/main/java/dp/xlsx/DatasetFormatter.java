@@ -8,6 +8,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.util.StringUtils;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,83 +19,158 @@ import java.util.stream.Collectors;
  */
 class DatasetFormatter {
 
-
     private final int COLUMN_WIDTH_PADDING_CHARS = 3;
-    private final int EXCEL_CHAR_WIDTH_FACTOR = 256;
+    private final int DIMENSION_WIDTH_PADDING_CHARS = 5;
+    private final int EXCEL_CHARS_TO_WIDTH_FACTOR = 256;
 
-    /**
-     * The following function will format a V4 file into a grouped
-     * 2 dimensional structure.
-     * eg;
-     * K02000001   |  K02000001
-     * Food        |  Clothing
-     * ------------|-----------
-     * jan-97  |  99       | 77
-     * feb-97  |  88       | 55
-     *
-     * @param sheet       The exel sheet to add the data to
-     * @param file        The v4 file containing the data
-     * @param valueStyle  The style of the cell titles
-     * @param numberStyle The style of the observations
-     */
-    void format(Sheet sheet, V4File file, Metadata datasetMetadata, CellStyle headingStyle, CellStyle headingRightAlignStyle, CellStyle valueStyle, CellStyle valueRightAlign, CellStyle numberStyle) {
+    private final CellStyle headingStyle;
+    private final CellStyle headingRightAlignStyle;
+    private final CellStyle valueStyle;
+    private final CellStyle valueRightAlign;
+    private final CellStyle numberStyle;
+
+    private final Sheet sheet;
+    private final V4File file;
+    private final Metadata datasetMetadata;
+
+    // Maintain a map of column index to width. As we write rows see if the width needs to be larger.
+    private final Map<Integer, Integer> dimensionColumnWidths = new HashMap<>();
+
+    private int rowOffset = 0;
+
+    public DatasetFormatter(CellStyle headingStyle, CellStyle headingRightAlignStyle, CellStyle valueStyle, CellStyle valueRightAlign, CellStyle numberStyle, Sheet sheet, V4File file, Metadata datasetMetadata) {
+
+        if (file.getDimensions() == null) {
+            throw new IllegalArgumentException("dimensions in the dataset cannot be null");
+        }
+
+        this.headingStyle = headingStyle;
+        this.headingRightAlignStyle = headingRightAlignStyle;
+        this.valueStyle = valueStyle;
+        this.valueRightAlign = valueRightAlign;
+        this.numberStyle = numberStyle;
+        this.sheet = sheet;
+        this.file = file;
+        this.datasetMetadata = datasetMetadata;
+    }
+
+    void format() {
 
         final List<Group> groups = file.groupData();
-        Map<Integer, Integer> sortedPositionMapping = file.getSortedPositionMapping();
-
-        final List<SortedGroup> sortedGroups = groups
-                .stream()
-                .map(group -> new SortedGroup(group, sortedPositionMapping))
-                .sorted()
-                .collect(Collectors.toList());
-
         final Collection<String> timeLabels = file.getOrderedTimeLabels();
 
-        // start with the column width of the first time header, then later check if any observations are longer.
+        List<Group> sortedGroups = groups.stream().sorted().collect(Collectors.toList());
+
+        addMetadata();
+        addHeaderRow(timeLabels);
+
+        // start with the column width of the first time header, then later check if any observations are wider.
         int widestDataColumn = timeLabels.iterator().next().length();
 
-        int rowOffset = 0;
-
-        rowOffset = addMetadata(sheet, datasetMetadata, headingStyle, headingRightAlignStyle, rowOffset);
-        rowOffset = createHeaderRow(sheet, file, datasetMetadata, valueStyle, timeLabels, rowOffset);
-
-        for (SortedGroup group : sortedGroups) {
+        for (Group group : sortedGroups) {
 
             int columnOffset = 0;
-
-            // add dimensions label
             Row row = sheet.createRow(rowOffset);
-            Cell cell = row.createCell(columnOffset);
-            cell.setCellStyle(valueStyle);
-            cell.setCellValue(group.getTitle());
-            columnOffset++;
 
-            for (String timeTitle : timeLabels) {
-
-                Cell obs = row.createCell(columnOffset);
-                final String value = group.getObservation(timeTitle);
-                setObservationCellValue(valueStyle, numberStyle, obs, value);
-
-                if (value != null && value.length() > widestDataColumn)
-                    widestDataColumn = value.length();
-
-                columnOffset++;
-            }
+            columnOffset = addDimensionOptionCells(group, columnOffset, row);
+            widestDataColumn = addObservationCells(timeLabels, widestDataColumn, group, columnOffset, row);
 
             rowOffset++;
         }
 
         sheet.setDefaultColumnWidth(widestDataColumn + COLUMN_WIDTH_PADDING_CHARS);
 
-        final int widestGroupTitle = sortedGroups.stream()
-                .mapToInt(g -> g.getTitleWidth())
-                .max()
-                .getAsInt();
-
-        sheet.setColumnWidth(0, widestGroupTitle * EXCEL_CHAR_WIDTH_FACTOR);
+        for (Map.Entry<Integer, Integer> columnWidth : dimensionColumnWidths.entrySet()) {
+            sheet.setColumnWidth(columnWidth.getKey(),
+                    (columnWidth.getValue() + DIMENSION_WIDTH_PADDING_CHARS) * EXCEL_CHARS_TO_WIDTH_FACTOR);
+        }
     }
 
-    private void setObservationCellValue(CellStyle valueStyle, CellStyle numberStyle, Cell obs, String value) {
+    private int addObservationCells(Collection<String> timeLabels, int widestDataColumn, Group group, int columnOffset, Row row) {
+
+        for (String timeTitle : timeLabels) {
+
+            Cell obs = row.createCell(columnOffset);
+            final String value = group.getObservation(timeTitle);
+            setObservationCellValue(obs, value);
+
+            if (value != null && value.length() > widestDataColumn)
+                widestDataColumn = value.length();
+
+            columnOffset++;
+        }
+
+        return widestDataColumn;
+    }
+
+    private int addDimensionOptionCells(Group group, int columnOffset, Row row) {
+
+        for (DimensionData dimension : group.getGroupValues()) {
+
+            addHeaderCell(columnOffset, row, dimension.getValue());
+            columnOffset++;
+
+            // For geography create another column / cell for the geographic code.
+            if (dimension.getDimensionType().equals(DimensionType.GEOGRAPHY)) {
+                addHeaderCell(columnOffset, row, dimension.getCode());
+                columnOffset++;
+            }
+        }
+
+        return columnOffset;
+    }
+
+    private void addHeaderCell(int columnOffset, Row row, String header) {
+
+        Cell cell = row.createCell(columnOffset);
+        cell.setCellStyle(valueStyle);
+        cell.setCellValue(header);
+
+        final Integer geoCodeColumnWidth = dimensionColumnWidths.get(columnOffset);
+        if (geoCodeColumnWidth == null || header.length() > geoCodeColumnWidth)
+            dimensionColumnWidths.put(columnOffset, header.length());
+
+    }
+
+    private void addHeaderRow(Collection<String> timeLabels) {
+
+        Row headerRow = sheet.createRow(rowOffset);
+
+        int columnOffset = 0;
+
+        for (DimensionData dimensionData : file.getDimensions()) {
+
+            String dimensionName = StringUtils.capitalize(dimensionData.getValue());
+            addHeaderCell(columnOffset, headerRow, dimensionName);
+            columnOffset++;
+
+            // For geography create another column / cell for the geographic code.
+            if (dimensionData.getDimensionType().equals(DimensionType.GEOGRAPHY)) {
+
+                String header = dimensionName + " code";
+                addHeaderCell(columnOffset, headerRow, header);
+                columnOffset++;
+            }
+        }
+
+        addTimeLabelCells(timeLabels, headerRow, columnOffset);
+
+        rowOffset++;
+    }
+
+    private void addTimeLabelCells(Collection<String> timeLabels, Row headerRow, int columnOffset) {
+
+        // write time labels across the title row
+        for (String timeLabel : timeLabels) {
+            Cell cell = headerRow.createCell(columnOffset);
+            cell.setCellStyle(valueRightAlign);
+            cell.setCellValue(timeLabel);
+            columnOffset++;
+        }
+    }
+
+
+    private void setObservationCellValue(Cell obs, String value) {
 
         if (StringUtils.isEmpty(value)) {
             obs.setCellValue("");
@@ -114,43 +190,7 @@ class DatasetFormatter {
         }
     }
 
-
-    private int createHeaderRow(Sheet sheet, V4File file, Metadata datasetMetadata, CellStyle valueStyle, Collection<String> timeLabels, int rowOffset) {
-
-        int columnOffset = 0;
-
-        Row headerRow = sheet.createRow(rowOffset);
-
-        // add dimension names in the corner of the table
-        Cell cell = headerRow.createCell(columnOffset);
-        cell.setCellStyle(valueStyle);
-
-        if (datasetMetadata.getDimensions() != null) {
-            String dimensionNames = file.getDimensions()
-                    .stream()
-                    .map(d -> StringUtils.capitalize(d))
-                    .sorted()
-                    .collect(Collectors.joining("\n"));
-
-            cell.setCellValue(dimensionNames);
-        }
-
-        columnOffset++;
-
-        // write time labels across the title row
-        for (String timeLabel : timeLabels) {
-            cell = headerRow.createCell(columnOffset);
-            cell.setCellStyle(valueStyle);
-            cell.setCellValue(timeLabel);
-            columnOffset++;
-        }
-
-        rowOffset++;
-
-        return rowOffset;
-    }
-
-    private int addMetadata(Sheet sheet, Metadata datasetMetadata, CellStyle headingStyle, CellStyle headingRightAlignStyle, int rowOffset) {
+    private void addMetadata() {
 
         int columnOffset = 0;
 
@@ -158,7 +198,10 @@ class DatasetFormatter {
         Row row = sheet.createRow(rowOffset);
         Cell cell = row.createCell(columnOffset);
         cell.setCellStyle(headingRightAlignStyle);
-        cell.setCellValue("Dataset Title");
+        final String titleLabel = "Title";
+        cell.setCellValue(titleLabel);
+
+        dimensionColumnWidths.put(columnOffset, titleLabel.length());
 
         cell = row.createCell(columnOffset + 1);
         cell.setCellStyle(headingStyle);
@@ -168,7 +211,5 @@ class DatasetFormatter {
         // Add a blank row at the bottom of the metadata.
         sheet.createRow(rowOffset);
         rowOffset++;
-        return rowOffset;
     }
-
 }

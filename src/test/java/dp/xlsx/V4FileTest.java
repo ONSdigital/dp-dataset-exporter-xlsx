@@ -86,24 +86,9 @@ public class V4FileTest {
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
         final V4File file = new V4File(inputStream);
-        List<String> dimensions = file.getDimensions();
+        List<DimensionData> dimensions = file.getDimensions();
 
-        assertThat(dimensions.get(0)).isEqualTo("Geography");
-        assertThat(dimensions.get(1)).isEqualTo("Aggregate");
-    }
-
-    @Test
-    public void getSortedPositionMapping() throws Exception {
-
-        String csvHeader = "V4_0,Time_codelist,Time,Geography_codelist,Geography,cpi1dim1aggid,Aggregate\n";
-        String csvRow1 = "88,Month,10-00,K02000001,,cpi1dim1A0,CPI (overall index)\n";
-        String csvContent = csvHeader + csvRow1;
-
-        InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
-        final V4File file = new V4File(inputStream);
-        Map<Integer, Integer> sortedPositionMapping = file.getSortedPositionMapping();
-
-        assertThat(sortedPositionMapping.get(0)).isEqualTo(1);
-        assertThat(sortedPositionMapping.get(1)).isEqualTo(0);
+        assertThat(dimensions.get(0).getValue()).isEqualTo("Geography");
+        assertThat(dimensions.get(1).getValue()).isEqualTo("Aggregate");
     }
 }
