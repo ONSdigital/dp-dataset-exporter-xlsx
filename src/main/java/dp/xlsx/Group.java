@@ -8,10 +8,10 @@ import java.util.Map;
 /**
  * A single unique combination of dimension options, and its associated observations.
  */
-public class Group {
+public class Group implements Comparable<Group> {
 
-    private List<String> groupValues; // the unique dimension options
-    private Map<String, String> observations; // time: observation
+    private List<DimensionData> groupValues; // the unique dimension options
+    private Map<String, String> observations; // <time, observation>
 
     /**
      * Create a group of dimensions
@@ -27,26 +27,19 @@ public class Group {
         int columnOffset = offset + 3; // skip the observation, time code and time label
 
         // read geography code and label
-        String value = data[columnOffset];
+        String label = data[columnOffset];
+        String code = data[columnOffset -1];
 
-        if ("".equals(value)) {
-            value = data[columnOffset - 1]; // Just use the code
-        } else {
-            value = String.format("%s (%s)", value, data[columnOffset - 1]); // Append the code to the label
-        }
-
-        getGroupValues().add(value);
+        getGroupValues().add(new DimensionData(DimensionType.GEOGRAPHY, label, code));
         columnOffset += labelOffset;
 
         // add all other dimensions
         for (int i = columnOffset; i < data.length; i += labelOffset) {
 
-            value = data[i];
+            label = data[i];
+            code = data[i -1];
 
-            if ("".equals(value))
-                value = data[i - 1]; // Just use the code
-
-            getGroupValues().add(value);
+            getGroupValues().add(new DimensionData(DimensionType.OTHER, label, code));
         }
     }
 
@@ -74,7 +67,29 @@ public class Group {
         return this.hashCode() == object.hashCode();
     }
 
-    protected List<String> getGroupValues() {
+    protected List<DimensionData> getGroupValues() {
         return this.groupValues;
+    }
+
+    @Override
+    public int compareTo(Group o) {
+
+        int compared = 0;
+
+        // if the group arrays differ in length do not try and compare.
+        if (getGroupValues().size() != o.getGroupValues().size())
+            return 0;
+
+        // Order by each group value in turn
+        for (int i = 0; i < getGroupValues().size(); ++i) {
+
+            compared = getGroupValues().get(i).compareTo(o.getGroupValues().get(i));
+
+            // return if we can determine order from this dimension option
+            if (compared != 0)
+                return compared;
+        }
+
+        return compared;
     }
 }
