@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,9 +26,17 @@ public class V4FileTest {
     public void groupContainsObservations() throws IOException {
         try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_0.csv")) {
             final V4File file = new V4File(stream);
-            final Group group = file.groupData().get(0);
-            assertThat(group.getObservation("Jan-96")).isEqualTo("86.8");
-            assertThat(group.getObservation("Feb-96")).isEqualTo("86.9");
+            final Optional<Group> group = file.groupData().stream().filter(g -> {
+                for (DimensionData data: g.getGroupValues()) {
+                    if (data.getValue().equals("02.1 Alcoholic beverages")) {
+                        return true;
+                    }
+                }
+                return false;
+            }).findAny();
+            assertThat(group.isPresent()).isEqualTo(true);
+            assertThat(group.get().getObservation("Jan-96")).isEqualTo("95.6");
+            assertThat(group.get().getObservation("Feb-96")).isEqualTo("95.9");
         }
     }
 
