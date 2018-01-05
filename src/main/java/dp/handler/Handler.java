@@ -100,7 +100,7 @@ public class Handler {
                 workbook.dispose();
                 workbook.close();
             } catch (IOException e) {
-                LOGGER.error("unexpected error while attempting to close workbook, {}", e.getMessage());
+                LOGGER.error("unexpected error while attempting to close workbook, {}", e);
             }
         }
     }
