@@ -7,11 +7,12 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import dp.api.dataset.DatasetAPIClient;
 import dp.api.dataset.Metadata;
-import dp.api.filter.FilterAPIClient;
 import dp.api.filter.Filter;
+import dp.api.filter.FilterAPIClient;
 import dp.avro.ExportedFile;
 import dp.xlsx.XLSXConverter;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +60,6 @@ public class Handler {
             String datasetVersionURL = filter.getLinks().getVersion().getHref();
             final Metadata datasetMetadata = datasetAPIClient.getMetadata(datasetVersionURL);
 
-
             try (final Workbook workbook = converter.toXLSX(object.getObjectContent(), datasetMetadata);
                  final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();) {
 
@@ -79,6 +79,9 @@ public class Handler {
                     s3Client.putObject(putObjectRequest);
                     final String downloadUri = s3Client.getUrl(bucket, key).toString();
                     filterAPIClient.addXLSXFile(message.getFilterId().toString(), downloadUri, contentLength);
+                } finally {
+                    LOGGER.info("completed, disposing of temp files");
+                    ((SXSSFWorkbook) workbook).dispose();
                 }
             }
 
