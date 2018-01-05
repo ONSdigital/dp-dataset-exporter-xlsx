@@ -25,6 +25,11 @@ public class XLSXConverter {
     private final static Logger LOGGER = LoggerFactory.getLogger(XLSXConverter.class);
 
     /**
+     * The maximum number of rows to hold in memory
+     **/
+    private static final int MAX_IN_MEMORY_ROWS = 50;
+
+    /**
      * Convert a V4 file to a XLSX file
      *
      * @param stream A V4 file to convert
@@ -32,10 +37,8 @@ public class XLSXConverter {
      * @throws IOException Failed to convert the V4 file to XLSX
      */
     public Workbook toXLSX(final InputStream stream, Metadata datasetMetadata) throws IOException {
-        LOGGER.info("beginning toXLSX");
-        Workbook workbook = null;
-        //final Workbook workbook = new XSSFWorkbook();
-        workbook = new SXSSFWorkbook(50);
+        LOGGER.info("beginning xlsx file generation");
+        final Workbook workbook = new SXSSFWorkbook(MAX_IN_MEMORY_ROWS);
         final CellStyle headingStyle = createBoldStyle(workbook);
         final CellStyle headerRightAlignStyle = createBoldRightAlignStyle(workbook);
         final CellStyle valueStyle = createStyle(workbook);
@@ -69,7 +72,7 @@ public class XLSXConverter {
 
         LOGGER.info("formatting metadata");
         metadataFormatter.format();
-        LOGGER.info("formatting completed");
+        LOGGER.info("formatting metadata completed");
 
         return workbook;
     }

@@ -54,14 +54,16 @@ public class Handler {
 
         final AmazonS3URI uri = new AmazonS3URI(message.getS3URL().toString());
 
+        Workbook workbook = null;
         try (final S3Object object = s3Client.getObject(uri.getBucket(), uri.getKey())) {
 
             final Filter filter = filterAPIClient.getFilter(message.getFilterId().toString());
             String datasetVersionURL = filter.getLinks().getVersion().getHref();
             final Metadata datasetMetadata = datasetAPIClient.getMetadata(datasetVersionURL);
 
-            try (final Workbook workbook = converter.toXLSX(object.getObjectContent(), datasetMetadata);
-                 final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();) {
+            workbook = converter.toXLSX(object.getObjectContent(), datasetMetadata);
+
+            try (final ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
                 workbook.write(outputStream);
 
@@ -79,17 +81,28 @@ public class Handler {
                     s3Client.putObject(putObjectRequest);
                     final String downloadUri = s3Client.getUrl(bucket, key).toString();
                     filterAPIClient.addXLSXFile(message.getFilterId().toString(), downloadUri, contentLength);
-                } finally {
-                    LOGGER.info("completed, disposing of temp files");
-                    ((SXSSFWorkbook) workbook).dispose();
                 }
             }
 
         } catch (final IOException e) {
             LOGGER.error("error when exporting filter {}. exception : {}", message.getFilterId(), e);
+        } finally {
+            LOGGER.info("cleaning up workbook resources");
+            closeWorkbook((SXSSFWorkbook) workbook);
         }
+        LOGGER.info("completed processing kafka message", message.getFilterId());
+    }
 
-        LOGGER.info("exported completed for filterID: {}", message.getFilterId());
+    private void closeWorkbook(SXSSFWorkbook workbook) {
+        if (workbook != null) {
+            try {
+                // you must call dispose on SXSSFWorkbook to discard the generated temp files.
+                workbook.dispose();
+                workbook.close();
+            } catch (IOException e) {
+                LOGGER.error("unexpected error while attempting to close workbook, {}", e.getMessage());
+            }
+        }
     }
 
 }
