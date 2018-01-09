@@ -33,6 +33,9 @@ class V4File {
     V4File(final InputStream inputStream) throws IOException {
         try (final CSVReader reader = new CSVReader(new InputStreamReader(inputStream))) {
             data = reader.readAll();
+            if (data.size() <= 1) {
+                throw new IOException("Two or more csv rows are need to generate a XLSX file");
+            }
         }
 
         final String[] header = data.get(0);

@@ -100,4 +100,12 @@ public class V4FileTest {
         assertThat(dimensions.get(0).getValue()).isEqualTo("Geography");
         assertThat(dimensions.get(1).getValue()).isEqualTo("Aggregate");
     }
+
+    @Test(expected = IOException.class)
+    public void noResultsFound() throws IOException {
+        try (final InputStream stream = V4FileTest.class.getResourceAsStream("no_data.csv")) {
+            final V4File file = new V4File(stream);
+
+        }
+    }
 }
