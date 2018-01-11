@@ -8,7 +8,9 @@ import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -20,6 +22,13 @@ import java.io.InputStream;
 @Component
 public class XLSXConverter {
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(XLSXConverter.class);
+
+    /**
+     * The maximum number of rows to hold in memory
+     **/
+    private static final int MAX_IN_MEMORY_ROWS = 50;
+
     /**
      * Convert a V4 file to a XLSX file
      *
@@ -28,8 +37,8 @@ public class XLSXConverter {
      * @throws IOException Failed to convert the V4 file to XLSX
      */
     public Workbook toXLSX(final InputStream stream, Metadata datasetMetadata) throws IOException {
-
-        final Workbook workbook = new XSSFWorkbook();
+        LOGGER.info("beginning xlsx file generation");
+        final Workbook workbook = new SXSSFWorkbook(MAX_IN_MEMORY_ROWS);
         final CellStyle headingStyle = createBoldStyle(workbook);
         final CellStyle headerRightAlignStyle = createBoldRightAlignStyle(workbook);
         final CellStyle valueStyle = createStyle(workbook);
@@ -53,6 +62,7 @@ public class XLSXConverter {
         datasetFormatter.format();
 
         final Sheet metadataSheet = workbook.createSheet("Metadata");
+        LOGGER.info("adding metadata sheet to workbook");
         final MetadataFormatter metadataFormatter = new MetadataFormatter(
                 metadataSheet,
                 datasetMetadata,
@@ -60,7 +70,9 @@ public class XLSXConverter {
                 valueStyle,
                 linkStyle);
 
+        LOGGER.info("formatting metadata");
         metadataFormatter.format();
+        LOGGER.info("formatting metadata completed");
 
         return workbook;
     }
