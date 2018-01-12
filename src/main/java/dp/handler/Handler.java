@@ -81,7 +81,7 @@ public class Handler {
             }
             return;
         } catch (Exception e) {
-            LOGGER.error("unexpected error throw while attempting to process message, {}", e.getMessage());
+            LOGGER.error("unexpected error throw while attempting to process message, {}", e);
         }
         if (FILTER.equals(messageType)) {
             LOGGER.info("exported completed for filterID: {}", message.getFilterId());

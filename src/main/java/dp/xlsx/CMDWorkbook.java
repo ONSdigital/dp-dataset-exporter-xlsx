@@ -42,7 +42,6 @@ public class CMDWorkbook extends SXSSFWorkbook {
 
     @Override
     public void close() throws IOException {
-        System.out.println("CLOSE IS BEING CALLED");
         if (super.dispose()) {
             LOGGER.info(this.getClass().getSimpleName() + ".dispose completed successfully");
         }
