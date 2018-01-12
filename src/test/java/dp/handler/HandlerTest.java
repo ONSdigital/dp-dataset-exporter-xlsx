@@ -2,7 +2,6 @@ package dp.handler;
 
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,18 +15,21 @@ import dp.api.filter.FilterAPIClient;
 import dp.api.filter.FilterLinks;
 import dp.avro.ExportedFile;
 import dp.exceptions.FilterAPIException;
-import dp.xlsx.XLSXConverter;
+import dp.xlsx.CMDWorkbook;
+import dp.xlsx.Converter;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 
@@ -35,6 +37,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -50,13 +53,16 @@ public class HandlerTest {
     private AmazonS3 s3Client;
 
     @MockBean
-    private XLSXConverter converter;
+    private Converter converter;
 
     @MockBean
     private FilterAPIClient filterAPI;
 
     @MockBean
     private DatasetAPIClientImpl datasetAPI;
+
+    @Mock
+    private CMDWorkbook workbookMock;
 
     @Autowired
     private Handler handler;
@@ -83,7 +89,7 @@ public class HandlerTest {
         Metadata datasetMetadata = new Metadata();
         when(datasetAPI.getMetadata(filter.getLinks().getVersion().getHref())).thenReturn(datasetMetadata);
 
-        when(converter.toXLSX(any(), any())).thenReturn(new XSSFWorkbook());
+        when(converter.toXLSX(any(), any())).thenReturn(workbookMock);
 
         final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "", "", "", "", "");
 
@@ -273,7 +279,7 @@ public class HandlerTest {
         S3Object s3Object = mock(S3Object.class);
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
 
-        Workbook workBookMock = mock(Workbook.class);
+        SXSSFWorkbook workBookMock = mock(SXSSFWorkbook.class);
 
         DownloadsList downloads = new DownloadsList(new Download("https://amazon.com/morty.xlsx", "0"), null);
 
@@ -374,8 +380,6 @@ public class HandlerTest {
         S3Object s3Object = mock(S3Object.class);
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
 
-        Workbook workBookMock = mock(Workbook.class);
-
         DownloadsList downloads = new DownloadsList(new Download("https://amazon.com/morty.xlsx", "0"), null);
 
         Metadata metadata = new Metadata();
@@ -389,7 +393,7 @@ public class HandlerTest {
         when(datasetAPI.getMetadata(metadataURL))
                 .thenReturn(metadata);
         when(converter.toXLSX(any(), any()))
-                .thenReturn(workBookMock);
+                .thenReturn(workbookMock);
         doThrow(new FilterAPIException("flubba wubba dub dub", null)).when(datasetAPI)
                 .putVersionDownloads(any(), any());
 
@@ -404,6 +408,42 @@ public class HandlerTest {
         verify(converter, times(1)).toXLSX(stream, metadata);
         verify(datasetAPI, times(1)).putVersionDownloads(any(), any());
         verify(s3Client, times(1)).putObject(any());
+        verify(workbookMock, times(1)).close();
+    }
+
+    @Test
+    public void testPutS3ClientError() throws IOException {
+        S3Object s3Object = mock(S3Object.class);
+        S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
+
+        when(s3Object.getObjectContent()).thenReturn(stream);
+        when(s3Client.getObject("bucket", "v4.csv")).thenReturn(s3Object);
+        when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/sdfsdf"));
+
+        Filter filter = createFilter();
+        when(filterAPI.getFilter(any())).thenReturn(filter);
+
+        Metadata datasetMetadata = new Metadata();
+        when(datasetAPI.getMetadata(filter.getLinks().getVersion().getHref())).thenReturn(datasetMetadata);
+
+        when(converter.toXLSX(any(), any())).thenReturn(workbookMock);
+
+        when(s3Client.putObject(any()))
+                .thenThrow(new RuntimeException());
+
+        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "", "", "", "", "");
+
+        try {
+            handler.listen(exportedFile);
+        } catch (Exception e) {
+            verify(s3Client, times(1)).getObject(anyString(), anyString());
+            verify(filterAPI, times(1)).getFilter(exportedFile.getFilterId().toString());
+            verify(datasetAPI, times(1)).getMetadata(filter.getLinks().getVersion().getHref());
+            verify(converter, times(1)).toXLSX(any(), any());
+            verify(s3Client, times(1)).putObject(any());
+            verify(workbookMock, times(1)).dispose();
+            verify(workbookMock, times(1)).close();
+        }
     }
 
     private Filter createFilter() {

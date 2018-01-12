@@ -17,7 +17,7 @@ import dp.api.filter.Filter;
 import dp.api.filter.FilterAPIClient;
 import dp.avro.ExportedFile;
 import dp.exceptions.FilterAPIException;
-import dp.xlsx.XLSXConverter;
+import dp.xlsx.Converter;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +53,7 @@ public class Handler {
     private AmazonS3 s3Client;
 
     @Autowired
-    private XLSXConverter converter;
+    private Converter converter;
 
     @Autowired
     private FilterAPIClient filterAPIClient;
@@ -84,10 +84,10 @@ public class Handler {
             LOGGER.error("unexpected error throw while attempting to process message, {}", e.getMessage());
         }
         if (FILTER.equals(messageType)) {
-            LOGGER.info("exported completed for filterID: {}",message.getFilterId());
+            LOGGER.info("exported completed for filterID: {}", message.getFilterId());
         } else {
             LOGGER.info("exported completed for instance: datasetID: {}, edition: {}, version: {}",
-                message.getDatasetId(), message.getEdition(), message.getVersion());
+                    message.getDatasetId(), message.getEdition(), message.getVersion());
         }
     }
 
@@ -146,28 +146,33 @@ public class Handler {
         WorkbookDetails details = null;
         try {
             details = createWorkbook(object, metadata, message.getFilename().toString());
+
+            try {
+                DownloadsList downloadsList = new DownloadsList(new Download(details.getDowloadURI(),
+                        String.valueOf(details.getContentLength())), null);
+
+                datasetAPIClient.putVersionDownloads(versionURL, downloadsList);
+            } catch (MalformedURLException |
+                    FilterAPIException e)
+
+            {
+                LOGGER.error("dataset api PUT version returned error, filename: {}, URL: {}",
+                        message.getFilename().toString(), versionURL);
+                throw e;
+            }
+
+
         } catch (IOException e) {
             LOGGER.error("error while attempting to create XLSX workbook, filename: {}",
                     message.getFilename().toString());
             throw e;
         }
-
-        try {
-            DownloadsList downloadsList = new DownloadsList(new Download(details.getDowloadURI(),
-                    String.valueOf(details.getContentLength())), null);
-
-            datasetAPIClient.putVersionDownloads(versionURL, downloadsList);
-        } catch (MalformedURLException | FilterAPIException e) {
-            LOGGER.error("dataset api PUT version returned error, filename: {}, URL: {}",
-                    message.getFilename().toString(), versionURL);
-            throw e;
-        }
+        LOGGER.info("completed processing kafka message", message.getFilterId());
     }
 
     private WorkbookDetails createWorkbook(S3Object object, Metadata datasetMetadata, String filename) throws IOException {
         try (final Workbook workbook = converter.toXLSX(object.getObjectContent(), datasetMetadata);
              final ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-
             workbook.write(outputStream);
 
             byte[] xlsxBytes = outputStream.toByteArray();
@@ -192,5 +197,4 @@ public class Handler {
             throw e;
         }
     }
-
 }

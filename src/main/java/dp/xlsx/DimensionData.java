@@ -37,14 +37,18 @@ public class DimensionData implements Comparable<DimensionData> {
 
         DimensionData that = (DimensionData) o;
 
-        return getValue().equals(that.getValue());
+        if (dimensionType != that.dimensionType) return false;
+        if (code != null ? !code.equals(that.code) : that.code != null) return false;
+        return value != null ? value.equals(that.value) : that.value == null;
     }
 
     @Override
     public int hashCode() {
-        return getValue().hashCode();
+        int result = dimensionType != null ? dimensionType.hashCode() : 0;
+        result = 31 * result + (code != null ? code.hashCode() : 0);
+        result = 31 * result + (value != null ? value.hashCode() : 0);
+        return result;
     }
-
 
     @Override
     public int compareTo(DimensionData o) {

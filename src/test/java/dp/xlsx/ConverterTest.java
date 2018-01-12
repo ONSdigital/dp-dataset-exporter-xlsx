@@ -15,14 +15,14 @@ import java.io.InputStream;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class XLSXConverterTest {
+public class ConverterTest {
 
     @Autowired
-    private XLSXConverter converter;
+    private Converter converter;
 
     @Test
     public void csvToXlsx() throws IOException {
-        try (final InputStream csv = XLSXConverterTest.class.getResourceAsStream("v4_0.csv")) {
+        try (final InputStream csv = ConverterTest.class.getResourceAsStream("v4_0.csv")) {
 
             Metadata datasetMetadata = new Metadata();
             datasetMetadata.setTitle("test title");
