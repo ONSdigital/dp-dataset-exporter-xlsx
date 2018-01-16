@@ -22,8 +22,6 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -37,7 +35,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -153,7 +150,6 @@ public class HandlerTest {
         final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "", "", "", "", "");
 
         handler.listen(exportedFile);
-
         verify(s3Client, times(1)).getObject(anyString(), anyString());
         verify(filterAPI, times(1)).getFilter(exportedFile.getFilterId().toString());
         verify(datasetAPI, times(1)).getMetadata(metadataURL);

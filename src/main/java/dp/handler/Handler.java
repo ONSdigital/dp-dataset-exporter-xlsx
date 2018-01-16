@@ -102,21 +102,21 @@ public class Handler {
         try {
             metadataURL = new URL(filter.getLinks().getVersion().getHref());
         } catch (MalformedURLException e) {
-            throw new IOException(java.text.MessageFormat.format("error while attempting to create metadata URL, filterID {}, value: {}",
+            throw new IOException(format("error while attempting to create metadata URL filterID {0}, value: {1}",
                     message.getFilterId().toString(), filter.getLinks().getVersion().getHref()), e);
         }
 
         try {
             datasetMetadata = datasetAPIClient.getMetadata(metadataURL);
         } catch (FilterAPIException e) {
-            throw new IOException(java.text.MessageFormat.format("dataset api get metadata returned error. filterID {}, uri: {}",
+            throw new IOException(format("dataset api get metadata returned error. filterID {0}, uri: {1}",
                     message.getFilterId().toString(), metadataURL.toString()), e);
         }
 
         try {
             details = createWorkbook(object, datasetMetadata, message.getFilename().toString());
         } catch (IOException e) {
-            throw new IOException(java.text.MessageFormat.format("error while attempting to create XLSX workbook, filterID: {}, filename: {}",
+            throw new IOException(format("error while attempting to create XLSX workbook filterID: {0}, filename: {1}",
                     message.getFilterId().toString(), message.getFilename().toString()), e);
         }
 
@@ -124,7 +124,7 @@ public class Handler {
             filterAPIClient.addXLSXFile(message.getFilterId().toString(), details.getDowloadURI(), details
                     .getContentLength());
         } catch (JsonProcessingException e) {
-            throw new IOException(java.text.MessageFormat.format("filter api client addXLSXFile returned error, filterID: {}",
+            throw new IOException(format("filter api client addXLSXFile returned error, filterID: {0}",
                     message.getFilterId().toString()), e);
         }
     }
