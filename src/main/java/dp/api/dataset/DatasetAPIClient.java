@@ -15,15 +15,6 @@ public interface DatasetAPIClient {
     /**
      * Get the Dataset {@link Metadata}.
      *
-     * @param url the version url to get the metadata for.
-     * @return the Dataset {@link Metadata}.
-     * @throws MalformedURLException problem getting the metadata.
-     */
-    Metadata getMetadata(URL url) throws MalformedURLException, FilterAPIException;
-
-    /**
-     * Get the Dataset {@link Metadata}.
-     *
      * @param versionPath the version uri to get the metadata for.
      * @return the Dataset {@link Metadata}.
      * @throws MalformedURLException MalformedURLException problem getting the metadata.

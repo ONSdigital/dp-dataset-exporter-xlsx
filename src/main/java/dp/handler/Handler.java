@@ -95,12 +95,13 @@ public class Handler {
         LOGGER.info("handling filter message: ", message.getFilterId().toString());
 
         Filter filter = filterAPIClient.getFilter(message.getFilterId().toString());
-        URL metadataURL = null;
         Metadata datasetMetadata = null;
+        String metadataURL = null;
         WorkbookDetails details = null;
 
         try {
-            metadataURL = new URL(filter.getLinks().getVersion().getHref() + "/metadata");
+            URL url = new URL(filter.getLinks().getVersion().getHref());
+            metadataURL = url.getPath();
         } catch (MalformedURLException e) {
             throw new IOException(format("error while attempting to create metadata URL filterID {0}, value: {1}",
                     message.getFilterId().toString(), filter.getLinks().getVersion().getHref()), e);

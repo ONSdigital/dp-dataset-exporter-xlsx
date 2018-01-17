@@ -42,27 +42,27 @@ public class DatasetAPIClientImpl implements DatasetAPIClient {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public Metadata getMetadata(URL url) throws FilterAPIException{
-        LOGGER.info("getting dataset version data from the dataset api, url : {}", url);
+    public Metadata getMetadata(final String versionPath) throws MalformedURLException, FilterAPIException {
+        URL metadataURL = new URL(datasetAPIURL + versionPath + "/metadata");
+
+        LOGGER.info("getting dataset version data from the dataset api, url : {}", metadataURL);
         try {
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.add(AUTH_HEADER_KEY, token);
             HttpEntity entity = new HttpEntity<>(httpHeaders);
-            ResponseEntity<Metadata> responseEntity = restTemplate.exchange(url.toString(), HttpMethod.GET, entity, Metadata.class);
-            LOGGER.info("dataset api get response, url : {}, response {}", url, responseEntity.getStatusCode());
+            ResponseEntity<Metadata> responseEntity = restTemplate.exchange(metadataURL.toString(), HttpMethod.GET, entity, Metadata.class);
+            LOGGER.info("dataset api get response, url : {}, response {}", metadataURL.toString(),
+                    responseEntity.getStatusCode());
             return responseEntity.getBody();
 
         } catch (RestClientException e) {
-            throw new FilterAPIException(format("get dataset metadata returned an error, URL {0}", url.toString()), e);
+            throw new FilterAPIException(format("get dataset metadata returned an error, URL {0}", metadataURL.toString()), e);
         }
-    }
 
-    public Metadata getMetadata(final String versionPath) throws MalformedURLException, FilterAPIException {
-        return getMetadata(new URL(datasetAPIURL + versionPath + "/metadata"));
     }
 
     public void putVersionDownloads(final String datasetVersionURL, DownloadsList downloads) throws
-            MalformedURLException, FilterAPIException{
+            MalformedURLException, FilterAPIException {
         final String url = new URL(datasetAPIURL + datasetVersionURL).toString();
 
         try {
