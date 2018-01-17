@@ -100,7 +100,7 @@ public class Handler {
         WorkbookDetails details = null;
 
         try {
-            metadataURL = new URL(filter.getLinks().getVersion().getHref());
+            metadataURL = new URL(filter.getLinks().getVersion().getHref() + "/metadata");
         } catch (MalformedURLException e) {
             throw new IOException(format("error while attempting to create metadata URL filterID {0}, value: {1}",
                     message.getFilterId().toString(), filter.getLinks().getVersion().getHref()), e);
@@ -114,7 +114,7 @@ public class Handler {
         }
 
         try {
-            details = createWorkbook(object, datasetMetadata, message.getFilename().toString());
+            details = createWorkbook(object, datasetMetadata, message.getFilterId().toString());
         } catch (IOException e) {
             throw new IOException(format("error while attempting to create XLSX workbook filterID: {0}, filename: {1}",
                     message.getFilterId().toString(), message.getFilename().toString()), e);
@@ -170,7 +170,8 @@ public class Handler {
         LOGGER.info("completed processing kafka message", message.getFilterId());
     }
 
-    private WorkbookDetails createWorkbook(S3Object object, Metadata datasetMetadata, String filename) throws IOException {
+    private WorkbookDetails createWorkbook(S3Object object, Metadata datasetMetadata, String filename)
+            throws IOException {
         try (final Workbook workbook = converter.toXLSX(object.getObjectContent(), datasetMetadata);
              final ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             workbook.write(outputStream);

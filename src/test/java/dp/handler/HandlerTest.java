@@ -2,6 +2,7 @@ package dp.handler;
 
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,6 +22,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,6 +33,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
@@ -75,6 +79,7 @@ public class HandlerTest {
     public void validExportFileFilterMessage() throws IOException {
         S3Object s3Object = mock(S3Object.class);
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
+        ArgumentCaptor<PutObjectRequest> arguments = ArgumentCaptor.forClass(PutObjectRequest.class);
 
         when(s3Object.getObjectContent()).thenReturn(stream);
         when(s3Client.getObject("bucket", "v4.csv")).thenReturn(s3Object);
@@ -94,9 +99,14 @@ public class HandlerTest {
 
         verify(s3Client, times(1)).getObject(anyString(), anyString());
         verify(filterAPI, times(1)).getFilter(exportedFile.getFilterId().toString());
-        verify(datasetAPI, times(1)).getMetadata(new URL(filter.getLinks().getVersion().getHref()));
+        verify(datasetAPI, times(1)).getMetadata(new URL(filter.getLinks().getVersion().getHref() + "/metadata"));
         verify(converter, times(1)).toXLSX(any(), any());
+
         verify(s3Client, times(1)).putObject(any());
+        verify(s3Client, times(1)).putObject(arguments.capture());
+
+        assertThat("inccorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
+        assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("123.xlsx"));
     }
 
     @Test
@@ -132,7 +142,7 @@ public class HandlerTest {
     public void validFilterMessageGetMetadataError() throws Exception {
         S3Object s3Object = mock(S3Object.class);
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
-        URL metadataURL = new URL("http://localhost:20000/filters/1");
+        URL metadataURL = new URL("http://localhost:20000/filters/1/metadata");
 
         Filter filter = createFilter();
 
@@ -162,7 +172,7 @@ public class HandlerTest {
     public void validFilterConverterError() throws Exception {
         S3Object s3Object = mock(S3Object.class);
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
-        URL metadataURL = new URL("http://localhost:20000/filters/1");
+        URL metadataURL = new URL("http://localhost:20000/filters/1/metadata");
 
         Filter filter = createFilter();
         Metadata datasetMetadata = new Metadata();
@@ -196,9 +206,10 @@ public class HandlerTest {
     public void validFilterMessageS3PutError() throws Exception {
         S3Object s3Object = mock(S3Object.class);
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
-        URL metadataURL = new URL("http://localhost:20000/filters/1");
+        URL metadataURL = new URL("http://localhost:20000/filters/1/metadata");
         Workbook workbookMock = mock(Workbook.class);
         SdkClientException ex = mock(SdkClientException.class);
+        ArgumentCaptor<PutObjectRequest> arguments = ArgumentCaptor.forClass(PutObjectRequest.class);
 
         Filter filter = createFilter();
         Metadata datasetMetadata = new Metadata();
@@ -226,17 +237,21 @@ public class HandlerTest {
         verify(filterAPI, times(1)).getFilter(exportedFile.getFilterId().toString());
         verify(datasetAPI, times(1)).getMetadata(metadataURL);
         verify(converter, times(1)).toXLSX(any(), eq(datasetMetadata));
-        verify(s3Client, times(1)).putObject(any());
+        verify(s3Client, times(1)).putObject(arguments.capture());
         verify(filterAPI, never()).addXLSXFile(any(), any(), anyLong());
+
+        assertThat("inccorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
+        assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("123.xlsx"));
     }
 
     @Test
     public void validFilterMessageFilterAPIAddXLSFileError() throws Exception {
         S3Object s3Object = mock(S3Object.class);
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
-        URL metadataURL = new URL("http://localhost:20000/filters/1");
+        URL metadataURL = new URL("http://localhost:20000/filters/1/metadata");
         Workbook workbookMock = mock(Workbook.class);
         JsonProcessingException ex = mock(JsonProcessingException.class);
+        ArgumentCaptor<PutObjectRequest> arguments = ArgumentCaptor.forClass(PutObjectRequest.class);
 
         Filter filter = createFilter();
         Metadata datasetMetadata = new Metadata();
@@ -266,8 +281,11 @@ public class HandlerTest {
         verify(filterAPI, times(1)).getFilter(exportedFile.getFilterId().toString());
         verify(datasetAPI, times(1)).getMetadata(metadataURL);
         verify(converter, times(1)).toXLSX(any(), eq(datasetMetadata));
-        verify(s3Client, times(1)).putObject(any());
+        verify(s3Client, times(1)).putObject(arguments.capture());
         verify(filterAPI, times(1)).addXLSXFile(any(), any(), anyLong());
+
+        assertThat("inccorrect buck name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
+        assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("123.xlsx"));
     }
 
     @Test
@@ -278,6 +296,7 @@ public class HandlerTest {
         SXSSFWorkbook workBookMock = mock(SXSSFWorkbook.class);
 
         DownloadsList downloads = new DownloadsList(new Download("https://amazon.com/morty.xlsx", "0"), null);
+        ArgumentCaptor<PutObjectRequest> arguments = ArgumentCaptor.forClass(PutObjectRequest.class);
 
 
         Metadata datasetMetadata = new Metadata();
@@ -302,7 +321,10 @@ public class HandlerTest {
         verify(converter, times(1)).toXLSX(any(), any());
         verify(datasetAPI, times(1)).putVersionDownloads(metadataURL, downloads);
         verify(workBookMock, times(1)).write(any(OutputStream.class));
-        verify(s3Client, times(1)).putObject(any());
+        verify(s3Client, times(1)).putObject(arguments.capture());
+
+        assertThat("inccorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
+        assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("morty.xlsx"));
     }
 
     @Test
@@ -375,6 +397,7 @@ public class HandlerTest {
     public void vaildPrePublishMessagePutVersionDatasetAPIError() throws Exception {
         S3Object s3Object = mock(S3Object.class);
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
+        ArgumentCaptor<PutObjectRequest> arguments = ArgumentCaptor.forClass(PutObjectRequest.class);
 
         DownloadsList downloads = new DownloadsList(new Download("https://amazon.com/morty.xlsx", "0"), null);
 
@@ -403,14 +426,18 @@ public class HandlerTest {
         verify(datasetAPI, times(1)).getMetadata(metadataURL);
         verify(converter, times(1)).toXLSX(stream, metadata);
         verify(datasetAPI, times(1)).putVersionDownloads(any(), any());
-        verify(s3Client, times(1)).putObject(any());
+        verify(s3Client, times(1)).putObject(arguments.capture());
         verify(workbookMock, times(1)).close();
+
+        assertThat("inccorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
+        assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("morty.xlsx"));
     }
 
     @Test
     public void testPutS3ClientError() throws IOException {
         S3Object s3Object = mock(S3Object.class);
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
+        ArgumentCaptor<PutObjectRequest> arguments = ArgumentCaptor.forClass(PutObjectRequest.class);
 
         when(s3Object.getObjectContent()).thenReturn(stream);
         when(s3Client.getObject("bucket", "v4.csv")).thenReturn(s3Object);
@@ -436,9 +463,12 @@ public class HandlerTest {
             verify(filterAPI, times(1)).getFilter(exportedFile.getFilterId().toString());
             verify(datasetAPI, times(1)).getMetadata(filter.getLinks().getVersion().getHref());
             verify(converter, times(1)).toXLSX(any(), any());
-            verify(s3Client, times(1)).putObject(any());
+            verify(s3Client, times(1)).putObject(arguments.capture());
             verify(workbookMock, times(1)).dispose();
             verify(workbookMock, times(1)).close();
+
+            assertThat("inccorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
+            assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("123.xlsx"));
         }
     }
 
