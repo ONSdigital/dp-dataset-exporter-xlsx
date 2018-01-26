@@ -2,7 +2,12 @@
  "type": "record",
  "name": "ExportedFile",
  "fields": [
-     {"name": "filterId", "type": "string"},
-     {"name": "s3URL",  "type": "string"}
+     {"name": "filterId", "type": "string", "default": ""},
+     {"name": "s3URL",  "type": "string", "default": ""},
+     {"name": "instance_id", "type": "string", "default": ""},
+     {"name": "dataset_id", "type": "string", "default": ""},
+     {"name": "edition", "type": "string", "default": ""},
+     {"name": "version", "type": "string", "default": ""},
+     {"name": "filename", "type": "string", "default": ""}
  ]
 }

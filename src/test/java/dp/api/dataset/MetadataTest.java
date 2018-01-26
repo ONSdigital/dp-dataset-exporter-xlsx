@@ -1,6 +1,17 @@
 package dp.api.dataset;
 
 import dp.api.Link;
+import dp.api.dataset.models.Alert;
+import dp.api.dataset.models.CodeList;
+import dp.api.dataset.models.ContactDetails;
+import dp.api.dataset.models.Download;
+import dp.api.dataset.models.DownloadsList;
+import dp.api.dataset.models.GeneralDetails;
+import dp.api.dataset.models.LatestChange;
+import dp.api.dataset.models.Metadata;
+import dp.api.dataset.models.MetadataLinks;
+import dp.api.dataset.models.Publisher;
+import dp.api.dataset.models.TemporalFrequency;
 
 import java.util.Arrays;
 
@@ -34,7 +45,7 @@ public class MetadataTest {
                 "Distribution3"
         ));
 
-        metadata.setDownloads(new DatasetDownloads(
+        metadata.setDownloads(new DownloadsList(
                 new Download("http://localhost:22400/CSVURL", "123"),
                 new Download("http://localhost:22400/XSLXURL", "123")
         ));
@@ -76,9 +87,9 @@ public class MetadataTest {
                 new GeneralDetails("http://localhost:22400/Publication3", "Publication3 title", "Publication3 description")
         ));
 
-        metadata.setPublisher(new Publisher("Publisher name","Publisher type", "http://localhost:22400/publisherHREF"));
+        metadata.setPublisher(new Publisher("Publisher name", "Publisher type", "http://localhost:22400/publisherHREF"));
 
-        metadata.setQmi(new GeneralDetails("http://localhost:22400/QMI-HREF","QMI title","QMI desc"));
+        metadata.setQmi(new GeneralDetails("http://localhost:22400/QMI-HREF", "QMI title", "QMI desc"));
 
 
         metadata.setRelatedDatasets(Arrays.asList(
@@ -92,7 +103,7 @@ public class MetadataTest {
         metadata.setReleaseFrequency("release frequency value");
 
         metadata.setTemporal(Arrays.asList(
-                new TemporalFrequency("end date","frequency","start date")
+                new TemporalFrequency("end date", "frequency", "start date")
         ));
 
 

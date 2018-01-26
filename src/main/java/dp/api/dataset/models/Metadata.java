@@ -1,6 +1,8 @@
-package dp.api.dataset;
+package dp.api.dataset.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.Collection;
 
@@ -25,7 +27,7 @@ public class Metadata {
     private Collection<String> distribution;
 
     @JsonProperty("downloads")
-    private DatasetDownloads downloads;
+    private DownloadsList downloads;
 
     @JsonProperty("keywords")
     private Collection<String> keywords;
@@ -137,11 +139,11 @@ public class Metadata {
         this.distribution = distribution;
     }
 
-    public DatasetDownloads getDownloads() {
+    public DownloadsList getDownloads() {
         return downloads;
     }
 
-    public void setDownloads(DatasetDownloads downloads) {
+    public void setDownloads(DownloadsList downloads) {
         this.downloads = downloads;
     }
 
@@ -271,5 +273,71 @@ public class Metadata {
 
     public void setUri(String uri) {
         this.uri = uri;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Metadata metadata = (Metadata) o;
+
+        return new EqualsBuilder()
+                .append(getAlerts(), metadata.getAlerts())
+                .append(getContacts(), metadata.getContacts())
+                .append(getDescription(), metadata.getDescription())
+                .append(getDimensions(), metadata.getDimensions())
+                .append(getDistribution(), metadata.getDistribution())
+                .append(getDownloads(), metadata.getDownloads())
+                .append(getKeywords(), metadata.getKeywords())
+                .append(getLatestChanges(), metadata.getLatestChanges())
+                .append(getLicense(), metadata.getLicense())
+                .append(getLinks(), metadata.getLinks())
+                .append(getMethodologies(), metadata.getMethodologies())
+                .append(getNationalStatistic(), metadata.getNationalStatistic())
+                .append(getNextRelease(), metadata.getNextRelease())
+                .append(getPublications(), metadata.getPublications())
+                .append(getPublisher(), metadata.getPublisher())
+                .append(getQmi(), metadata.getQmi())
+                .append(getRelatedDatasets(), metadata.getRelatedDatasets())
+                .append(getReleaseDate(), metadata.getReleaseDate())
+                .append(getReleaseFrequency(), metadata.getReleaseFrequency())
+                .append(getTemporal(), metadata.getTemporal())
+                .append(getTheme(), metadata.getTheme())
+                .append(getTitle(), metadata.getTitle())
+                .append(getUnitOfMeasure(), metadata.getUnitOfMeasure())
+                .append(getUri(), metadata.getUri())
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(getAlerts())
+                .append(getContacts())
+                .append(getDescription())
+                .append(getDimensions())
+                .append(getDistribution())
+                .append(getDownloads())
+                .append(getKeywords())
+                .append(getLatestChanges())
+                .append(getLicense())
+                .append(getLinks())
+                .append(getMethodologies())
+                .append(getNationalStatistic())
+                .append(getNextRelease())
+                .append(getPublications())
+                .append(getPublisher())
+                .append(getQmi())
+                .append(getRelatedDatasets())
+                .append(getReleaseDate())
+                .append(getReleaseFrequency())
+                .append(getTemporal())
+                .append(getTheme())
+                .append(getTitle())
+                .append(getUnitOfMeasure())
+                .append(getUri())
+                .toHashCode();
     }
 }

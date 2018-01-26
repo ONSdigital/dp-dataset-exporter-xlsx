@@ -1,6 +1,6 @@
 package dp.xlsx;
 
-import dp.api.dataset.Metadata;
+import dp.api.dataset.models.Metadata;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;

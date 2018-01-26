@@ -1,6 +1,6 @@
 package dp.xlsx;
 
-import dp.api.dataset.Metadata;
+import dp.api.dataset.models.Metadata;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
@@ -15,14 +15,14 @@ import java.io.InputStream;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class XLSXConverterTest {
+public class ConverterTest {
 
     @Autowired
-    private XLSXConverter converter;
+    private Converter converter;
 
     @Test
     public void csvToXlsx() throws IOException {
-        try (final InputStream csv = XLSXConverterTest.class.getResourceAsStream("v4_0.csv")) {
+        try (final InputStream csv = ConverterTest.class.getResourceAsStream("v4_0.csv")) {
 
             Metadata datasetMetadata = new Metadata();
             datasetMetadata.setTitle("test title");

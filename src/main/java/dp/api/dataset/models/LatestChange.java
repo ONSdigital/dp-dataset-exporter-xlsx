@@ -1,14 +1,11 @@
-package dp.api.dataset;
+package dp.api.dataset.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- * An alert associated with a dataset version.
- */
-public class Alert {
+public class LatestChange {
 
-    @JsonProperty("date")
-    private String date;
+    @JsonProperty("name")
+    private String name;
 
     @JsonProperty("description")
     private String description;
@@ -16,20 +13,20 @@ public class Alert {
     @JsonProperty("type")
     private String type;
 
-    public Alert(String date, String description, String type) {
-        this.date = date;
+    public LatestChange(String name, String description, String type) {
+        this.name = name;
         this.description = description;
         this.type = type;
     }
 
-    public Alert() {}
+    public LatestChange() {}
 
-    public String getDate() {
-        return date;
+    public String getName() {
+        return name;
     }
 
-    public void setDate(String date) {
-        this.date = date;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDescription() {

@@ -1,12 +1,12 @@
 package dp.xlsx;
 
-import dp.api.dataset.Alert;
-import dp.api.dataset.CodeList;
-import dp.api.dataset.ContactDetails;
-import dp.api.dataset.GeneralDetails;
-import dp.api.dataset.LatestChange;
-import dp.api.dataset.Metadata;
-import dp.api.dataset.MetadataLinks;
+import dp.api.dataset.models.Alert;
+import dp.api.dataset.models.CodeList;
+import dp.api.dataset.models.ContactDetails;
+import dp.api.dataset.models.GeneralDetails;
+import dp.api.dataset.models.LatestChange;
+import dp.api.dataset.models.Metadata;
+import dp.api.dataset.models.MetadataLinks;
 import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -153,17 +153,21 @@ class MetadataFormatter {
     }
 
     private void writeDownloads() {
-
-        if (datasetMetadata.getDownloads() == null)
+        if (datasetMetadata.getDownloads() == null) {
             return;
+        }
 
-        writeLink("XLSX Download", datasetMetadata.getDownloads().getXls().getUrl());
-        writeString("Size (bytes)", datasetMetadata.getDownloads().getXls().getSize());
+        if (datasetMetadata.getDownloads().getXls() != null) {
+            writeLink("XLSX Download", datasetMetadata.getDownloads().getXls().getUrl());
+            writeString("Size (bytes)", datasetMetadata.getDownloads().getXls().getSize());
+            writeBlankRow();
+        }
 
-        writeBlankRow();
-        writeLink("CSV Download", datasetMetadata.getDownloads().getCsv().getUrl());
-        writeString("Size (bytes)", datasetMetadata.getDownloads().getCsv().getSize());
-        writeBlankRow();
+        if (datasetMetadata.getDownloads().getCsv() != null) {
+            writeLink("CSV Download", datasetMetadata.getDownloads().getCsv().getUrl());
+            writeString("Size (bytes)", datasetMetadata.getDownloads().getCsv().getSize());
+            writeBlankRow();
+        }
     }
 
     private void writeCodeLists() {

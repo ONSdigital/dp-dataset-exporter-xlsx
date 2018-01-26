@@ -1,6 +1,6 @@
 package dp.xlsx;
 
-import dp.api.dataset.Metadata;
+import dp.api.dataset.models.Metadata;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -8,7 +8,8 @@ import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -18,7 +19,14 @@ import java.io.InputStream;
  * A spring component used to convert a V4 file to a XLSX file
  */
 @Component
-public class XLSXConverter {
+public class Converter {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(Converter.class);
+
+    /**
+     * The maximum number of rows to hold in memory
+     **/
+    private static final int MAX_IN_MEMORY_ROWS = 50;
 
     /**
      * Convert a V4 file to a XLSX file
@@ -28,8 +36,8 @@ public class XLSXConverter {
      * @throws IOException Failed to convert the V4 file to XLSX
      */
     public Workbook toXLSX(final InputStream stream, Metadata datasetMetadata) throws IOException {
-
-        final Workbook workbook = new XSSFWorkbook();
+        LOGGER.info("beginning xlsx file generation");
+        final Workbook workbook = new CMDWorkbook(MAX_IN_MEMORY_ROWS);
         final CellStyle headingStyle = createBoldStyle(workbook);
         final CellStyle headerRightAlignStyle = createBoldRightAlignStyle(workbook);
         final CellStyle valueStyle = createStyle(workbook);
@@ -53,6 +61,7 @@ public class XLSXConverter {
         datasetFormatter.format();
 
         final Sheet metadataSheet = workbook.createSheet("Metadata");
+        LOGGER.info("adding metadata sheet to workbook");
         final MetadataFormatter metadataFormatter = new MetadataFormatter(
                 metadataSheet,
                 datasetMetadata,
@@ -60,7 +69,9 @@ public class XLSXConverter {
                 valueStyle,
                 linkStyle);
 
+        LOGGER.info("formatting metadata");
         metadataFormatter.format();
+        LOGGER.info("formatting metadata completed");
 
         return workbook;
     }
