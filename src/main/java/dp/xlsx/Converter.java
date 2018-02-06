@@ -45,8 +45,10 @@ public class Converter {
         final CellStyle linkStyle = createLinkStyle(workbook);
         final CellStyle numberStyle = createNumberStyle(workbook);
 
+        LOGGER.info("creating local copy of data from stream");
         final V4File v4File = new V4File(stream);
 
+        LOGGER.info("creating data sheet");
         final Sheet datasetSheet = workbook.createSheet("Dataset");
         final DatasetFormatter datasetFormatter = new DatasetFormatter(
                 headingStyle,
@@ -58,8 +60,10 @@ public class Converter {
                 v4File,
                 datasetMetadata);
 
+        LOGGER.info("formatting data sheet");
         datasetFormatter.format();
 
+        LOGGER.info("creating metadata sheet");
         final Sheet metadataSheet = workbook.createSheet("Metadata");
         LOGGER.info("adding metadata sheet to workbook");
         final MetadataFormatter metadataFormatter = new MetadataFormatter(
@@ -150,4 +154,3 @@ public class Converter {
     }
 
 }
-
