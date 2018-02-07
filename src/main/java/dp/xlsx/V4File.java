@@ -1,8 +1,10 @@
 package dp.xlsx;
 
-import au.com.bytecode.opencsv.CSVReader;
+import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
 import org.springframework.util.StringUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -25,25 +27,60 @@ import java.util.TreeMap;
  */
 class V4File {
 
-    private final List<String[]> data; // v4 CSV rows
-    private final int headerOffset;
-    private final Group headerGroup;
-    private Set<String> uniqueTimeValues;
+    private final Collection<Group> groupData;
+    private final Set<String> uniqueTimeValues;
+    private Group headerGroup;
 
     V4File(final InputStream inputStream) throws IOException {
-        try (final CSVReader reader = new CSVReader(new InputStreamReader(inputStream))) {
-            data = reader.readAll();
-            if (data.size() <= 1) {
+
+        final Map<Group, Group> groups = new HashMap<>();
+
+        try (final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+             final BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+
+            uniqueTimeValues = new HashSet<>();
+
+            String line;
+            int headerOffset = 0;
+
+            CsvParserSettings settings = new CsvParserSettings();
+            settings.setEmptyValue("");
+            settings.setNullValue("");
+            CsvParser parser = new CsvParser(settings);
+
+            if ((line = bufferedReader.readLine()) != null) {
+
+                final String[] header = parser.parseLine(line);
+                final String v4Code = header[0];
+
+                headerOffset = Integer.parseInt(v4Code.split("V4_")[1]) + 1;
+                headerGroup = new Group(header, headerOffset);
+            }
+
+            while ((line = bufferedReader.readLine()) != null) {
+
+                final String[] row = parser.parseLine(line);
+
+                final Group group = new Group(row, headerOffset);
+                final String timeValue = row[headerOffset + 1];
+                final String observation = row[0];
+
+                if (groups.containsKey(group)) {
+                    uniqueTimeValues.add(timeValue);
+                    groups.get(group).addObservation(timeValue, observation);
+                } else {
+                    uniqueTimeValues.add(timeValue);
+                    group.addObservation(timeValue, observation);
+                    groups.put(group, group);
+                }
+            }
+
+            if (groups.size() < 1) {
                 throw new IOException("Two or more csv rows are need to generate a XLSX file");
             }
+
+            groupData = groups.values();
         }
-
-        final String[] header = data.get(0);
-        final String v4Code = header[0];
-
-        headerOffset = Integer.parseInt(v4Code.split("V4_")[1]) + 1;
-        uniqueTimeValues = new HashSet<>();
-        headerGroup = new Group(header, headerOffset);
     }
 
     /**
@@ -51,31 +88,8 @@ class V4File {
      *
      * @return A list of all groups within the v4 file
      */
-    List<Group> groupData() {
-
-        data.remove(0); // remove header
-
-        final Map<Group, Group> groups = new HashMap<>();
-
-        data.stream().forEach(row -> {
-
-            final Group group = new Group(row, headerOffset);
-            final String timeValue = row[headerOffset + 1];
-            final String observation = row[0];
-
-            if (groups.containsKey(group)) {
-
-                uniqueTimeValues.add(timeValue);
-                groups.get(group).addObservation(timeValue, observation);
-            } else {
-
-                uniqueTimeValues.add(timeValue);
-                group.addObservation(timeValue, observation);
-                groups.put(group, group);
-            }
-        });
-
-        return new ArrayList<>(groups.values());
+    Collection<Group> groupData() {
+        return groupData;
     }
 
     /**
@@ -85,7 +99,6 @@ class V4File {
      * @return
      */
     List<DimensionData> getDimensions() {
-
         return headerGroup.getGroupValues();
     }
 
