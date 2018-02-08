@@ -51,6 +51,11 @@ class V4File {
             if ((line = bufferedReader.readLine()) != null) {
 
                 final String[] header = parser.parseLine(line);
+                if (header == null || header.length == 0) {
+                    throw new IOException("header row does not contain any content");
+                }
+
+
                 final String v4Code = header[0];
 
                 headerOffset = Integer.parseInt(v4Code.split("V4_")[1]) + 1;
@@ -60,6 +65,9 @@ class V4File {
             while ((line = bufferedReader.readLine()) != null) {
 
                 final String[] row = parser.parseLine(line);
+                if (row == null || row.length == 0) {
+                    continue;
+                }
 
                 final Group group = new Group(row, headerOffset);
                 final String timeValue = row[headerOffset + 1];
