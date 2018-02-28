@@ -56,7 +56,7 @@ class DatasetFormatter {
 
     void format() {
 
-        final List<Group> groups = file.groupData();
+        final Collection<Group> groups = file.groupData();
         final Collection<String> timeLabels = file.getOrderedTimeLabels();
 
         List<Group> sortedGroups = groups.stream().sorted().collect(Collectors.toList());
