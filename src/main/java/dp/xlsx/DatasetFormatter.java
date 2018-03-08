@@ -79,9 +79,10 @@ class DatasetFormatter {
                     (columnWidth.getValue() + DIMENSION_WIDTH_PADDING_CHARS) * EXCEL_CHARS_TO_WIDTH_FACTOR);
         }
 
-        if (datasetMetadata.getUserNotes() == null) return;
-        for (UserNotes note : datasetMetadata.getUserNotes()) {
-            AddUserNotes(note);
+        if (datasetMetadata.getUserNotes() != null) {
+            for (UserNotes note : datasetMetadata.getUserNotes()) {
+                addUserNotes(note);
+            }
         }
     }
 
@@ -245,7 +246,7 @@ class DatasetFormatter {
         cell.setCellStyle(workBookStyles.getNoteStyle());
     }
 
-    private void AddUserNotes(UserNotes notes) {
+    private void addUserNotes(UserNotes notes) {
         rowOffset++;
         sheet.createRow(rowOffset); // Blank row
         rowOffset++;
