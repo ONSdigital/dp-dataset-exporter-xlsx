@@ -39,12 +39,8 @@ public class Converter {
         LOGGER.info("beginning xlsx file generation");
         final Workbook workbook = new CMDWorkbook(MAX_IN_MEMORY_ROWS);
         final CellStyle headingStyle = createBoldStyle(workbook);
-        final CellStyle headerRightAlignStyle = createBoldRightAlignStyle(workbook);
         final CellStyle valueStyle = createStyle(workbook);
-        final CellStyle valueRightAlignStyle = createRightAlignStyle(workbook);
         final CellStyle linkStyle = createLinkStyle(workbook);
-        final CellStyle numberStyle = createNumberStyle(workbook);
-        final CellStyle noteStyle = createNoteStyle(workbook);
 
         LOGGER.info("creating local copy of data from stream");
         final V4File v4File = new V4File(stream);
@@ -89,18 +85,6 @@ public class Converter {
         return style;
     }
 
-    private CellStyle createRightAlignStyle(Workbook wb) {
-        final CellStyle style = wb.createCellStyle();
-        final Font font = wb.createFont();
-        font.setFontName("Arial");
-        font.setFontHeightInPoints((short) 14);
-        style.setFont(font);
-        style.setWrapText(true);
-        style.setAlignment(HorizontalAlignment.RIGHT);
-        style.setVerticalAlignment(VerticalAlignment.TOP);
-        return style;
-    }
-
     private CellStyle createLinkStyle(Workbook wb) {
         final CellStyle style = wb.createCellStyle();
         final Font font = wb.createFont();
@@ -123,37 +107,6 @@ public class Converter {
         style.setFont(font);
         style.setWrapText(false);
         style.setVerticalAlignment(VerticalAlignment.TOP);
-        return style;
-    }
-
-    private CellStyle createBoldRightAlignStyle(Workbook wb) {
-        final CellStyle style = wb.createCellStyle();
-        final Font font = wb.createFont();
-        font.setFontName("Arial-Bold");
-        font.setBold(true);
-        font.setFontHeightInPoints((short) 14);
-        style.setFont(font);
-        style.setWrapText(false);
-        style.setAlignment(HorizontalAlignment.RIGHT);
-        style.setVerticalAlignment(VerticalAlignment.TOP);
-        return style;
-    }
-
-    private CellStyle createNumberStyle(Workbook wb) {
-        final CellStyle style = wb.createCellStyle();
-        final Font font = wb.createFont();
-        font.setFontName("Arial-Number");
-        font.setFontHeightInPoints((short) 14);
-        style.setDataFormat(wb.createDataFormat().getFormat("0.0############################"));
-        style.setFont(font);
-        style.setWrapText(true);
-        style.setVerticalAlignment(VerticalAlignment.TOP);
-        return style;
-    }
-
-    private CellStyle createNoteStyle(Workbook wb) {
-        CellStyle style = createStyle(wb);
-        style.setWrapText(false);
         return style;
     }
 
