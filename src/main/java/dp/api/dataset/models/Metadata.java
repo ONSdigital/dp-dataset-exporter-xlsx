@@ -83,6 +83,9 @@ public class Metadata {
     @JsonProperty("uri")
     private String uri;
 
+    @JsonProperty("user_notes")
+    private UserNotes[] userNotes;
+
     public Collection<GeneralDetails> getRelatedDatasets() {
         return relatedDatasets;
     }
@@ -273,6 +276,14 @@ public class Metadata {
 
     public void setUri(String uri) {
         this.uri = uri;
+    }
+
+    public UserNotes[] getUserNotes() {
+        return userNotes;
+    }
+
+    public void setUserNotes(UserNotes[] userNotes) {
+        this.userNotes = userNotes;
     }
 
     @Override

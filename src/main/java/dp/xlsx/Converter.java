@@ -44,18 +44,16 @@ public class Converter {
         final CellStyle valueRightAlignStyle = createRightAlignStyle(workbook);
         final CellStyle linkStyle = createLinkStyle(workbook);
         final CellStyle numberStyle = createNumberStyle(workbook);
+        final CellStyle noteStyle = createNoteStyle(workbook);
 
         LOGGER.info("creating local copy of data from stream");
         final V4File v4File = new V4File(stream);
 
         LOGGER.info("creating data sheet");
         final Sheet datasetSheet = workbook.createSheet("Dataset");
+        final WorkBookStyles workBookStyles = new WorkBookStyles(workbook);
         final DatasetFormatter datasetFormatter = new DatasetFormatter(
-                headingStyle,
-                headerRightAlignStyle,
-                valueStyle,
-                valueRightAlignStyle,
-                numberStyle,
+                workBookStyles,
                 datasetSheet,
                 v4File,
                 datasetMetadata);
@@ -150,6 +148,12 @@ public class Converter {
         style.setFont(font);
         style.setWrapText(true);
         style.setVerticalAlignment(VerticalAlignment.TOP);
+        return style;
+    }
+
+    private CellStyle createNoteStyle(Workbook wb) {
+        CellStyle style = createStyle(wb);
+        style.setWrapText(false);
         return style;
     }
 

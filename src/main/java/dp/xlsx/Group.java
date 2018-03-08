@@ -11,7 +11,7 @@ import java.util.Map;
 public class Group implements Comparable<Group> {
 
     private List<DimensionData> groupValues; // the unique dimension options
-    private Map<String, String> observations; // <time, observation>
+    private Map<String, Observation> observations; // <time, observation>
 
     /**
      * Create a group of dimensions
@@ -48,12 +48,13 @@ public class Group implements Comparable<Group> {
      *
      * @param timeLabel   The label used for the time
      * @param observation The observation value
+     * @param additionalValues The addition values which are related to the observation
      */
-    void addObservation(final String timeLabel, final String observation) {
-        observations.put(timeLabel, observation);
+    void addObservation(final String timeLabel, final String observation, final String[] additionalValues) {
+        observations.put(timeLabel, new Observation(observation, additionalValues));
     }
 
-    String getObservation(String time) {
+    Observation getObservation(String time) {
         return observations.get(time);
     }
 

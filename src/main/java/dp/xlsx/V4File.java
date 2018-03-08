@@ -8,19 +8,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * A class used to extract information from a V4 file.
@@ -30,6 +22,7 @@ class V4File {
     private final Collection<Group> groupData;
     private final Set<String> uniqueTimeValues;
     private Group headerGroup;
+    private String[] additionalHeaders;
 
     V4File(final InputStream inputStream) throws IOException {
 
@@ -60,6 +53,7 @@ class V4File {
 
                 headerOffset = Integer.parseInt(v4Code.split("V4_")[1]) + 1;
                 headerGroup = new Group(header, headerOffset);
+                additionalHeaders = Arrays.copyOfRange(header, 1, headerOffset);
             }
 
             while ((line = bufferedReader.readLine()) != null) {
@@ -72,13 +66,14 @@ class V4File {
                 final Group group = new Group(row, headerOffset);
                 final String timeValue = row[headerOffset + 1];
                 final String observation = row[0];
+                final String additionalData[] = Arrays.copyOfRange(row, 1, headerOffset);
 
                 if (groups.containsKey(group)) {
                     uniqueTimeValues.add(timeValue);
-                    groups.get(group).addObservation(timeValue, observation);
+                    groups.get(group).addObservation(timeValue, observation, additionalData);
                 } else {
                     uniqueTimeValues.add(timeValue);
-                    group.addObservation(timeValue, observation);
+                    group.addObservation(timeValue, observation, additionalData);
                     groups.put(group, group);
                 }
             }
@@ -153,6 +148,8 @@ class V4File {
 
         return dates.values();
     }
+
+    public String[] getAdditionalHeaders() {
+        return additionalHeaders;
+    }
 }
-
-
