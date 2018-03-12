@@ -2,7 +2,7 @@ package dp.api.dataset.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class UserNotes {
+public class UsageNotes {
 
     @JsonProperty("title")
     private String title;

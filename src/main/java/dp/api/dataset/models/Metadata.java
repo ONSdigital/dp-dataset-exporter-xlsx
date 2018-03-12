@@ -83,8 +83,8 @@ public class Metadata {
     @JsonProperty("uri")
     private String uri;
 
-    @JsonProperty("user_notes")
-    private UserNotes[] userNotes;
+    @JsonProperty("usage_notes")
+    private UsageNotes[] userNotes;
 
     public Collection<GeneralDetails> getRelatedDatasets() {
         return relatedDatasets;
@@ -278,11 +278,11 @@ public class Metadata {
         this.uri = uri;
     }
 
-    public UserNotes[] getUserNotes() {
+    public UsageNotes[] getUserNotes() {
         return userNotes;
     }
 
-    public void setUserNotes(UserNotes[] userNotes) {
+    public void setUserNotes(UsageNotes[] userNotes) {
         this.userNotes = userNotes;
     }
 

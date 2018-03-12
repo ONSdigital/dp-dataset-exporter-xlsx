@@ -1,7 +1,7 @@
 package dp.xlsx;
 
 import dp.api.dataset.models.Metadata;
-import dp.api.dataset.models.UserNotes;
+import dp.api.dataset.models.UsageNotes;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -21,7 +21,7 @@ class DatasetFormatter {
 
     private final int COLUMN_WIDTH_PADDING_CHARS = 3;
     private final int DIMENSION_WIDTH_PADDING_CHARS = 5;
-    private final int EXCEL_CHARS_TO_WIDTH_FACTOR = 256;
+    private final int EXCEL_CHARS_TO_WIDTH_FACTOR = 275;
 
     private final WorkBookStyles workBookStyles;
 
@@ -30,7 +30,7 @@ class DatasetFormatter {
     private final Metadata datasetMetadata;
 
     // Maintain a map of column index to width. As we write rows see if the width needs to be larger.
-    private final Map<Integer, Integer> dimensionColumnWidths = new HashMap<>();
+    private final Map<Integer, Integer> columnWidths = new HashMap<>();
 
     private int rowOffset = 0;
 
@@ -74,13 +74,13 @@ class DatasetFormatter {
 
         sheet.setDefaultColumnWidth(widestDataColumn + COLUMN_WIDTH_PADDING_CHARS);
 
-        for (Map.Entry<Integer, Integer> columnWidth : dimensionColumnWidths.entrySet()) {
+        for (Map.Entry<Integer, Integer> columnWidth : columnWidths.entrySet()) {
             sheet.setColumnWidth(columnWidth.getKey(),
                     (columnWidth.getValue() + DIMENSION_WIDTH_PADDING_CHARS) * EXCEL_CHARS_TO_WIDTH_FACTOR);
         }
 
         if (datasetMetadata.getUserNotes() != null) {
-            for (UserNotes note : datasetMetadata.getUserNotes()) {
+            for (UsageNotes note : datasetMetadata.getUserNotes()) {
                 addUserNotes(note);
             }
         }
@@ -133,9 +133,9 @@ class DatasetFormatter {
         cell.setCellStyle( workBookStyles.getValueStyle());
         cell.setCellValue(header);
 
-        final Integer geoCodeColumnWidth = dimensionColumnWidths.get(columnOffset);
+        final Integer geoCodeColumnWidth = columnWidths.get(columnOffset);
         if (geoCodeColumnWidth == null || header.length() > geoCodeColumnWidth)
-            dimensionColumnWidths.put(columnOffset, header.length());
+            columnWidths.put(columnOffset, header.length());
 
     }
 
@@ -224,7 +224,7 @@ class DatasetFormatter {
         final String titleLabel = "Title";
         cell.setCellValue(titleLabel);
 
-        dimensionColumnWidths.put(columnOffset, titleLabel.length());
+        columnWidths.put(columnOffset, titleLabel.length());
 
         cell = row.createCell(columnOffset + 1);
         cell.setCellStyle(workBookStyles.getHeadingStyle());
@@ -246,7 +246,7 @@ class DatasetFormatter {
         cell.setCellStyle(workBookStyles.getNoteStyle());
     }
 
-    private void addUserNotes(UserNotes notes) {
+    private void addUserNotes(UsageNotes notes) {
         rowOffset++;
         sheet.createRow(rowOffset); // Blank row
         rowOffset++;
