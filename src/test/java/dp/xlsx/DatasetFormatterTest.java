@@ -1,7 +1,7 @@
 package dp.xlsx;
 
 import dp.api.dataset.models.Metadata;
-import dp.api.dataset.models.UserNotes;
+import dp.api.dataset.models.UsageNotes;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -226,17 +226,17 @@ public class DatasetFormatterTest {
 
         try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_2.csv")) {
 
-            UserNotes[] notes = new UserNotes[2];
-            notes[0] = new UserNotes();
+            UsageNotes[] notes = new UsageNotes[2];
+            notes[0] = new UsageNotes();
             notes[0].setTitle("Data Markings");
             notes[0].setNotes(". - value not available\n" + "x - value not reliable\n" + "p - provisional\n" + "r - revised");
-            notes[1] = new UserNotes();
+            notes[1] = new UsageNotes();
             notes[1].setTitle("Coefficients of variation");
             notes[1].setNotes("CV <= 5% Estimates are considered precise\n" +
                     "CV > 5% and <= 10% Estimates are considered reasonably precise\n" +
                     "CV > 10% and <= 20% Estimates are considered acceptable\n" +
                     "CV > 20% Estimates are considered unreliable for practical purposes");
-            datasetMetadata.setUserNotes(notes);
+            datasetMetadata.setUsageNotes(notes);
 
             final V4File file = new V4File(stream);
             final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);

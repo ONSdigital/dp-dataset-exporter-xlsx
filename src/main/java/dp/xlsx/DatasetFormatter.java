@@ -79,8 +79,8 @@ class DatasetFormatter {
                     (columnWidth.getValue() + DIMENSION_WIDTH_PADDING_CHARS) * EXCEL_CHARS_TO_WIDTH_FACTOR);
         }
 
-        if (datasetMetadata.getUserNotes() != null) {
-            for (UsageNotes note : datasetMetadata.getUserNotes()) {
+        if (datasetMetadata.getUsageNotes() != null) {
+            for (UsageNotes note : datasetMetadata.getUsageNotes()) {
                 addUserNotes(note);
             }
         }
