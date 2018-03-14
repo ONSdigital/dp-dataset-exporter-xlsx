@@ -92,6 +92,12 @@ class DatasetFormatter {
 
             Cell obs = row.createCell(columnOffset);
             final Observation observation = group.getObservation(timeTitle);
+
+            if (observation == null) {
+                columnOffset+= this.file.getAdditionalHeaders().length + 1;
+                continue;
+            }
+
             final String observationValue = observation.getValue();
             setObservationCellValue(obs, observationValue);
             columnOffset++;

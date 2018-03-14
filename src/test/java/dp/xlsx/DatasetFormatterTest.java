@@ -222,6 +222,33 @@ public class DatasetFormatterTest {
     }
 
     @Test
+    public void format_withSparsity() throws IOException {
+
+        // Given some v4 file data sparsity (missing values in the grid)
+        String csvRow1 = "88,Month,Jan-96,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow2 = "88,Month,Jan-97,K02000001,,something else\n";
+        String csvContent = csvHeader + csvRow1 + csvRow2;
+
+        InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
+        final V4File file = new V4File(inputStream);
+        final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
+
+        // When format is called
+        datasetFormatter.format();
+
+        // Then the expected values are in the output
+        assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 3);
+
+        Cell cell = sheet.getRow(metadataRows + 1).getCell(3);
+        assertThat(cell.getCellTypeEnum()).isEqualTo(CellType.NUMERIC);
+        assertThat(cell.getNumericCellValue()).isEqualTo(88.0);
+
+        // Then the sparse values are empty
+        cell = sheet.getRow(metadataRows + 1).getCell(4);
+        assertThat(cell.getCellTypeEnum()).isEqualTo(CellType.BLANK);
+    }
+
+    @Test
     public void format_WithUserNotes() throws IOException {
 
         try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_2.csv")) {
