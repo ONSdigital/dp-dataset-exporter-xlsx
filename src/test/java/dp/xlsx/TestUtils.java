@@ -43,6 +43,6 @@ public class TestUtils {
     static void writeToFile(Workbook workbook) throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         workbook.write(os);
-        Files.write(Paths.get("test.xlsx"), os.toByteArray(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        Files.write(Paths.get("test0.xlsx"), os.toByteArray(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
     }
 }

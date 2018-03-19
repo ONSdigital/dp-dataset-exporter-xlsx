@@ -1,8 +1,8 @@
 package dp.xlsx;
 
 import dp.api.dataset.models.Metadata;
+import dp.api.dataset.models.UsageNotes;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.util.StringUtils;
@@ -21,34 +21,26 @@ class DatasetFormatter {
 
     private final int COLUMN_WIDTH_PADDING_CHARS = 3;
     private final int DIMENSION_WIDTH_PADDING_CHARS = 5;
-    private final int EXCEL_CHARS_TO_WIDTH_FACTOR = 256;
+    private final int EXCEL_CHARS_TO_WIDTH_FACTOR = 275;
 
-    private final CellStyle headingStyle;
-    private final CellStyle headingRightAlignStyle;
-    private final CellStyle valueStyle;
-    private final CellStyle valueRightAlign;
-    private final CellStyle numberStyle;
+    private final WorkBookStyles workBookStyles;
 
     private final Sheet sheet;
     private final V4File file;
     private final Metadata datasetMetadata;
 
     // Maintain a map of column index to width. As we write rows see if the width needs to be larger.
-    private final Map<Integer, Integer> dimensionColumnWidths = new HashMap<>();
+    private final Map<Integer, Integer> columnWidths = new HashMap<>();
 
     private int rowOffset = 0;
 
-    public DatasetFormatter(CellStyle headingStyle, CellStyle headingRightAlignStyle, CellStyle valueStyle, CellStyle valueRightAlign, CellStyle numberStyle, Sheet sheet, V4File file, Metadata datasetMetadata) {
+    public DatasetFormatter(WorkBookStyles workBookStyles, Sheet sheet, V4File file, Metadata datasetMetadata) {
 
         if (file.getDimensions() == null) {
             throw new IllegalArgumentException("dimensions in the dataset cannot be null");
         }
 
-        this.headingStyle = headingStyle;
-        this.headingRightAlignStyle = headingRightAlignStyle;
-        this.valueStyle = valueStyle;
-        this.valueRightAlign = valueRightAlign;
-        this.numberStyle = numberStyle;
+        this.workBookStyles = workBookStyles;
         this.sheet = sheet;
         this.file = file;
         this.datasetMetadata = datasetMetadata;
@@ -56,7 +48,9 @@ class DatasetFormatter {
 
     void format() {
 
+
         final Collection<Group> groups = file.groupData();
+
         final Collection<String> timeLabels = file.getOrderedTimeLabels();
 
         List<Group> sortedGroups = groups.stream().sorted().collect(Collectors.toList());
@@ -80,9 +74,15 @@ class DatasetFormatter {
 
         sheet.setDefaultColumnWidth(widestDataColumn + COLUMN_WIDTH_PADDING_CHARS);
 
-        for (Map.Entry<Integer, Integer> columnWidth : dimensionColumnWidths.entrySet()) {
+        for (Map.Entry<Integer, Integer> columnWidth : columnWidths.entrySet()) {
             sheet.setColumnWidth(columnWidth.getKey(),
                     (columnWidth.getValue() + DIMENSION_WIDTH_PADDING_CHARS) * EXCEL_CHARS_TO_WIDTH_FACTOR);
+        }
+
+        if (datasetMetadata.getUsageNotes() != null) {
+            for (UsageNotes note : datasetMetadata.getUsageNotes()) {
+                addUserNotes(note);
+            }
         }
     }
 
@@ -91,13 +91,26 @@ class DatasetFormatter {
         for (String timeTitle : timeLabels) {
 
             Cell obs = row.createCell(columnOffset);
-            final String value = group.getObservation(timeTitle);
-            setObservationCellValue(obs, value);
+            final Observation observation = group.getObservation(timeTitle);
 
-            if (value != null && value.length() > widestDataColumn)
-                widestDataColumn = value.length();
+            if (observation == null) {
+                columnOffset+= this.file.getAdditionalHeaders().length + 1;
+                continue;
+            }
 
+            final String observationValue = observation.getValue();
+            setObservationCellValue(obs, observationValue);
             columnOffset++;
+
+            for (String additionalValue : observation.getAdditionalValues()) {
+                Cell data = row.createCell(columnOffset);
+                data.setCellValue(additionalValue);
+                setCellValueByType(data, additionalValue);
+                columnOffset++;
+            }
+
+            if (observationValue != null && observationValue.length() > widestDataColumn)
+                widestDataColumn = observationValue.length();
         }
 
         return widestDataColumn;
@@ -123,12 +136,12 @@ class DatasetFormatter {
     private void addHeaderCell(int columnOffset, Row row, String header) {
 
         Cell cell = row.createCell(columnOffset);
-        cell.setCellStyle(valueStyle);
+        cell.setCellStyle( workBookStyles.getValueStyle());
         cell.setCellValue(header);
 
-        final Integer geoCodeColumnWidth = dimensionColumnWidths.get(columnOffset);
+        final Integer geoCodeColumnWidth = columnWidths.get(columnOffset);
         if (geoCodeColumnWidth == null || header.length() > geoCodeColumnWidth)
-            dimensionColumnWidths.put(columnOffset, header.length());
+            columnWidths.put(columnOffset, header.length());
 
     }
 
@@ -160,15 +173,31 @@ class DatasetFormatter {
 
     private void addTimeLabelCells(Collection<String> timeLabels, Row headerRow, int columnOffset) {
 
+        final String[] additionalHeaders = file.getAdditionalHeaders();
+
         // write time labels across the title row
         for (String timeLabel : timeLabels) {
             Cell cell = headerRow.createCell(columnOffset);
-            cell.setCellStyle(valueRightAlign);
+            cell.setCellStyle(workBookStyles.getValueRightAlignStyle());
             cell.setCellValue(timeLabel);
             columnOffset++;
+
+            for (String additionalHeader : additionalHeaders) {
+                addHeaderCell(columnOffset, headerRow, additionalHeader + " (" + timeLabel + ")");
+                columnOffset++;
+            }
         }
     }
 
+
+    private void setCellValueByType(Cell cell, String value) {
+
+        if (value.chars().allMatch(Character::isDigit)) {
+            cell.setCellStyle( workBookStyles.getNumberStyle());
+        } else {
+            cell.setCellStyle(workBookStyles.getValueStyle());
+        }
+    }
 
     private void setObservationCellValue(Cell obs, String value) {
 
@@ -178,9 +207,9 @@ class DatasetFormatter {
         }
 
         if (value.contains(".")) {
-            obs.setCellStyle(numberStyle); // apply decimal formatting if there is a decimal
+            obs.setCellStyle( workBookStyles.getNumberStyle()); // apply decimal formatting if there is a decimal
         } else {
-            obs.setCellStyle(valueStyle);
+            obs.setCellStyle(workBookStyles.getValueStyle());
         }
 
         try {
@@ -197,19 +226,40 @@ class DatasetFormatter {
         // title row
         Row row = sheet.createRow(rowOffset);
         Cell cell = row.createCell(columnOffset);
-        cell.setCellStyle(headingRightAlignStyle);
+        cell.setCellStyle(workBookStyles.getHeaderRightAlignStyle());
         final String titleLabel = "Title";
         cell.setCellValue(titleLabel);
 
-        dimensionColumnWidths.put(columnOffset, titleLabel.length());
+        columnWidths.put(columnOffset, titleLabel.length());
 
         cell = row.createCell(columnOffset + 1);
-        cell.setCellStyle(headingStyle);
+        cell.setCellStyle(workBookStyles.getHeadingStyle());
         cell.setCellValue(datasetMetadata.getTitle());
         rowOffset++;
 
         // Add a blank row at the bottom of the metadata.
         sheet.createRow(rowOffset);
         rowOffset++;
+    }
+
+
+    private void addNote(final String value) {
+        rowOffset++;
+        Row row = sheet.createRow(rowOffset);
+        row.createCell(0); //Blank cell
+        Cell cell = row.createCell(1);
+        cell.setCellValue(value);
+        cell.setCellStyle(workBookStyles.getNoteStyle());
+    }
+
+    private void addUserNotes(UsageNotes notes) {
+        rowOffset++;
+        sheet.createRow(rowOffset); // Blank row
+        rowOffset++;
+        Row row = sheet.createRow(rowOffset);
+        Cell title = row.createCell(0);
+        title.setCellStyle(workBookStyles.getHeadingStyle());
+        title.setCellValue(notes.getTitle());
+        addNote(notes.getNotes());
     }
 }

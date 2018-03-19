@@ -1,0 +1,13 @@
+V4_2,Data markings, CV, Time_codelist,Time,Geography_codelist,Geography,cpi1dim1aggid,Aggregate
+86.8,r,7,Month,Jan-96,K02000001,,cpi1dim1A0,CPI (overall index)
+90.3,,2,Month,Jan-96,K02000001,,cpi1dim1G10100,01.1 Food
+93.8,,3,Month,Jan-96,K02000001,,cpi1dim1G10200,01.2 Non-alcoholic beverages
+95.6,,5,Month,Jan-96,K02000001,,cpi1dim1G20100,02.1 Alcoholic beverages
+57.2,,4,Month,Jan-96,K02000001,,cpi1dim1G20200,02.2 Tobacco
+163.7,,4,Month,Jan-96,K02000001,,cpi1dim1G30100,03.1 Clothing
+86.9,,7,Month,Feb-96,K02000001,,cpi1dim1A0,CPI (overall index)
+90.6,,6,Month,Feb-96,K02000001,,cpi1dim1G10100,01.1 Food
+93.9,,3,Month,Feb-96,K02000001,,cpi1dim1G10200,01.2 Non-alcoholic beverages
+95.9,x,6,Month,Feb-96,K02000001,,cpi1dim1G20100,02.1 Alcoholic beverages
+57.6,,5,Month,Feb-96,K02000001,,cpi1dim1G20200,02.2 Tobacco
+163.5,,4,Month,Feb-96,K02000001,,cpi1dim1G30100,03.1 Clothing

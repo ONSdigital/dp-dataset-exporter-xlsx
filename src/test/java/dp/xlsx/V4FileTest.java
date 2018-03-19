@@ -71,8 +71,8 @@ public class V4FileTest {
                 return false;
             }).findAny();
             assertThat(group.isPresent()).isEqualTo(true);
-            assertThat(group.get().getObservation("Jan-96")).isEqualTo("95.6");
-            assertThat(group.get().getObservation("Feb-96")).isEqualTo("95.9");
+            assertThat(group.get().getObservation("Jan-96").getValue()).isEqualTo("95.6");
+            assertThat(group.get().getObservation("Feb-96").getValue()).isEqualTo("95.9");
         }
     }
 

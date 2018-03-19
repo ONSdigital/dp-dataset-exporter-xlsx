@@ -1,10 +1,9 @@
 package dp.xlsx;
 
 import dp.api.dataset.models.Metadata;
+import dp.api.dataset.models.UsageNotes;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -23,10 +22,10 @@ public class DatasetFormatterTest {
     private static final int metadataRows = 2;
     private static final String csvHeader = "V4_0,Time_codelist,Time,Geography_codelist,Geography,cpi1dim1aggid,Aggregate\n";
 
-    final Metadata datasetMetadata = new Metadata();
-    final Workbook wb = new XSSFWorkbook();
-    final CellStyle style = createStyle(wb);
-    final Sheet sheet = wb.createSheet("Test");
+    private final Metadata datasetMetadata = new Metadata();
+    private final Workbook wb = new XSSFWorkbook();
+    private final Sheet sheet = wb.createSheet("Test");
+    private final WorkBookStyles workBookStyles = new WorkBookStyles(wb);
 
     @Test
     public void timeValuesAreOrderedAlphabeticallyWhenUnrecognised() throws IOException {
@@ -39,7 +38,7 @@ public class DatasetFormatterTest {
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
         final V4File file = new V4File(inputStream);
 
-        final DatasetFormatter datasetFormatter = new DatasetFormatter(style, style, style, style, style, sheet, file, datasetMetadata);
+        final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
         // When format is called
         datasetFormatter.format();
@@ -58,7 +57,7 @@ public class DatasetFormatterTest {
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
         final V4File file = new V4File(inputStream);
-        final DatasetFormatter datasetFormatter = new DatasetFormatter(style, style, style, style, style, sheet, file, datasetMetadata);
+        final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
         // When format is called
         datasetFormatter.format();
@@ -77,7 +76,7 @@ public class DatasetFormatterTest {
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
         final V4File file = new V4File(inputStream);
-        final DatasetFormatter datasetFormatter = new DatasetFormatter(style, style, style, style, style, sheet, file, datasetMetadata);
+        final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
         // When format is called
         datasetFormatter.format();
@@ -97,10 +96,11 @@ public class DatasetFormatterTest {
         try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_0.csv")) {
 
             final V4File file = new V4File(stream);
-            final DatasetFormatter datasetFormatter = new DatasetFormatter(style, style, style, style, style, sheet, file, datasetMetadata);
+            final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
             datasetFormatter.format();
-
+            TestUtils.printSheet(sheet);
+            TestUtils.writeToFile(wb);
             assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 7);
         }
     }
@@ -118,7 +118,7 @@ public class DatasetFormatterTest {
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
 
         final V4File file = new V4File(inputStream);
-        final DatasetFormatter datasetFormatter = new DatasetFormatter(style, style, style, style, style, sheet, file, datasetMetadata);
+        final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
         // When format is called
         datasetFormatter.format();
@@ -138,7 +138,7 @@ public class DatasetFormatterTest {
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
         final V4File file = new V4File(inputStream);
-        final DatasetFormatter datasetFormatter = new DatasetFormatter(style, style, style, style, style, sheet, file, datasetMetadata);
+        final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
         // When format is called
         datasetFormatter.format();
@@ -158,7 +158,7 @@ public class DatasetFormatterTest {
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
         final V4File file = new V4File(inputStream);
-        final DatasetFormatter datasetFormatter = new DatasetFormatter(style, style, style, style, style, sheet, file, datasetMetadata);
+        final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
         // When format is called
         datasetFormatter.format();
@@ -181,7 +181,7 @@ public class DatasetFormatterTest {
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
         final V4File file = new V4File(inputStream);
-        final DatasetFormatter datasetFormatter = new DatasetFormatter(style, style, style, style, style, sheet, file, datasetMetadata);
+        final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
         // When format is called
         datasetFormatter.format();
@@ -202,18 +202,75 @@ public class DatasetFormatterTest {
         when(file.getDimensions()).thenReturn(null);
 
         // When the DatsetFormatter constructor is called
-        new DatasetFormatter(style, style, style, style, style, sheet, file, datasetMetadata);
+        new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
         // Then the expected exception is thrown
     }
 
-    private CellStyle createStyle(Workbook wb) {
-        final CellStyle style = wb.createCellStyle();
-        final Font font = wb.createFont();
-        font.setFontName("Arial");
-        font.setFontHeightInPoints((short) 14);
-        style.setFont(font);
-        style.setWrapText(true);
-        return style;
+    @Test
+    public void format_v4_2_File() throws IOException {
+
+        try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_2.csv")) {
+
+            final V4File file = new V4File(stream);
+            final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
+
+            datasetFormatter.format();
+            TestUtils.printSheet(sheet);
+            assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 7);
+        }
+    }
+
+    @Test
+    public void format_withSparsity() throws IOException {
+
+        // Given some v4 file data sparsity (missing values in the grid)
+        String csvRow1 = "88,Month,Jan-96,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow2 = "88,Month,Jan-97,K02000001,,something else\n";
+        String csvContent = csvHeader + csvRow1 + csvRow2;
+
+        InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
+        final V4File file = new V4File(inputStream);
+        final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
+
+        // When format is called
+        datasetFormatter.format();
+
+        // Then the expected values are in the output
+        assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 3);
+
+        Cell cell = sheet.getRow(metadataRows + 1).getCell(3);
+        assertThat(cell.getCellTypeEnum()).isEqualTo(CellType.NUMERIC);
+        assertThat(cell.getNumericCellValue()).isEqualTo(88.0);
+
+        // Then the sparse values are empty
+        cell = sheet.getRow(metadataRows + 1).getCell(4);
+        assertThat(cell.getCellTypeEnum()).isEqualTo(CellType.BLANK);
+    }
+
+    @Test
+    public void format_WithUserNotes() throws IOException {
+
+        try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_2.csv")) {
+
+            UsageNotes[] notes = new UsageNotes[2];
+            notes[0] = new UsageNotes();
+            notes[0].setTitle("Data Markings");
+            notes[0].setNotes(". - value not available\n" + "x - value not reliable\n" + "p - provisional\n" + "r - revised");
+            notes[1] = new UsageNotes();
+            notes[1].setTitle("Coefficients of variation");
+            notes[1].setNotes("CV <= 5% Estimates are considered precise\n" +
+                    "CV > 5% and <= 10% Estimates are considered reasonably precise\n" +
+                    "CV > 10% and <= 20% Estimates are considered acceptable\n" +
+                    "CV > 20% Estimates are considered unreliable for practical purposes");
+            datasetMetadata.setUsageNotes(notes);
+
+            final V4File file = new V4File(stream);
+            final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
+
+            datasetFormatter.format();
+            TestUtils.printSheet(sheet);
+            assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 13);
+        }
     }
 }
