@@ -13,10 +13,12 @@ import dp.api.dataset.WorkbookDetails;
 import dp.api.dataset.models.Download;
 import dp.api.dataset.models.DownloadsList;
 import dp.api.dataset.models.Metadata;
+import dp.api.dataset.models.Version;
 import dp.api.filter.Filter;
 import dp.api.filter.FilterAPIClient;
 import dp.avro.ExportedFile;
 import dp.exceptions.FilterAPIException;
+import dp.s3crypto.S3Crypto;
 import dp.xlsx.Converter;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
@@ -25,12 +27,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import org.springframework.vault.core.VaultOperations;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Random;
 
 import static dp.api.dataset.MessageType.FILTER;
 import static dp.api.dataset.MessageType.GetMessageType;
@@ -42,161 +46,198 @@ import static java.text.MessageFormat.format;
 @Component
 public class Handler {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(Handler.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(Handler.class);
 
-    private static final String VERSION_DOWNLOADS_URL = "/datasets/{0}/editions/{1}/versions/{2}";
+	private static final String VERSION_DOWNLOADS_URL = "/datasets/{0}/editions/{1}/versions/{2}";
+	private static final String INSTANCE_URL = "/instances/{0}";
+	private static final String PUBLISHED_STATE = "published";
 
-    @Value("${S3_BUCKET_NAME:csv-exported}")
-    private String bucket;
+	@Value("${S3_BUCKET_NAME:csv-exported}")
+	private String bucket;
+	
+	private String vaultPath;
 
-    @Autowired
-    private AmazonS3 s3Client;
+	@Autowired
+	private AmazonS3 s3Client;
 
-    @Autowired
-    private Converter converter;
+	@Autowired
+	private S3Crypto s3CryptoClient;
+	
+	@Autowired 
+	private VaultOperations vaultOperations;
 
-    @Autowired
-    private FilterAPIClient filterAPIClient;
+	@Autowired
+	private Converter converter;
 
-    @Autowired
-    private DatasetAPIClient datasetAPIClient;
+	@Autowired
+	private FilterAPIClient filterAPIClient;
 
-    @KafkaListener(topics = "${KAFKA_TOPIC:common-output-created}")
-    public void listen(final ExportedFile message) {
-        MessageType messageType = GetMessageType(message);
-        final AmazonS3URI uri = new AmazonS3URI(message.getS3URL().toString());
+	@Autowired
+	private DatasetAPIClient datasetAPIClient;
 
-        try (final S3Object object = s3Client.getObject(uri.getBucket(), uri.getKey())) {
-            if (FILTER.equals(messageType)) {
-                handleFilterMessage(message, object);
-            } else {
-                handlePrePublishMessage(message, object);
-            }
-        } catch (final IOException | FilterAPIException e) {
-            if (FILTER.equals(messageType)) {
-                LOGGER.error("error when exporting filter {}. exception : {}", message.getFilterId(), e);
-            } else {
-                LOGGER.error("error when exporting pre publish message {}. exception : {}",
-                        message.getFilename().toString(), e);
-            }
-            return;
-        } catch (Exception e) {
-            LOGGER.error("unexpected error throw while attempting to process message, {}", e);
-        }
-        if (FILTER.equals(messageType)) {
-            LOGGER.info("exported completed for filterID: {}", message.getFilterId());
-        } else {
-            LOGGER.info("exported completed for instance: datasetID: {}, edition: {}, version: {}",
-                    message.getDatasetId(), message.getEdition(), message.getVersion());
-        }
-    }
+	@KafkaListener(topics = "${KAFKA_TOPIC:common-output-created}")
+	public void listen(final ExportedFile message) {
+		MessageType messageType = GetMessageType(message);
+		final AmazonS3URI uri = new AmazonS3URI(message.getS3URL().toString());
 
-    private void handleFilterMessage(ExportedFile message, S3Object object) throws IOException {
-        LOGGER.info("handling filter message: ", message.getFilterId().toString());
+		try (final S3Object object = s3Client.getObject(uri.getBucket(), uri.getKey())) {
+			String state = getState(message);
+			if (FILTER.equals(messageType)) {
+				handleFilterMessage(message, object, PUBLISHED_STATE.equals(state));
+			} else {
+				handleFullDownloadMessage(message, object, PUBLISHED_STATE.equals(state));
+			}
+		} catch (final IOException | FilterAPIException e) {
+			if (FILTER.equals(messageType)) {
+				LOGGER.error("error when exporting filter {}. exception : {}", message.getFilterId(), e);
+			} else {
+				LOGGER.error("error when exporting pre publish message {}. exception : {}",
+						message.getFilename().toString(), e);
+			}
+			return;
+		} catch (Exception e) {
+			LOGGER.error("unexpected error throw while attempting to process message, {}", e);
+		}
+		if (FILTER.equals(messageType)) {
+			LOGGER.info("exported completed for filterID: {}", message.getFilterId());
+		} else {
+			LOGGER.info("exported completed for instance: datasetID: {}, edition: {}, version: {}",
+					message.getDatasetId(), message.getEdition(), message.getVersion());
+		}
+	}
 
-        Filter filter = filterAPIClient.getFilter(message.getFilterId().toString());
-        Metadata datasetMetadata = null;
-        String metadataURL = null;
-        WorkbookDetails details = null;
+	private String getState(ExportedFile message) throws MalformedURLException, FilterAPIException {
+		String path = "";
+		if (message.getInstanceId().length() == 0) {
+			path = format(VERSION_DOWNLOADS_URL, message.getDatasetId(), message.getEdition(), message.getVersion());
+		} else {
+			path = format(INSTANCE_URL, message.getInstanceId());
+		}
 
-        try {
-            URL url = new URL(filter.getLinks().getVersion().getHref());
-            metadataURL = url.getPath();
-        } catch (MalformedURLException e) {
-            throw new IOException(format("error while attempting to create metadata URL filterID {0}, value: {1}",
-                    message.getFilterId().toString(), filter.getLinks().getVersion().getHref()), e);
-        }
+		Version version = datasetAPIClient.getVersion(path);
 
-        try {
-            datasetMetadata = datasetAPIClient.getMetadata(metadataURL);
-        } catch (FilterAPIException e) {
-            throw new IOException(format("dataset api get metadata returned error. filterID {0}, uri: {1}",
-                    message.getFilterId().toString(), metadataURL.toString()), e);
-        }
+		return version.getState();
+	}
 
-        try {
-            details = createWorkbook(object, datasetMetadata, message.getFilterId().toString());
-        } catch (IOException e) {
-            throw new IOException(format("error while attempting to create XLSX workbook filterID: {0}, filename: {1}",
-                    message.getFilterId().toString(), message.getFilename().toString()), e);
-        }
+	private void handleFilterMessage(ExportedFile message, S3Object object, boolean isPublished) throws IOException {
+		LOGGER.info("handling filter message: ", message.getFilterId().toString());
 
-        try {
-            filterAPIClient.addXLSXFile(message.getFilterId().toString(), details.getDowloadURI(), details
-                    .getContentLength());
-        } catch (JsonProcessingException e) {
-            throw new IOException(format("filter api client addXLSXFile returned error, filterID: {0}",
-                    message.getFilterId().toString()), e);
-        }
-    }
+		Filter filter = filterAPIClient.getFilter(message.getFilterId().toString());
+		Metadata datasetMetadata = null;
+		String metadataURL = null;
+		WorkbookDetails details = null;
 
-    private void handlePrePublishMessage(ExportedFile message, S3Object object) throws IOException {
-        LOGGER.info("handling pre-publish message: ", message.getFilename().toString());
+		try {
+			URL url = new URL(filter.getLinks().getVersion().getHref());
+			metadataURL = url.getPath();
+		} catch (MalformedURLException e) {
+			throw new IOException(format("error while attempting to create metadata URL filterID {0}, value: {1}",
+					message.getFilterId().toString(), filter.getLinks().getVersion().getHref()), e);
+		}
 
-        String versionURL = format(VERSION_DOWNLOADS_URL, message.getDatasetId(), message.getEdition(),
-                message.getVersion());
+		try {
+			datasetMetadata = datasetAPIClient.getMetadata(metadataURL);
+		} catch (FilterAPIException e) {
+			throw new IOException(format("dataset api get metadata returned error. filterID {0}, uri: {1}",
+					message.getFilterId().toString(), metadataURL.toString()), e);
+		}
 
-        Metadata metadata = null;
-        try {
-            metadata = datasetAPIClient.getMetadata(versionURL);
-        } catch (MalformedURLException | FilterAPIException e) {
-            LOGGER.error("dataset api client error while attempting to get metadata, URL: {}", versionURL);
-            throw e;
-        }
+		try {
+			details = createWorkbook(object, datasetMetadata, message.getFilterId().toString(), isPublished);
+		} catch (IOException e) {
+			throw new IOException(format("error while attempting to create XLSX workbook filterID: {0}, filename: {1}",
+					message.getFilterId().toString(), message.getFilename().toString()), e);
+		}
 
-        WorkbookDetails details = null;
-        try {
-            details = createWorkbook(object, metadata, message.getFilename().toString());
+		try {
+			filterAPIClient.addXLSXFile(message.getFilterId().toString(), details.getDowloadURI(),
+					details.getContentLength());
+		} catch (JsonProcessingException e) {
+			throw new IOException(format("filter api client addXLSXFile returned error, filterID: {0}",
+					message.getFilterId().toString()), e);
+		}
+	}
 
-            try {
-                DownloadsList downloadsList = new DownloadsList(new Download(details.getDowloadURI(),
-                        String.valueOf(details.getContentLength())), null);
+	private void handleFullDownloadMessage(ExportedFile message, S3Object object, boolean isPublished)
+			throws IOException {
+		LOGGER.info("handling pre-publish message: ", message.getFilename().toString());
 
-                datasetAPIClient.putVersionDownloads(versionURL, downloadsList);
-            } catch (MalformedURLException |
-                    FilterAPIException e)
+		String versionURL = format(VERSION_DOWNLOADS_URL, message.getDatasetId(), message.getEdition(),
+				message.getVersion());
 
-            {
-                LOGGER.error("dataset api PUT version returned error, filename: {}, URL: {}",
-                        message.getFilename().toString(), versionURL);
-                throw e;
-            }
+		Metadata metadata = null;
+		try {
+			metadata = datasetAPIClient.getMetadata(versionURL);
+		} catch (MalformedURLException | FilterAPIException e) {
+			LOGGER.error("dataset api client error while attempting to get metadata, URL: {}", versionURL);
+			throw e;
+		}
 
+		WorkbookDetails details = null;
+		try {
+			details = createWorkbook(object, metadata, message.getFilename().toString(), isPublished);
 
-        } catch (IOException e) {
-            LOGGER.error("error while attempting to create XLSX workbook, filename: {}",
-                    message.getFilename().toString());
-            throw e;
-        }
-        LOGGER.info("completed processing kafka message", message.getFilterId());
-    }
+			try {
+				DownloadsList downloadsList = new DownloadsList(
+						new Download(details.getDowloadURI(), String.valueOf(details.getContentLength())), null);
 
-    private WorkbookDetails createWorkbook(S3Object object, Metadata datasetMetadata, String filename)
-            throws IOException {
-        try (final Workbook workbook = converter.toXLSX(object.getObjectContent(), datasetMetadata);
-             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            workbook.write(outputStream);
+				datasetAPIClient.putVersionDownloads(versionURL, downloadsList);
+			} catch (MalformedURLException | FilterAPIException e)
 
-            byte[] xlsxBytes = outputStream.toByteArray();
+			{
+				LOGGER.error("dataset api PUT version returned error, filename: {}, URL: {}",
+						message.getFilename().toString(), versionURL);
+				throw e;
+			}
 
-            final long contentLength = xlsxBytes.length;
-            final ObjectMetadata metadata = new ObjectMetadata();
+		} catch (IOException e) {
+			LOGGER.error("error while attempting to create XLSX workbook, filename: {}",
+					message.getFilename().toString());
+			throw e;
+		}
+		LOGGER.info("completed processing kafka message", message.getFilterId());
+	}
 
-            metadata.setContentLength(contentLength);
-            final String key = filename + ".xlsx";
+	private WorkbookDetails createWorkbook(S3Object object, Metadata datasetMetadata, String filename,
+			boolean isPublished) throws IOException {
+		try (final Workbook workbook = converter.toXLSX(object.getObjectContent(), datasetMetadata);
+				final ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+			workbook.write(outputStream);
 
-            try (final ByteArrayInputStream stream = new ByteArrayInputStream(xlsxBytes)) {
-                final PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, key, stream, metadata);
-                s3Client.putObject(putObjectRequest);
-                return new WorkbookDetails(s3Client.getUrl(bucket, key).toString(), contentLength);
-            } catch (SdkClientException e) {
-                LOGGER.error("error while attempting PUT XLSX workbook to S3 bucket, filename: {}, bucket: {}",
-                        key, bucket);
-                throw new FilterAPIException("error while attempting PUT XLSX workbook to S3 bucket", e);
-            }
-        } catch (IOException e) {
-            LOGGER.error("error while attempting create XLSX workbook, filename: {}, bucket: {}", filename);
-            throw e;
-        }
-    }
+			byte[] xlsxBytes = outputStream.toByteArray();
+
+			final long contentLength = xlsxBytes.length;
+			final ObjectMetadata metadata = new ObjectMetadata();
+
+			metadata.setContentLength(contentLength);
+			final String key = filename + ".xlsx";
+
+			try (final ByteArrayInputStream stream = new ByteArrayInputStream(xlsxBytes)) {
+				final PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, key, stream, metadata);
+				if (isPublished) {
+					s3Client.putObject(putObjectRequest);
+				} else {
+					byte[] psk = createPSK();
+					
+					vaultOperations.write()
+					
+					s3CryptoClient.putObjectWithPSK(putObjectRequest, psk);
+				}
+				return new WorkbookDetails(s3Client.getUrl(bucket, key).toString(), contentLength);
+			} catch (SdkClientException e) {
+				LOGGER.error("error while attempting PUT XLSX workbook to S3 bucket, filename: {}, bucket: {}", key,
+						bucket);
+				throw new FilterAPIException("error while attempting PUT XLSX workbook to S3 bucket", e);
+			}
+		} catch (IOException e) {
+			LOGGER.error("error while attempting create XLSX workbook, filename: {}, bucket: {}", filename);
+			throw e;
+		}
+	}
+
+	private byte[] createPSK() {
+		byte[] b = new byte[16];
+		new Random().nextBytes(b);
+		return b;
+	}
 }

@@ -11,8 +11,11 @@ public class Version {
 
     @JsonProperty("downloads")
     private DownloadsList downloadsList;
+    
+    @JsonProperty("state")
+    private String state;
 
-    public Version(DownloadsList downloadsList) {
+	public Version(DownloadsList downloadsList) {
         this.downloadsList = downloadsList;
     }
 
@@ -23,6 +26,14 @@ public class Version {
     public void setDownloadsList(DownloadsList downloadsList) {
         this.downloadsList = downloadsList;
     }
+    
+    public String getState() {
+		return state;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
 
     @Override
     public boolean equals(Object o) {

@@ -78,4 +78,23 @@ public class DatasetAPIClientImpl implements DatasetAPIClient {
             throw new FilterAPIException("put dataset version failed", e);
         }
     }
+
+	@Override
+	public Version getVersion(String versionPath) throws MalformedURLException, FilterAPIException {
+		final String url = new URL(datasetAPIURL + versionPath).toString();
+		
+		LOGGER.info("getting dataset version from the dataset api, url : {}", url);
+		try {
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.add(AUTH_HEADER_KEY, token);
+            HttpEntity entity = new HttpEntity<>(httpHeaders);
+            ResponseEntity<Version> responseEntity = restTemplate.exchange(url.toString(), HttpMethod.GET, entity, Version.class);
+            LOGGER.info("dataset api get response, url : {}, response {}", url.toString(),
+                    responseEntity.getStatusCode());
+            return responseEntity.getBody();
+
+        } catch (RestClientException e) {
+            throw new FilterAPIException(format("get dataset version returned an error, URL {0}", url.toString()), e);
+        }
+	}
 }

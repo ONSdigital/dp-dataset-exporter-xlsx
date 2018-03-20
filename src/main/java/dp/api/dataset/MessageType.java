@@ -14,13 +14,13 @@ public enum MessageType {
     FILTER,
 
     /**
-     * pre published jobs that are generated internally and are not driven by filter jobs.
+     * full download jobs that are generated internally and are not driven by filter jobs.
      */
-    PRE_PUBLISH;
+    FULL_DOWNLOAD;
 
     public static MessageType GetMessageType(ExportedFile message) {
         if (StringUtils.isEmpty(message.getFilterId().toString())) {
-            return PRE_PUBLISH;
+            return FULL_DOWNLOAD;
         }
         return FILTER;
     }

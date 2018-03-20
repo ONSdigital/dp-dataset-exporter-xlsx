@@ -2,10 +2,10 @@ package dp.api.dataset;
 
 import dp.api.dataset.models.DownloadsList;
 import dp.api.dataset.models.Metadata;
+import dp.api.dataset.models.Version;
 import dp.exceptions.FilterAPIException;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 
 /**
  * Defines an API client for the dp-dataset-api.
@@ -20,6 +20,15 @@ public interface DatasetAPIClient {
      * @throws MalformedURLException MalformedURLException problem getting the metadata.
      */
     Metadata getMetadata(final String versionPath) throws MalformedURLException, FilterAPIException;
+    
+    /**
+     * Get the Version {@link Version}.
+     * 
+     * @param versionPath
+     * @return the version {@link Version}.
+     * @throws MalformedURLException problem getting the dataset version.
+     */
+    Version getVersion(final String versionPath) throws MalformedURLException, FilterAPIException;
 
     /**
      * Update the dataset version
