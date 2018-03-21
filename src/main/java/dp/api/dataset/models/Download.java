@@ -9,11 +9,17 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  */
 public class Download {
 
-    @JsonProperty("url")
+    @JsonProperty("href")
     private String url;
 
     @JsonProperty("size")
     private String size;
+    
+    @JsonProperty("public")
+    private String publicState;
+
+	@JsonProperty("private")
+    private String privateState;
 
     public Download(String url, String size) {
         this.url = url;
@@ -38,6 +44,22 @@ public class Download {
     public void setSize(String size) {
         this.size = size;
     }
+    
+    public String getPublicState() {
+		return publicState;
+	}
+
+	public void setPublicState(String publicState) {
+		this.publicState = publicState;
+	}
+
+	public String getPrivateState() {
+		return privateState;
+	}
+
+	public void setPrivateState(String privateState) {
+		this.privateState = privateState;
+	}
 
     @Override
     public boolean equals(Object o) {

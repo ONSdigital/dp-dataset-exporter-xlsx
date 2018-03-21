@@ -1,12 +1,41 @@
 package dp.handler;
 
+import static dp.api.dataset.MessageType.FILTER;
+import static dp.api.dataset.MessageType.GetMessageType;
+import static java.text.MessageFormat.format;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.IOUtils;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Component;
+import org.springframework.vault.core.VaultOperations;
+
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3URI;
+import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.fasterxml.jackson.core.JsonProcessingException;
+
 import dp.api.dataset.DatasetAPIClient;
 import dp.api.dataset.MessageType;
 import dp.api.dataset.WorkbookDetails;
@@ -20,25 +49,6 @@ import dp.avro.ExportedFile;
 import dp.exceptions.FilterAPIException;
 import dp.s3crypto.S3Crypto;
 import dp.xlsx.Converter;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Component;
-import org.springframework.vault.core.VaultOperations;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Random;
-
-import static dp.api.dataset.MessageType.FILTER;
-import static dp.api.dataset.MessageType.GetMessageType;
-import static java.text.MessageFormat.format;
 
 /**
  * A class used to consume ExportedFile message from kafka
@@ -54,16 +64,22 @@ public class Handler {
 
 	@Value("${S3_BUCKET_NAME:csv-exported}")
 	private String bucket;
-	
+
+	@Value("${VAULT_PATH:secret/shared/psk}")
 	private String vaultPath;
 
-	@Autowired
-	private AmazonS3 s3Client;
+	@Value("${DOWNLOAD_SERVICE_URL:http://localhost:23600}")
+	private String downloadServiceUrl;
 
 	@Autowired
-	private S3Crypto s3CryptoClient;
+	@Qualifier("s3-client")
+	private AmazonS3 s3Client;
 	
-	@Autowired 
+	@Autowired
+	@Qualifier("crypto-client")
+	private S3Crypto s3Crypto;
+
+	@Autowired
 	private VaultOperations vaultOperations;
 
 	@Autowired
@@ -79,9 +95,12 @@ public class Handler {
 	public void listen(final ExportedFile message) {
 		MessageType messageType = GetMessageType(message);
 		final AmazonS3URI uri = new AmazonS3URI(message.getS3URL().toString());
+		
+		LOGGER.info("got message", message);
 
-		try (final S3Object object = s3Client.getObject(uri.getBucket(), uri.getKey())) {
+		try {
 			String state = getState(message);
+			S3Object object = getObject(uri.getBucket(), uri.getKey(), PUBLISHED_STATE.equals(state));
 			if (FILTER.equals(messageType)) {
 				handleFilterMessage(message, object, PUBLISHED_STATE.equals(state));
 			} else {
@@ -178,8 +197,22 @@ public class Handler {
 			details = createWorkbook(object, metadata, message.getFilename().toString(), isPublished);
 
 			try {
-				DownloadsList downloadsList = new DownloadsList(
-						new Download(details.getDowloadURI(), String.valueOf(details.getContentLength())), null);
+				String downloadUrl = downloadServiceUrl + format(VERSION_DOWNLOADS_URL, message.getDatasetId(),
+						message.getEdition(), message.getVersion()) + ".xlsx";
+
+				DownloadsList downloadsList = null;
+
+				if (isPublished) {
+					Download download = new Download(downloadUrl, String.valueOf(details.getContentLength()));
+					download.setPublicState(details.getDowloadURI());
+
+					downloadsList = new DownloadsList(download, null);
+				} else {
+					Download download = new Download(downloadUrl, String.valueOf(details.getContentLength()));
+					download.setPrivateState(details.getDowloadURI());
+
+					downloadsList = new DownloadsList(download, null);
+				}
 
 				datasetAPIClient.putVersionDownloads(versionURL, downloadsList);
 			} catch (MalformedURLException | FilterAPIException e)
@@ -218,10 +251,13 @@ public class Handler {
 					s3Client.putObject(putObjectRequest);
 				} else {
 					byte[] psk = createPSK();
-					
-					vaultOperations.write()
-					
-					s3CryptoClient.putObjectWithPSK(putObjectRequest, psk);
+
+					Map<String, String> map = new HashMap<String, String>();
+					map.put(key, Hex.encodeHexString(psk));
+
+					vaultOperations.write(vaultPath, map);
+
+					s3Crypto.putObjectWithPSK(putObjectRequest, psk);
 				}
 				return new WorkbookDetails(s3Client.getUrl(bucket, key).toString(), contentLength);
 			} catch (SdkClientException e) {
@@ -233,6 +269,18 @@ public class Handler {
 			LOGGER.error("error while attempting create XLSX workbook, filename: {}, bucket: {}", filename);
 			throw e;
 		}
+	}
+	
+	private S3Object getObject(String bucket, String key, boolean isPublished) throws AmazonServiceException, SdkClientException, DecoderException {
+		if (isPublished) {
+			return s3Client.getObject(bucket, key);
+		}
+		
+		Map<String, Object> map =  vaultOperations.read(vaultPath).getData();
+		String psk = (String) map.get(key);
+		
+		byte[] pskBytes =  Hex.decodeHex(psk.toCharArray());		
+		return s3Crypto.getObjectWithPSK(bucket, key, pskBytes);
 	}
 
 	private byte[] createPSK() {

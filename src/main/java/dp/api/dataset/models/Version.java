@@ -14,6 +14,8 @@ public class Version {
     
     @JsonProperty("state")
     private String state;
+    
+    public Version() {}
 
 	public Version(DownloadsList downloadsList) {
         this.downloadsList = downloadsList;
