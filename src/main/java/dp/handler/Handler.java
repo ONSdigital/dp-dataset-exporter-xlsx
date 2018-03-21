@@ -15,7 +15,6 @@ import java.util.Random;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +29,6 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3URI;
-import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
@@ -95,8 +93,6 @@ public class Handler {
 	public void listen(final ExportedFile message) {
 		MessageType messageType = GetMessageType(message);
 		final AmazonS3URI uri = new AmazonS3URI(message.getS3URL().toString());
-		
-		LOGGER.info("got message", message);
 
 		try {
 			String state = getState(message);

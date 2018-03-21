@@ -19,13 +19,15 @@ public class VaultConfiguration extends AbstractVaultConfiguration {
 	@Override
 	public VaultEndpoint vaultEndpoint() {
 		VaultEndpoint vaultEndpoint = null;
+		String addr = System.getenv("VAULT_ADDR");
+		if (addr.length() == 0) {
+			addr = "http://localhost:8200";
+		}
 		try {
-			vaultEndpoint = VaultEndpoint.from(new URL(System.getenv("VAULT_ADDR")).toURI());
+			vaultEndpoint = VaultEndpoint.from(new URL(addr).toURI());
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -34,7 +36,11 @@ public class VaultConfiguration extends AbstractVaultConfiguration {
 
 	@Override
 	public ClientAuthentication clientAuthentication() {
-		return new TokenAuthentication(System.getenv("VAULT_TOKEN"));
+		String token = System.getenv("VAULT_TOKEN");
+		if (token.length() == 0) {
+			token = "...";
+		}
+		return new TokenAuthentication(token);
 	}
 
 }
