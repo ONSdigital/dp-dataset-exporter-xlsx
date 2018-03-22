@@ -17,23 +17,27 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.vault.authentication.SessionManager;
-import org.springframework.vault.core.VaultTemplate;
+import org.springframework.vault.core.VaultOperations;
+import org.springframework.vault.support.VaultResponse;
 
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
@@ -52,6 +56,7 @@ import dp.api.filter.Filter;
 import dp.api.filter.FilterAPIClient;
 import dp.api.filter.FilterLinks;
 import dp.avro.ExportedFile;
+import dp.configuration.TestConfig;
 import dp.exceptions.FilterAPIException;
 import dp.s3crypto.S3Crypto;
 import dp.xlsx.CMDWorkbook;
@@ -59,6 +64,7 @@ import dp.xlsx.Converter;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@ContextConfiguration(classes = TestConfig.class)
 public class HandlerTest {
 
 	@MockBean
@@ -78,20 +84,6 @@ public class HandlerTest {
 	@Qualifier("crypto-client")
 	private S3Crypto s3Crypto;
 
-	@Configuration
-	static class Config {
-
-		@Bean
-		VaultTemplate vaultTemplate() {
-			return Mockito.mock(VaultTemplate.class);
-		}
-
-		@Bean
-		Handler handler() {
-			return new Handler();
-		}
-	}
-
 	@MockBean
 	private SessionManager sessionManager;
 
@@ -99,7 +91,14 @@ public class HandlerTest {
 	private CMDWorkbook workbookMock;
 
 	@Autowired
+	@InjectMocks
 	private Handler handler;
+	
+	@Mock
+    private VaultOperations vaultTemplate;
+	
+	@Mock
+	private VaultResponse vaultResponse;
 
 	private String instanceID = "123";
 	private String datasetID = "456";
@@ -107,6 +106,58 @@ public class HandlerTest {
 	private String version = "1";
 	private String filename = "morty";
 	private String versionURL = "/datasets/456/editions/2017/versions/1";
+	
+	@Before
+	public void setUp() {
+		MockitoAnnotations.initMocks(this);
+	}
+
+	@Test
+	public void validFullDownloadWithNonPublishedState() throws Exception {
+		S3Object s3Object = mock(S3Object.class);
+		S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
+
+		SXSSFWorkbook workBookMock = mock(SXSSFWorkbook.class);
+		ArgumentCaptor<PutObjectRequest> arguments = ArgumentCaptor.forClass(PutObjectRequest.class);
+
+		Metadata datasetMetadata = new Metadata();
+
+		Version ver = new Version();
+		ver.setState("associated");
+
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("v4.csv", "746573742D6B6579");
+		when(vaultTemplate.read(anyString())).thenReturn(vaultResponse);
+		when(vaultResponse.getData()).thenReturn(map);
+		
+		when(datasetAPI.getVersion("/instances/123")).thenReturn(ver);
+		when(s3Object.getObjectContent()).thenReturn(stream);
+		when(s3Crypto.getObjectWithPSK("bucket", "v4.csv", "test-key".getBytes())).thenReturn(s3Object);
+		when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/morty.xlsx"));
+		when(datasetAPI.getMetadata(versionURL)).thenReturn(datasetMetadata);
+		when(converter.toXLSX(any(), any())).thenReturn(workBookMock);
+
+		final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
+				version, filename);
+
+		handler.setVaultOperations(vaultTemplate);
+		handler.listen(exportedFile);
+
+		verify(datasetAPI, times(1)).getVersion(anyString());
+		verify(s3Crypto, times(1)).getObjectWithPSK(anyString(), anyString(), any());
+		verify(datasetAPI, times(1)).getMetadata(versionURL);
+		verify(converter, times(1)).toXLSX(any(), any());
+		verify(datasetAPI, times(1)).putVersionDownloads(any(), any());
+		verify(workBookMock, times(1)).write(any(OutputStream.class));
+		verify(vaultTemplate, times(1)).read("secret/shared/psk");
+		verify(vaultResponse, times(1)).getData();
+		verify(vaultTemplate, times(1)).write(any(), any());
+		verify(s3Crypto, times(1)).putObjectWithPSK(any(), any());
+		verify(s3Crypto, times(1)).putObjectWithPSK(arguments.capture(), any());
+
+		assertThat("inccorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
+		assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("morty.xlsx"));
+	}
 
 	@Test
 	public void validExportFileFilterMessage() throws IOException {
@@ -378,7 +429,7 @@ public class HandlerTest {
 	@Test
 	public void vaildPrePublishMessageGetMetadataError() throws Exception {
 		S3Object s3Object = mock(S3Object.class);
-		
+
 		Version ver = new Version();
 		ver.setState("published");
 
@@ -427,7 +478,7 @@ public class HandlerTest {
 		verify(datasetAPI, never()).putVersionDownloads(any(), any());
 		verify(s3Client, never()).putObject(any());
 	}
-	
+
 	@Test
 	public void validMessageWithVersionGetError() throws Exception {
 		S3Object s3Object = mock(S3Object.class);
