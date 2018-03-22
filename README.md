@@ -5,11 +5,16 @@ A service which converts a V4 into a formatted XLSX file
 
 ### Getting started
 
+Ensure you have vault running.
+
+`brew install vault`
+`vault server -dev`
+
 * Install maven 3.5+ `brew install maven`
 * Install Java 1.8+
 * Install kafka `brew install kafka` supports versions (0.9, 0.10, 0.11)
 
-To quickly run the service locally use the `run.sh` script. Make sure AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are
+To quickly run the service locally run `make debug`. Make sure AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are
 setup as environment variables.
 
 ### Configuration
@@ -28,6 +33,11 @@ setup as environment variables.
 | FILTER_API_AUTH_TOKEN | FD0108EA-825D-411C-9B1D-41EF7727F465 | Secret token to use the Filter api
 | DATASET_API_URL       | http://localhost:22000               | Dataset api URL
 | DATASET_API_AUTH_TOKEN| FD0108EA-825D-411C-9B1D-41EF7727F465 | Secret token to use the Dataset api
+| DOWNLOAD_SERVICE_URL  | http://localhost:23600               | URL for the download service
+| VAULT_ADDR            | http://localhost:8200                | The address of vault
+| VAULT_TOKEN           | -                                    | Use `make debug` to set a vault token
+| VAULT_PATH            | secret/shared/psk                    | The vault path to store psks
+
 
 ### Contributing
 
