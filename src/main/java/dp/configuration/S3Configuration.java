@@ -17,22 +17,20 @@ import dp.s3crypto.S3CryptoClient;
 @Configuration
 public class S3Configuration {
 
-    @Value("${S3_REGION:eu-west-1}")
-    private String region;
+	@Value("${S3_REGION:eu-west-1}")
+	private String region;
 
-    @Bean
-    @Qualifier("s3-client")
-    public AmazonS3 amazonS3Client() {
-        AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                .withRegion(Regions.fromName("eu-west-1"))
-                .build();
-        return s3Client;
-    }
-    
-    @Bean
-    @Qualifier("crypto-client")
-    public S3Crypto s3CryptoClient() {
-    		return new S3CryptoClient((AmazonS3Client) amazonS3Client());
-    }
+	@Bean
+	@Qualifier("s3-client")
+	public AmazonS3 amazonS3Client() {
+		AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.fromName(region)).build();
+		return s3Client;
+	}
+
+	@Bean
+	@Qualifier("crypto-client")
+	public S3Crypto s3CryptoClient() {
+		return new S3CryptoClient((AmazonS3Client) amazonS3Client());
+	}
 
 }

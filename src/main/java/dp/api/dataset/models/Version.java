@@ -9,27 +9,28 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  */
 public class Version {
 
-    @JsonProperty("downloads")
-    private DownloadsList downloadsList;
-    
-    @JsonProperty("state")
-    private String state;
-    
-    public Version() {}
+	@JsonProperty("downloads")
+	private DownloadsList downloadsList;
+
+	@JsonProperty("state")
+	private String state;
+
+	public Version() {
+	}
 
 	public Version(DownloadsList downloadsList) {
-        this.downloadsList = downloadsList;
-    }
+		this.downloadsList = downloadsList;
+	}
 
-    public DownloadsList getDownloadsList() {
-        return downloadsList;
-    }
+	public DownloadsList getDownloadsList() {
+		return downloadsList;
+	}
 
-    public void setDownloadsList(DownloadsList downloadsList) {
-        this.downloadsList = downloadsList;
-    }
-    
-    public String getState() {
+	public void setDownloadsList(DownloadsList downloadsList) {
+		this.downloadsList = downloadsList;
+	}
+
+	public String getState() {
 		return state;
 	}
 
@@ -37,23 +38,21 @@ public class Version {
 		this.state = state;
 	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
 
-        if (o == null || getClass() != o.getClass()) return false;
+		if (o == null || getClass() != o.getClass())
+			return false;
 
-        Version version = (Version) o;
+		Version version = (Version) o;
 
-        return new EqualsBuilder()
-                .append(getDownloadsList(), version.getDownloadsList())
-                .isEquals();
-    }
+		return new EqualsBuilder().append(getDownloadsList(), version.getDownloadsList()).isEquals();
+	}
 
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(getDownloadsList())
-                .toHashCode();
-    }
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 37).append(getDownloadsList()).toHashCode();
+	}
 }

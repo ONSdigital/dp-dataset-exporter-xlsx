@@ -24,43 +24,42 @@ import com.amazonaws.services.s3.AmazonS3;
 import java.io.IOException;
 import java.io.InputStream;
 
-
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @ContextConfiguration(classes = TestConfig.class)
 public class ConverterTest {
-	
+
 	@MockBean
 	@Qualifier("crypto-client")
 	private S3Crypto s3Crypto;
-	
+
 	@MockBean
 	@Qualifier("s3-client")
 	private AmazonS3 s3Client;
 
-    @Autowired
-    private Converter converter;
-    
-    @Autowired
+	@Autowired
+	private Converter converter;
+
+	@Autowired
 	@InjectMocks
 	private Handler handler;
-    
-    @MockBean
+
+	@MockBean
 	private FilterAPIClient filterAPI;
 
 	@MockBean
 	private DatasetAPIClientImpl datasetAPI;
 
-    @Test
-    public void csvToXlsx() throws IOException {
-        try (final InputStream csv = ConverterTest.class.getResourceAsStream("v4_0.csv")) {
+	@Test
+	public void csvToXlsx() throws IOException {
+		try (final InputStream csv = ConverterTest.class.getResourceAsStream("v4_0.csv")) {
 
-            Metadata datasetMetadata = new Metadata();
-            datasetMetadata.setTitle("test title");
+			Metadata datasetMetadata = new Metadata();
+			datasetMetadata.setTitle("test title");
 
-            Workbook workbook = converter.toXLSX(csv, datasetMetadata);
+			Workbook workbook = converter.toXLSX(csv, datasetMetadata);
 
-            Assertions.assertThat(workbook.getNumberOfSheets()).isEqualTo(2);
-        }
-    }
+			Assertions.assertThat(workbook.getNumberOfSheets()).isEqualTo(2);
+		}
+	}
 }
