@@ -80,14 +80,6 @@ public class Handler {
 	@Autowired
 	private VaultOperations vaultOperations;
 
-	public VaultOperations getVaultOperations() {
-		return vaultOperations;
-	}
-
-	public void setVaultOperations(VaultOperations vaultOperations) {
-		this.vaultOperations = vaultOperations;
-	}
-
 	@Autowired
 	private Converter converter;
 

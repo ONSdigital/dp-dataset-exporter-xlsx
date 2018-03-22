@@ -140,7 +140,6 @@ public class HandlerTest {
 		final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
 				version, filename);
 
-		handler.setVaultOperations(vaultTemplate);
 		handler.listen(exportedFile);
 
 		verify(datasetAPI, times(1)).getVersion(anyString());
