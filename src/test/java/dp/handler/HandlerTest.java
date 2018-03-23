@@ -148,8 +148,8 @@ public class HandlerTest {
 		verify(converter, times(1)).toXLSX(any(), any());
 		verify(datasetAPI, times(1)).putVersionDownloads(any(), any());
 		verify(workBookMock, times(1)).write(any(OutputStream.class));
-		verify(vaultTemplate, times(1)).read("secret/shared/psk");
-		verify(vaultResponse, times(1)).getData();
+		verify(vaultTemplate, times(2)).read("secret/shared/psk");
+		verify(vaultResponse, times(2)).getData();
 		verify(vaultTemplate, times(1)).write(any(), any());
 		verify(s3Crypto, times(1)).putObjectWithPSK(any(), any());
 		verify(s3Crypto, times(1)).putObjectWithPSK(arguments.capture(), any());

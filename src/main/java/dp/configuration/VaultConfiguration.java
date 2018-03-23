@@ -13,7 +13,6 @@ import org.springframework.vault.client.VaultEndpoint;
 import org.springframework.vault.config.AbstractVaultConfiguration;
 
 @Configuration
-@VaultPropertySource(value="secret/shared/psk", renewal = Renewal.ROTATE)
 public class VaultConfiguration extends AbstractVaultConfiguration {
 
 	@Override

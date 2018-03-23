@@ -248,7 +248,7 @@ public class Handler {
 				} else {
 					byte[] psk = createPSK();
 
-					Map<String, String> map = new HashMap<String, String>();
+					Map<String, Object> map =  vaultOperations.read(vaultPath).getData();
 					map.put(key, Hex.encodeHexString(psk));
 
 					vaultOperations.write(vaultPath, map);
