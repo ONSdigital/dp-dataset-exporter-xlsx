@@ -1,6 +1,7 @@
 package dp.api.dataset;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dp.api.AuthUtils;
 import dp.api.dataset.models.DownloadsList;
 import dp.api.dataset.models.Metadata;
 import dp.api.dataset.models.Version;
@@ -28,28 +29,26 @@ public class DatasetAPIClientImpl implements DatasetAPIClient {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DatasetAPIClientImpl.class);
 
-    private static final String AUTH_HEADER_KEY = "Internal-Token";
+    @Deprecated
+    private static final String AUTH_HEADER_KEY_OLD = "Internal-Token";
+
+    private static final String AUTH_HEADER_KEY = "Authorization";
 
     @Value("${DATASET_API_URL:http://localhost:22000}")
     private String datasetAPIURL;
 
-    @Value("${DATASET_API_AUTH_TOKEN:FD0108EA-825D-411C-9B1D-41EF7727F465}")
+    @Value("${SERVICE_AUTH_TOKEN:FD0108EA-825D-411C-9B1D-41EF7727F465}")
     private String token;
 
     @Autowired
     private RestTemplate restTemplate;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     public Metadata getMetadata(final String versionPath) throws MalformedURLException, FilterAPIException {
         URL metadataURL = new URL(datasetAPIURL + versionPath + "/metadata");
 
         LOGGER.info("getting dataset version data from the dataset api, url : {}", metadataURL);
         try {
-            HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.add(AUTH_HEADER_KEY, token);
-            HttpEntity entity = new HttpEntity<>(httpHeaders);
+            HttpEntity entity = AuthUtils.createHeaders(token, null);
             ResponseEntity<Metadata> responseEntity = restTemplate.exchange(metadataURL.toString(), HttpMethod.GET, entity, Metadata.class);
             LOGGER.info("dataset api get response, url : {}, response {}", metadataURL.toString(),
                     responseEntity.getStatusCode());
@@ -66,10 +65,7 @@ public class DatasetAPIClientImpl implements DatasetAPIClient {
         final String url = new URL(datasetAPIURL + datasetVersionURL).toString();
 
         try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.add(AUTH_HEADER_KEY, token);
-
-            HttpEntity<Version> entity = new HttpEntity<>(new Version(downloads), headers);
+            HttpEntity<Version> entity = AuthUtils.createHeaders(token, new Version(downloads));
             ResponseEntity response = restTemplate.exchange(url, HttpMethod.PUT, entity, Void.class);
             if (response.getStatusCode() != HttpStatus.OK) {
                 throw new RestClientException("incorrect status returned");
