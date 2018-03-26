@@ -64,7 +64,7 @@ job "dp-dataset-exporter-xlsx" {
         policies = ["dp-dataset-exporter-xlsx"]
 
         change_mode   = "signal"
-        change_signal = "SIGUSR1"
+        change_signal = "SIGTERM"
       }
     }
   }

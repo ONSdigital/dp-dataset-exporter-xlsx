@@ -1,12 +1,8 @@
 package dp.configuration;
 
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.vault.annotation.VaultPropertySource;
-import org.springframework.vault.annotation.VaultPropertySource.Renewal;
 import org.springframework.vault.authentication.ClientAuthentication;
 import org.springframework.vault.authentication.TokenAuthentication;
 import org.springframework.vault.client.VaultEndpoint;
@@ -22,13 +18,12 @@ public class VaultConfiguration extends AbstractVaultConfiguration {
 		if (addr.length() == 0) {
 			addr = "http://localhost:8200";
 		}
+		
 		try {
 			vaultEndpoint = VaultEndpoint.from(new URL(addr).toURI());
-		} catch (MalformedURLException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
+		} 
 		
 		return vaultEndpoint;
 	}
