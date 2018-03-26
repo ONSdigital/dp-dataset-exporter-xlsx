@@ -1,5 +1,7 @@
 package dp.configuration;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.springframework.context.annotation.Configuration;
@@ -21,9 +23,9 @@ public class VaultConfiguration extends AbstractVaultConfiguration {
 		
 		try {
 			vaultEndpoint = VaultEndpoint.from(new URL(addr).toURI());
-		} catch (Exception e) {
-			e.printStackTrace();
-		} 
+		} catch (MalformedURLException | URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
 		
 		return vaultEndpoint;
 	}
