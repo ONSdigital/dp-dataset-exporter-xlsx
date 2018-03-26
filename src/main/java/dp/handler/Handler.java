@@ -122,8 +122,12 @@ public class Handler {
 	}
 
 	private String getState(ExportedFile message) throws MalformedURLException, FilterAPIException {
+		
 		String path = "";
 		if (message.getInstanceId().length() == 0) {
+			if (message.getDatasetId().length() == 0 && message.getFilterId().length() > 0) {
+				return "published";
+			}
 			path = format(VERSION_DOWNLOADS_URL, message.getDatasetId(), message.getEdition(), message.getVersion());
 		} else {
 			path = format(INSTANCE_URL, message.getInstanceId());
@@ -193,7 +197,7 @@ public class Handler {
 			details = createWorkbook(object, metadata, message.getFilename().toString(), isPublished);
 
 			try {
-				String downloadUrl = downloadServiceUrl + format(VERSION_DOWNLOADS_URL, message.getDatasetId(),
+				String downloadUrl = downloadServiceUrl + "/downloads" + format(VERSION_DOWNLOADS_URL, message.getDatasetId(),
 						message.getEdition(), message.getVersion()) + ".xlsx";
 
 				DownloadsList downloadsList = null;
