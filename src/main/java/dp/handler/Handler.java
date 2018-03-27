@@ -61,6 +61,9 @@ public class Handler {
 
 	@Value("${S3_BUCKET_NAME:csv-exported}")
 	private String bucket;
+	
+	@Value("${S3_PRIVATE_BUCKET_NAME:csv-exported}")
+	private String privateBucket;
 
 	@Value("${VAULT_PATH:secret/shared/psk}")
 	private String vaultPath;
@@ -255,6 +258,7 @@ public class Handler {
 					map.put(key, Hex.encodeHexString(psk));
 
 					vaultOperations.write(vaultPath, map);
+					putObjectRequest.setBucketName(privateBucket);
 
 					s3Crypto.putObjectWithPSK(putObjectRequest, psk);
 				}
