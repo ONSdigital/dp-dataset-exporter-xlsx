@@ -74,6 +74,7 @@ public class DatasetAPIClientImplTest {
         setField(api, "restTemplate", restTemplateMock);
         setField(api, "datasetAPIURL", DATASET_API_URL);
         setField(api, "token", AUTH_TOKEN);
+        setField(api, "serviceToken", AUTH_TOKEN);
     }
 
     @Test

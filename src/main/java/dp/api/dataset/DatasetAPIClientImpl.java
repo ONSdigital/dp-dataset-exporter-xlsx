@@ -1,6 +1,5 @@
 package dp.api.dataset;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dp.api.AuthUtils;
 import dp.api.dataset.models.DownloadsList;
 import dp.api.dataset.models.Metadata;
@@ -11,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,16 +27,15 @@ public class DatasetAPIClientImpl implements DatasetAPIClient {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DatasetAPIClientImpl.class);
 
-    @Deprecated
-    private static final String AUTH_HEADER_KEY_OLD = "Internal-Token";
-
-    private static final String AUTH_HEADER_KEY = "Authorization";
-
     @Value("${DATASET_API_URL:http://localhost:22000}")
     private String datasetAPIURL;
 
-    @Value("${SERVICE_AUTH_TOKEN:FD0108EA-825D-411C-9B1D-41EF7727F465}")
+    @Deprecated
+    @Value("${DATASET_API_AUTH_TOKEN:FD0108EA-825D-411C-9B1D-41EF7727F465}")
     private String token;
+
+    @Value("${SERVICE_AUTH_TOKEN:07B082D8-AA33-4213-A562-911FA019C570}")
+    private String serviceToken;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -48,7 +45,7 @@ public class DatasetAPIClientImpl implements DatasetAPIClient {
 
         LOGGER.info("getting dataset version data from the dataset api, url : {}", metadataURL);
         try {
-            HttpEntity entity = AuthUtils.createHeaders(token, null);
+            HttpEntity entity = AuthUtils.createHeaders(serviceToken, token, null);
             ResponseEntity<Metadata> responseEntity = restTemplate.exchange(metadataURL.toString(), HttpMethod.GET, entity, Metadata.class);
             LOGGER.info("dataset api get response, url : {}, response {}", metadataURL.toString(),
                     responseEntity.getStatusCode());
@@ -65,7 +62,7 @@ public class DatasetAPIClientImpl implements DatasetAPIClient {
         final String url = new URL(datasetAPIURL + datasetVersionURL).toString();
 
         try {
-            HttpEntity<Version> entity = AuthUtils.createHeaders(token, new Version(downloads));
+            HttpEntity<Version> entity = AuthUtils.createHeaders(serviceToken, token, new Version(downloads));
             ResponseEntity response = restTemplate.exchange(url, HttpMethod.PUT, entity, Void.class);
             if (response.getStatusCode() != HttpStatus.OK) {
                 throw new RestClientException("incorrect status returned");

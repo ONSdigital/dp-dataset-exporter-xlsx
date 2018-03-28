@@ -24,8 +24,12 @@ public class FilterAPIClient {
     @Value("${FILTER_API_URL:http://localhost:22100}")
     private String filterAPIURL;
 
-    @Value("${SERVICE_AUTH_TOKEN:FD0108EA-825D-411C-9B1D-41EF7727F465}")
+    @Deprecated
+    @Value("${FILTER_API_AUTH_TOKEN:FD0108EA-825D-411C-9B1D-41EF7727F465}")
     private String token;
+
+    @Value("${SERVICE_AUTH_TOKEN:07B082D8-AA33-4213-A562-911FA019C570}")
+    private String serviceToken;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -43,7 +47,7 @@ public class FilterAPIClient {
         try {
 
             LOGGER.info("updating filter api, url : {}, json : {}", url, objectMapper.writeValueAsString(r));
-            restTemplate.put(url, AuthUtils.createHeaders(token, r));
+            restTemplate.put(url, AuthUtils.createHeaders(serviceToken, token, r));
 
         } catch (RestClientException e) {
             throw new FilterAPIException("expected 200 status code", e);
