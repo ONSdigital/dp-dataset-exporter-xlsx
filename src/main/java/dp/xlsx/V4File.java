@@ -51,7 +51,7 @@ class V4File {
 
                 final String v4Code = header[0];
 
-                headerOffset = Integer.parseInt(v4Code.split("V4_")[1]) + 1;
+                headerOffset = Integer.parseInt(v4Code.split("_")[1]) + 1;
                 headerGroup = new Group(header, headerOffset);
                 additionalHeaders = Arrays.copyOfRange(header, 1, headerOffset);
             }
