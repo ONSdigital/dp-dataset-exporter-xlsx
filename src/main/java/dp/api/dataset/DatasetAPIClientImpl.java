@@ -34,7 +34,7 @@ public class DatasetAPIClientImpl implements DatasetAPIClient {
     @Value("${DATASET_API_AUTH_TOKEN:FD0108EA-825D-411C-9B1D-41EF7727F465}")
     private String token;
 
-    @Value("${SERVICE_AUTH_TOKEN:07B082D8-AA33-4213-A562-911FA019C570}")
+    @Value("${SERVICE_AUTH_TOKEN:939616dc-7599-4ded-9a86-a9c66fbf98e0}")
     private String serviceToken;
 
     @Autowired
