@@ -28,7 +28,7 @@ public class FilterAPIClient {
     @Value("${FILTER_API_AUTH_TOKEN:FD0108EA-825D-411C-9B1D-41EF7727F465}")
     private String token;
 
-    @Value("${SERVICE_AUTH_TOKEN:07B082D8-AA33-4213-A562-911FA019C570}")
+    @Value("${SERVICE_AUTH_TOKEN:7049050e-5d55-440d-b461-319f8cdf6670}")
     private String serviceToken;
 
     @Autowired

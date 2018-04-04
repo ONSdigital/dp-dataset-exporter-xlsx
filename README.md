@@ -28,7 +28,7 @@ setup as environment variables.
 | FILTER_API_URL        | http://localhost:22100               | Filter api URL
 | FILTER_API_AUTH_TOKEN | FD0108EA-825D-411C-9B1D-41EF7727F465 | Secret token to use the Filter api
 | DATASET_API_URL       | http://localhost:22000               | Dataset api URL
-| SERVICE_AUTH_TOKEN    | 939616dc-7599-4ded-9a86-a9c66fbf98e0 | Service token to authenticate against Zebedee
+| SERVICE_AUTH_TOKEN    | 7049050e-5d55-440d-b461-319f8cdf6670 | Service token to authenticate against Zebedee
 | ZEBEDEE_URL           |                                      | A url to zebedee, if provided the service auth token will be checked on startup
 
 ### Contributing

@@ -27,7 +27,7 @@ public class AuthenicateOnStartUp implements ApplicationListener<ApplicationRead
     @Value("${ZEBEDEE_URL:}")
     private String zebedee_url;
 
-    @Value("${SERVICE_AUTH_TOKEN:939616dc-7599-4ded-9a86-a9c66fbf98e0}")
+    @Value("${SERVICE_AUTH_TOKEN:7049050e-5d55-440d-b461-319f8cdf6670}")
     private String token;
 
     @Autowired
