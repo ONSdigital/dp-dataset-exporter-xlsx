@@ -2,6 +2,7 @@ package dp.api.filter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dp.api.AuthUtils;
 import dp.exceptions.FilterAPIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +24,12 @@ public class FilterAPIClient {
     @Value("${FILTER_API_URL:http://localhost:22100}")
     private String filterAPIURL;
 
+    @Deprecated
     @Value("${FILTER_API_AUTH_TOKEN:FD0108EA-825D-411C-9B1D-41EF7727F465}")
     private String token;
+
+    @Value("${SERVICE_AUTH_TOKEN:7049050e-5d55-440d-b461-319f8cdf6670}")
+    private String serviceToken;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -35,17 +40,14 @@ public class FilterAPIClient {
     public void addXLSXFile(final String id, final String s3Location, final long size) throws JsonProcessingException {
 
         final String url = UriComponentsBuilder.fromHttpUrl(filterAPIURL + "/filter-outputs/{filterId}").buildAndExpand(id).toUriString();
-        final HttpHeaders headers = new HttpHeaders();
         final String sizeToString = Long.toString(size);
-
-        headers.add("internal-token", token);
 
         final PutFileRequest r = new PutFileRequest(new Downloads(new XLSXFile(s3Location, sizeToString)));
 
         try {
 
             LOGGER.info("updating filter api, url : {}, json : {}", url, objectMapper.writeValueAsString(r));
-            restTemplate.put(url, new HttpEntity<>(r, headers));
+            restTemplate.put(url, AuthUtils.createHeaders(serviceToken, token, r));
 
         } catch (RestClientException e) {
             throw new FilterAPIException("expected 200 status code", e);
