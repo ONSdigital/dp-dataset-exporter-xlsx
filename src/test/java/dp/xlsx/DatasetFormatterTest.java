@@ -226,7 +226,7 @@ public class DatasetFormatterTest {
 
         // Given some v4 file data sparsity (missing values in the grid)
         String csvRow1 = "88,Month,Jan-96,K02000001,,cpi1dim1A0,CPI (overall index)\n";
-        String csvRow2 = "88,Month,Jan-97,K02000001,,something else\n";
+        String csvRow2 = "85,Month,Jan-97,K02000001,,cpi1dim1A1,something else\n";
         String csvContent = csvHeader + csvRow1 + csvRow2;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
@@ -269,7 +269,6 @@ public class DatasetFormatterTest {
             final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
             datasetFormatter.format();
-            TestUtils.printSheet(sheet);
             assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 13);
         }
     }
