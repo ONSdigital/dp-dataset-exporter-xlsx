@@ -8,6 +8,7 @@ A service which converts a V4 into a formatted XLSX file
 * Install maven 3.5+ `brew install maven`
 * Install Java 1.8+
 * Install kafka `brew install kafka` supports versions (0.9, 0.10, 0.11)
+* Run the auth-stub-api or Zebedee for authentication
 
 To quickly run the service locally use the `run.sh` script. Make sure AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are
 setup as environment variables.
@@ -27,7 +28,7 @@ setup as environment variables.
 | FILTER_API_URL        | http://localhost:22100               | Filter api URL
 | FILTER_API_AUTH_TOKEN | FD0108EA-825D-411C-9B1D-41EF7727F465 | Secret token to use the Filter api
 | DATASET_API_URL       | http://localhost:22000               | Dataset api URL
-| SERVICE_AUTH_TOKEN    | FD0108EA-825D-411C-9B1D-41EF7727F465 | Secret token to use the Dataset api
+| SERVICE_AUTH_TOKEN    | 939616dc-7599-4ded-9a86-a9c66fbf98e0 | Service token to authenticate against Zebedee
 | ZEBEDEE_URL           |                                      | A url to zebedee, if provided the service auth token will be checked on startup
 
 ### Contributing
