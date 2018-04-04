@@ -45,7 +45,10 @@ public class DatasetAPIClientImplTest {
     private static final String VERSION_URL = DATASET_API_URL + VERSION_URI;
 
     private static final String AUTH_TOKEN = "666";
-    private static final String AUTH_TOKEN_KEY = "Internal-Token";
+    private static final String EXPECTED_AUTH_HEADER = "Bearer " + AUTH_TOKEN;
+    private static final String AUTH_TOKEN_KEY_OLD = "Internal-Token";
+
+    private static final String AUTH_TOKEN_KEY = "Authorization";
 
     private DatasetAPIClientImpl api;
 
@@ -72,15 +75,17 @@ public class DatasetAPIClientImplTest {
         setField(api, "restTemplate", restTemplateMock);
         setField(api, "datasetAPIURL", DATASET_API_URL);
         setField(api, "token", AUTH_TOKEN);
+        setField(api, "serviceToken", AUTH_TOKEN);
     }
 
     @Test
     public void getMetadataSuccess() throws Exception {
         HttpHeaders expectedHTTPHeaders = new HttpHeaders();
-        expectedHTTPHeaders.add(AUTH_TOKEN_KEY, AUTH_TOKEN);
+        expectedHTTPHeaders.add(AUTH_TOKEN_KEY_OLD, AUTH_TOKEN);
+        expectedHTTPHeaders.add(AUTH_TOKEN_KEY, EXPECTED_AUTH_HEADER);
         HttpEntity expectedEntity = new HttpEntity<>(expectedHTTPHeaders);
 
-        given(restTemplateMock.exchange(eq(METADATA_URL), eq(HttpMethod.GET), eq(expectedEntity), eq(Metadata.class)))
+        given(restTemplateMock.exchange(eq(METADATA_URL), eq(HttpMethod.GET), any(), eq(Metadata.class)))
                 .willReturn(metadataResponseEntity);
 
         given(metadataResponseEntity.getStatusCode())
@@ -99,11 +104,12 @@ public class DatasetAPIClientImplTest {
     @Test(expected = FilterAPIException.class)
     public void getMetadataRestClientError() throws Exception {
         HttpHeaders expectedHTTPHeaders = new HttpHeaders();
-        expectedHTTPHeaders.add(AUTH_TOKEN_KEY, AUTH_TOKEN);
-        HttpEntity expectedEntity = new HttpEntity<>(expectedHTTPHeaders);
+        expectedHTTPHeaders.add(AUTH_TOKEN_KEY_OLD, AUTH_TOKEN);
+        expectedHTTPHeaders.add(AUTH_TOKEN_KEY, EXPECTED_AUTH_HEADER);
+        HttpEntity expectedEntity = new HttpEntity<>(null, expectedHTTPHeaders);
 
         try {
-            given(restTemplateMock.exchange(eq(METADATA_URL), eq(HttpMethod.GET), eq(expectedEntity), eq(Metadata.class)))
+            given(restTemplateMock.exchange(eq(METADATA_URL), eq(HttpMethod.GET), any(), eq(Metadata.class)))
                     .willThrow(new RestClientException("spectaular explosion"));
 
             given(metadataResponseEntity.getStatusCode())
@@ -138,10 +144,11 @@ public class DatasetAPIClientImplTest {
         Version v = new Version(downloadsList);
 
         HttpHeaders expectedHTTPHeaders = new HttpHeaders();
-        expectedHTTPHeaders.add(AUTH_TOKEN_KEY, AUTH_TOKEN);
+        expectedHTTPHeaders.add(AUTH_TOKEN_KEY_OLD, AUTH_TOKEN);
+        expectedHTTPHeaders.add(AUTH_TOKEN_KEY, EXPECTED_AUTH_HEADER);
         HttpEntity<Version> expectedEntity = new HttpEntity<>(v, expectedHTTPHeaders);
 
-        given(restTemplateMock.exchange(eq(VERSION_URL), eq(HttpMethod.PUT), eq(expectedEntity), eq(Void.class)))
+        given(restTemplateMock.exchange(eq(VERSION_URL), eq(HttpMethod.PUT), any(), eq(Void.class)))
                 .willReturn(versionResponseEntity);
 
         given(versionResponseEntity.getStatusCode())
@@ -160,7 +167,8 @@ public class DatasetAPIClientImplTest {
         Version v = new Version(downloadsList);
 
         HttpHeaders expectedHTTPHeaders = new HttpHeaders();
-        expectedHTTPHeaders.add(AUTH_TOKEN_KEY, AUTH_TOKEN);
+        expectedHTTPHeaders.add(AUTH_TOKEN_KEY_OLD, AUTH_TOKEN);
+        expectedHTTPHeaders.add(AUTH_TOKEN_KEY, EXPECTED_AUTH_HEADER);
         HttpEntity<Version> expectedEntity = new HttpEntity<>(v, expectedHTTPHeaders);
 
         given(restTemplateMock.exchange(eq(VERSION_URL), eq(HttpMethod.PUT), eq(expectedEntity), eq(Void.class)))
@@ -182,10 +190,10 @@ public class DatasetAPIClientImplTest {
         Version v = new Version(downloadsList);
 
         HttpHeaders expectedHTTPHeaders = new HttpHeaders();
-        expectedHTTPHeaders.add(AUTH_TOKEN_KEY, AUTH_TOKEN);
+        expectedHTTPHeaders.add(AUTH_TOKEN_KEY_OLD, AUTH_TOKEN);
         HttpEntity<Version> expectedEntity = new HttpEntity<>(v, expectedHTTPHeaders);
 
-        given(restTemplateMock.exchange(eq(VERSION_URL), eq(HttpMethod.PUT), eq(expectedEntity), eq(Void.class)))
+        given(restTemplateMock.exchange(eq(VERSION_URL), eq(HttpMethod.PUT), any(), eq(Void.class)))
                 .willReturn(versionResponseEntity);
 
         given(versionResponseEntity.getStatusCode())

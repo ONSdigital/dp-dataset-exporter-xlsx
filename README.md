@@ -13,6 +13,7 @@ Ensure you have vault running.
 * Install maven 3.5+ `brew install maven`
 * Install Java 1.8+
 * Install kafka `brew install kafka` supports versions (0.9, 0.10, 0.11)
+* Run the auth-stub-api or Zebedee for authentication
 
 To quickly run the service locally run `make debug`. Make sure AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are
 setup as environment variables.
@@ -38,6 +39,8 @@ setup as environment variables.
 | VAULT_TOKEN           | -                                    | Use `make debug` to set a vault token
 | VAULT_PATH            | secret/shared/psk                    | The vault path to store psks
 
+| SERVICE_AUTH_TOKEN    | 7049050e-5d55-440d-b461-319f8cdf6670 | Service token to authenticate against Zebedee
+| ZEBEDEE_URL           |                                      | A url to zebedee, if provided the service auth token will be checked on startup
 
 ### Contributing
 
