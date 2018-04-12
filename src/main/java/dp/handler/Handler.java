@@ -166,7 +166,7 @@ public class Handler {
 
         try {
             filterAPIClient.addXLSXFile(message.getFilterId().toString(), details.getDowloadURI(),
-                    details.getContentLength());
+                    details.getContentLength(), filter.isPublished());
         } catch (JsonProcessingException e) {
             throw new IOException(format("filter api client addXLSXFile returned error, filterID: {0}",
                     message.getFilterId().toString()), e);

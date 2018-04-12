@@ -48,6 +48,7 @@ import java.util.Map;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -212,7 +213,7 @@ public class HandlerTest {
         verify(datasetAPI, never()).getMetadata(anyString());
         verify(converter, never()).toXLSX(any(), any());
         verify(s3Client, never()).putObject(any());
-        verify(filterAPI, never()).addXLSXFile(any(), any(), anyLong());
+        verify(filterAPI, never()).addXLSXFile(any(), any(), anyLong(), anyBoolean());
     }
 
     @Test
@@ -238,7 +239,7 @@ public class HandlerTest {
         verify(datasetAPI, times(1)).getMetadata(versionURL);
         verify(converter, never()).toXLSX(any(), any());
         verify(s3Client, never()).putObject(any());
-        verify(filterAPI, never()).addXLSXFile(any(), any(), anyLong());
+        verify(filterAPI, never()).addXLSXFile(any(), any(), anyLong(), anyBoolean());
     }
 
     @Test
@@ -265,7 +266,7 @@ public class HandlerTest {
         verify(filterAPI, times(1)).getFilter(exportedFile.getFilterId().toString());
         verify(datasetAPI, times(1)).getMetadata(versionURL);
         verify(converter, times(1)).toXLSX(any(), eq(datasetMetadata));
-        verify(filterAPI, never()).addXLSXFile(any(), any(), anyLong());
+        verify(filterAPI, never()).addXLSXFile(any(), any(), anyLong(), anyBoolean());
         verify(s3Client, never()).putObject(any());
     }
 
@@ -298,7 +299,7 @@ public class HandlerTest {
         verify(datasetAPI, times(1)).getMetadata(versionURL);
         verify(converter, times(1)).toXLSX(any(), eq(datasetMetadata));
         verify(s3Client, times(1)).putObject(arguments.capture());
-        verify(filterAPI, never()).addXLSXFile(any(), any(), anyLong());
+        verify(filterAPI, never()).addXLSXFile(any(), any(), anyLong(), anyBoolean());
 
         assertThat("inccorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
         assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("123.xlsx"));
@@ -323,7 +324,7 @@ public class HandlerTest {
         when(datasetAPI.getMetadata(versionURL)).thenReturn(datasetMetadata);
         when(converter.toXLSX(any(), eq(datasetMetadata))).thenReturn(workbookMock);
         when(s3Client.putObject(any())).thenReturn(null);
-        doThrow(ex).when(filterAPI).addXLSXFile(any(), any(), anyLong());
+        doThrow(ex).when(filterAPI).addXLSXFile(any(), any(), anyLong(), anyBoolean());
 
         final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "12345", "", "", "", "");
 
@@ -334,7 +335,7 @@ public class HandlerTest {
         verify(datasetAPI, times(1)).getMetadata(versionURL);
         verify(converter, times(1)).toXLSX(any(), eq(datasetMetadata));
         verify(s3Client, times(1)).putObject(arguments.capture());
-        verify(filterAPI, times(1)).addXLSXFile(any(), any(), anyLong());
+        verify(filterAPI, times(1)).addXLSXFile(any(), any(), anyLong(), anyBoolean());
 
         assertThat("inccorrect buck name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
         assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("123.xlsx"));
