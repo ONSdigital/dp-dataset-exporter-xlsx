@@ -9,55 +9,73 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  */
 public class Download {
 
-    @JsonProperty("url")
-    private String url;
+	@JsonProperty("href")
+	private String url;
 
-    @JsonProperty("size")
-    private String size;
+	@JsonProperty("size")
+	private String size;
 
-    public Download(String url, String size) {
-        this.url = url;
-        this.size = size;
-    }
+	@JsonProperty("public")
+	private String publicState;
 
-    public Download() {
-    }
+	@JsonProperty("private")
+	private String privateState;
 
-    public String getUrl() {
-        return url;
-    }
+	public Download(String url, String size) {
+		this.url = url;
+		this.size = size;
+	}
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
+	public Download() {
+	}
 
-    public String getSize() {
-        return size;
-    }
+	public String getUrl() {
+		return url;
+	}
 
-    public void setSize(String size) {
-        this.size = size;
-    }
+	public void setUrl(String url) {
+		this.url = url;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
+	public String getSize() {
+		return size;
+	}
 
-        if (o == null || getClass() != o.getClass()) return false;
+	public void setSize(String size) {
+		this.size = size;
+	}
 
-        Download download = (Download) o;
+	public String getPublicState() {
+		return publicState;
+	}
 
-        return new EqualsBuilder()
-                .append(getUrl(), download.getUrl())
-                .append(getSize(), download.getSize())
-                .isEquals();
-    }
+	public void setPublicState(String publicState) {
+		this.publicState = publicState;
+	}
 
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(getUrl())
-                .append(getSize())
-                .toHashCode();
-    }
+	public String getPrivateState() {
+		return privateState;
+	}
+
+	public void setPrivateState(String privateState) {
+		this.privateState = privateState;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		Download download = (Download) o;
+
+		return new EqualsBuilder().append(getUrl(), download.getUrl()).append(getSize(), download.getSize()).isEquals();
+	}
+
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 37).append(getUrl()).append(getSize()).toHashCode();
+	}
 }
