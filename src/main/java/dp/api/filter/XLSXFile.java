@@ -16,9 +16,6 @@ public class XLSXFile {
     @JsonProperty("size")
     private String size;
 
-    public XLSXFile() {
-    }
-
     public String getPublicUrl() {
         return publicUrl;
     }
