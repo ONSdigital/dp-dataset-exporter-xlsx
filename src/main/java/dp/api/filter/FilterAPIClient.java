@@ -3,13 +3,14 @@ package dp.api.filter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dp.api.AuthUtils;
+import dp.api.authentication.ServiceIdentity;
 import dp.exceptions.FilterAPIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
@@ -37,12 +38,21 @@ public class FilterAPIClient {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public void addXLSXFile(final String id, final String s3Location, final long size) throws JsonProcessingException {
+    public void addXLSXFile(final String id, final String s3Location, final long size, boolean filterIsPublished) throws JsonProcessingException {
 
         final String url = UriComponentsBuilder.fromHttpUrl(filterAPIURL + "/filter-outputs/{filterId}").buildAndExpand(id).toUriString();
         final String sizeToString = Long.toString(size);
 
-        final PutFileRequest r = new PutFileRequest(new Downloads(new XLSXFile(s3Location, sizeToString)));
+        XLSXFile xlsxFile = new XLSXFile();
+        xlsxFile.setSize(sizeToString);
+
+        if (filterIsPublished) {
+            xlsxFile.setPublicUrl(s3Location);
+        } else {
+            xlsxFile.setPrivateUrl(s3Location);
+        }
+
+        final PutFileRequest r = new PutFileRequest(new Downloads(xlsxFile));
 
         try {
 
@@ -54,7 +64,6 @@ public class FilterAPIClient {
         }
     }
 
-
     public Filter getFilter(final String filterID) {
 
         final String url = UriComponentsBuilder
@@ -65,7 +74,9 @@ public class FilterAPIClient {
 
         try {
 
-            ResponseEntity<Filter> responseEntity = restTemplate.getForEntity(url, Filter.class);
+            HttpEntity<ServiceIdentity> entity = AuthUtils.createAuthHeaders(serviceToken);
+            ResponseEntity<Filter> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, Filter.class);
+
             LOGGER.info("filter api get response, url : {}, response {}", url, responseEntity.getStatusCode());
             return responseEntity.getBody();
 
