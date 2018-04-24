@@ -122,8 +122,8 @@ public class HandlerTest {
         Version ver = new Version();
         ver.setState("associated");
 
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("v4.csv", "746573742D6B6579");
+        Map<String, Object> map = new HashMap<>();
+        map.put("key", "746573742D6B6579");
         when(vaultTemplate.read(anyString())).thenReturn(vaultResponse);
         when(vaultResponse.getData()).thenReturn(map);
 
@@ -131,7 +131,7 @@ public class HandlerTest {
         when(s3Object.getObjectContent()).thenReturn(stream);
         when(s3Crypto.getObjectWithPSK("bucket", "v4.csv", "test-key".getBytes())).thenReturn(s3Object);
         when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/morty.xlsx"));
-        when(datasetAPI.getMetadata(versionURL)).thenReturn(datasetMetadata);
+        when(datasetAPI.getMetadata("/instances/123")).thenReturn(datasetMetadata);
         when(converter.toXLSX(any(), any())).thenReturn(workBookMock);
 
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
@@ -139,20 +139,18 @@ public class HandlerTest {
 
         handler.listen(exportedFile);
 
-        verify(datasetAPI, times(1)).getVersion(anyString());
-        verify(s3Crypto, times(1)).getObjectWithPSK(anyString(), anyString(), any());
-        verify(datasetAPI, times(1)).getMetadata(versionURL);
+        verify(datasetAPI, times(1)).getVersion("/instances/" + instanceID);
         verify(converter, times(1)).toXLSX(any(), any());
         verify(datasetAPI, times(1)).putVersionDownloads(any(), any());
         verify(workBookMock, times(1)).write(any(OutputStream.class));
-        verify(vaultTemplate, times(2)).read("secret/shared/psk");
-        verify(vaultResponse, times(2)).getData();
+        verify(vaultTemplate, times(1)).read("secret/shared/psk/v4.csv");
+        verify(vaultResponse, times(1)).getData();
         verify(vaultTemplate, times(1)).write(any(), any());
         verify(s3Crypto, times(1)).putObjectWithPSK(any(), any());
         verify(s3Crypto, times(1)).putObjectWithPSK(arguments.capture(), any());
 
-        assertThat("inccorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
-        assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("morty.xlsx"));
+        assertThat("incorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
+        assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("morty.xlsx"));
     }
 
     @Test
