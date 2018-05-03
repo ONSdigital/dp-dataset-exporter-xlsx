@@ -37,6 +37,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
@@ -232,7 +233,7 @@ public class Handler {
         LOGGER.info("completed processing kafka message", message.getFilterId());
     }
 
-    private WorkbookDetails createWorkbook(S3Object object, Metadata datasetMetadata, String filename,
+    private WorkbookDetails createWorkbook(S3Object object, Metadata datasetMetadata, String fileId,
                                            boolean isPublished) throws IOException {
         try (final Workbook workbook = converter.toXLSX(object.getObjectContent(), datasetMetadata);
              final ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
@@ -244,31 +245,34 @@ public class Handler {
             final ObjectMetadata metadata = new ObjectMetadata();
 
             metadata.setContentLength(contentLength);
-            final String key = filename + ".xlsx";
+            final String filename = fileId + ".xlsx";
 
             try (final ByteArrayInputStream stream = new ByteArrayInputStream(xlsxBytes)) {
-                final PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, key, stream, metadata);
+                final PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, filename, stream, metadata);
                 if (isPublished) {
                     s3Client.putObject(putObjectRequest);
                 } else {
                     byte[] psk = createPSK();
 
-                    Map<String, Object> map = vaultOperations.read(vaultPath).getData();
-                    map.put(key, Hex.encodeHexString(psk));
+                    String path = vaultPath + "/" + filename;
+                    String vaultKey = "key";
+                    
+                    Map<String, Object> map = new HashMap<>();
+                    map.put(vaultKey, Hex.encodeHexString(psk));
 
-                    vaultOperations.write(vaultPath, map);
+                    vaultOperations.write(path, map);
                     putObjectRequest.setBucketName(privateBucket);
 
                     s3Crypto.putObjectWithPSK(putObjectRequest, psk);
                 }
-                return new WorkbookDetails(s3Client.getUrl(bucket, key).toString(), contentLength);
+                return new WorkbookDetails(s3Client.getUrl(bucket, filename).toString(), contentLength);
             } catch (SdkClientException e) {
-                LOGGER.error("error while attempting PUT XLSX workbook to S3 bucket, filename: {}, bucket: {}", key,
+                LOGGER.error("error while attempting PUT XLSX workbook to S3 bucket, filename: {}, bucket: {}", filename,
                         bucket);
                 throw new FilterAPIException("error while attempting PUT XLSX workbook to S3 bucket", e);
             }
         } catch (IOException e) {
-            LOGGER.error("error while attempting create XLSX workbook, filename: {}, bucket: {}", filename);
+            LOGGER.error("error while attempting create XLSX workbook, filename: {}, bucket: {}", fileId);
             throw e;
         }
     }
@@ -278,9 +282,12 @@ public class Handler {
             return s3Client.getObject(bucket, key);
         }
 
-        Map<String, Object> map = vaultOperations.read(vaultPath).getData();
+        String path = vaultPath + "/" + key;
+        String vaultKey = "key";
+        
+        Map<String, Object> map = vaultOperations.read(path).getData();
 
-        String psk = (String) map.get(key);
+        String psk = (String) map.get(vaultKey);
 
         byte[] pskBytes = Hex.decodeHex(psk.toCharArray());
         return s3Crypto.getObjectWithPSK(bucket, key, pskBytes);
