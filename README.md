@@ -14,9 +14,10 @@ Ensure you have vault running.
 * Install Java 1.8+
 * Install kafka `brew install kafka` supports versions (0.9, 0.10, 0.11)
 * Run the auth-stub-api or Zebedee for authentication
+* Setup AWS credentials. The app uses the default provider chain. When running locally this typically means they are provided by the `~/.aws/credentials` file.  Alternatively you can inject the credentials via environment variables as described in the configuration section
 
-To quickly run the service locally run `make debug`. Make sure AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are
-setup as environment variables.
+To quickly run the service locally run `make debug`. 
+
 
 ### Configuration
 
@@ -38,9 +39,10 @@ setup as environment variables.
 | VAULT_ADDR            | http://localhost:8200                | The address of vault
 | VAULT_TOKEN           | -                                    | Use `make debug` to set a vault token
 | VAULT_PATH            | secret/shared/psk                    | The vault path to store psks
-
 | SERVICE_AUTH_TOKEN    | 7049050e-5d55-440d-b461-319f8cdf6670 | Service token to authenticate against Zebedee
 | ZEBEDEE_URL           |                                      | A url to zebedee, if provided the service auth token will be checked on startup
+| AWS_ACCESS_KEY_ID     | -                                    | The AWS access key credential
+| AWS_SECRET_ACCESS_KEY | -                                    | The AWS secret key credential
 
 ### Contributing
 
