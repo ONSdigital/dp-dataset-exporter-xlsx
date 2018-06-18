@@ -150,7 +150,7 @@ public class HandlerTest {
         verify(s3Crypto, times(1)).putObjectWithPSK(arguments.capture(), any());
 
         assertThat("incorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
-        assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("morty.xlsx"));
+        assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("full-datasets/morty.xlsx"));
     }
 
     @Test
@@ -185,7 +185,7 @@ public class HandlerTest {
         verify(s3Client, times(1)).putObject(arguments.capture());
 
         assertThat("inccorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
-        assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("123.xlsx"));
+        assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("filtered-datasets/123.xlsx"));
     }
 
     @Test
@@ -299,8 +299,8 @@ public class HandlerTest {
         verify(s3Client, times(1)).putObject(arguments.capture());
         verify(filterAPI, never()).addXLSXFile(any(), any(), anyLong(), anyBoolean());
 
-        assertThat("inccorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
-        assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("123.xlsx"));
+        assertThat("incorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
+        assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("filtered-datasets/123.xlsx"));
     }
 
     @Test
@@ -335,8 +335,8 @@ public class HandlerTest {
         verify(s3Client, times(1)).putObject(arguments.capture());
         verify(filterAPI, times(1)).addXLSXFile(any(), any(), anyLong(), anyBoolean());
 
-        assertThat("inccorrect buck name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
-        assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("123.xlsx"));
+        assertThat("incorrect buck name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
+        assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("filtered-datasets/123.xlsx"));
     }
 
     @Test
@@ -371,8 +371,8 @@ public class HandlerTest {
 		verify(workBookMock, times(1)).write(any(OutputStream.class));
 		verify(s3Client, times(1)).putObject(arguments.capture());
 
-        assertThat("inccorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
-        assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("morty.xlsx"));
+        assertThat("incorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
+        assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("full-datasets/morty.xlsx"));
     }
 
     @Test
@@ -505,8 +505,8 @@ public class HandlerTest {
         verify(s3Client, times(1)).putObject(arguments.capture());
         verify(workbookMock, times(1)).close();
 
-        assertThat("inccorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
-        assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("morty.xlsx"));
+        assertThat("incorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
+        assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("full-datasets/morty.xlsx"));
     }
 
     @Test
@@ -547,7 +547,7 @@ public class HandlerTest {
             verify(workbookMock, times(1)).close();
 
             assertThat("inccorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
-            assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("123.xlsx"));
+            assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("filtered-datasets/123.xlsx"));
         }
     }
 
