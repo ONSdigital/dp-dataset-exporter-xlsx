@@ -129,25 +129,25 @@ public class HandlerTest {
 
         when(datasetAPI.getVersion("/instances/123")).thenReturn(ver);
         when(s3Object.getObjectContent()).thenReturn(stream);
-        when(s3Crypto.getObjectWithPSK("bucket", "v4.csv", "test-key".getBytes())).thenReturn(s3Object);
-        when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/morty.xlsx"));
+        when(s3Crypto.getObjectWithPSK("bucket", "datasets/v4.csv", "test-key".getBytes())).thenReturn(s3Object);
+        when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/datasets/morty.xlsx"));
         when(datasetAPI.getMetadata("/instances/123")).thenReturn(datasetMetadata);
         when(converter.toXLSX(any(), any())).thenReturn(workBookMock);
 
-        final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
+        final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/datasets/v4.csv", instanceID, datasetID, edition,
                 version, filename);
 
         handler.listen(exportedFile);
 
         verify(datasetAPI, times(1)).getVersion("/instances/" + instanceID);
-        verify(converter, times(1)).toXLSX(any(), any());
         verify(datasetAPI, times(1)).putVersionDownloads(any(), any());
         verify(workBookMock, times(1)).write(any(OutputStream.class));
         verify(vaultTemplate, times(1)).read("secret/shared/psk/v4.csv");
         verify(vaultResponse, times(1)).getData();
-        verify(vaultTemplate, times(1)).write(any(), any());
+        verify(vaultTemplate, times(1)).write(eq("secret/shared/psk/morty.xlsx"), any());
         verify(s3Crypto, times(1)).putObjectWithPSK(any(), any());
         verify(s3Crypto, times(1)).putObjectWithPSK(arguments.capture(), any());
+        verify(converter, times(1)).toXLSX(any(), any());
 
         assertThat("incorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
         assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("full-datasets/morty.xlsx"));

@@ -37,6 +37,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -265,11 +266,13 @@ public class Handler {
                 } else {
                     byte[] psk = createPSK();
 
-                    String path = vaultPath + "/" + filename;
+                    String path = vaultPath + "/" + Paths.get(filename).getFileName().toString();
                     String vaultKey = "key";
-                    
+
                     Map<String, Object> map = new HashMap<>();
                     map.put(vaultKey, Hex.encodeHexString(psk));
+
+                    LOGGER.info("writing key to vault path {}", path);
 
                     vaultOperations.write(path, map);
                     putObjectRequest.setBucketName(privateBucket);
@@ -293,9 +296,10 @@ public class Handler {
             return s3Client.getObject(bucket, key);
         }
 
-        String path = vaultPath + "/" + key;
+        String path = vaultPath + "/" + Paths.get(key).getFileName().toString();
         String vaultKey = "key";
-        
+
+        LOGGER.info("reading key from vault path {}", path);
         Map<String, Object> map = vaultOperations.read(path).getData();
 
         String psk = (String) map.get(vaultKey);
