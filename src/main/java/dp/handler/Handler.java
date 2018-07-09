@@ -37,6 +37,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -68,6 +69,12 @@ public class Handler {
 
     @Value("${DOWNLOAD_SERVICE_URL:http://localhost:23600}")
     private String downloadServiceUrl;
+
+    @Value("${FULL_DATASET_FILE_PREFIX:full-datasets/}")
+    private String fullDatasetFilePrefix;
+
+    @Value("${FILTERED_DATASET_FILE_PREFIX:filtered-datasets/}")
+    private String filteredDatasetFilePrefix;
 
     @Autowired
     @Qualifier("s3-client")
@@ -159,7 +166,9 @@ public class Handler {
 
         WorkbookDetails details;
         try {
-            details = createWorkbook(object, datasetMetadata, message.getFilterId().toString(), filter.isPublished());
+            final String filename = filteredDatasetFilePrefix + message.getFilterId().toString() + ".xlsx";
+
+            details = createWorkbook(object, datasetMetadata, filename, filter.isPublished());
         } catch (IOException e) {
             throw new IOException(format("error while attempting to create XLSX workbook filterID: {0}, filename: {1}",
                     message.getFilterId().toString(), message.getFilename().toString()), e);
@@ -196,7 +205,11 @@ public class Handler {
 
         WorkbookDetails details;
         try {
-            details = createWorkbook(object, metadata, message.getFilename().toString(), isPublished);
+
+
+            final String filename = fullDatasetFilePrefix + message.getFilename().toString() + ".xlsx";
+
+            details = createWorkbook(object, metadata, filename, isPublished);
 
             try {
                 String downloadUrl = downloadServiceUrl + "/downloads" + format(VERSION_DOWNLOADS_URL, message.getDatasetId(),
@@ -233,7 +246,7 @@ public class Handler {
         LOGGER.info("completed processing kafka message", message.getFilterId());
     }
 
-    private WorkbookDetails createWorkbook(S3Object object, Metadata datasetMetadata, String fileId,
+    private WorkbookDetails createWorkbook(S3Object object, Metadata datasetMetadata, String filename,
                                            boolean isPublished) throws IOException {
         try (final Workbook workbook = converter.toXLSX(object.getObjectContent(), datasetMetadata);
              final ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
@@ -245,7 +258,6 @@ public class Handler {
             final ObjectMetadata metadata = new ObjectMetadata();
 
             metadata.setContentLength(contentLength);
-            final String filename = fileId + ".xlsx";
 
             try (final ByteArrayInputStream stream = new ByteArrayInputStream(xlsxBytes)) {
                 final PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, filename, stream, metadata);
@@ -254,11 +266,13 @@ public class Handler {
                 } else {
                     byte[] psk = createPSK();
 
-                    String path = vaultPath + "/" + filename;
+                    String path = vaultPath + "/" + Paths.get(filename).getFileName().toString();
                     String vaultKey = "key";
-                    
+
                     Map<String, Object> map = new HashMap<>();
                     map.put(vaultKey, Hex.encodeHexString(psk));
+
+                    LOGGER.info("writing key to vault path {}", path);
 
                     vaultOperations.write(path, map);
                     putObjectRequest.setBucketName(privateBucket);
@@ -272,7 +286,7 @@ public class Handler {
                 throw new FilterAPIException("error while attempting PUT XLSX workbook to S3 bucket", e);
             }
         } catch (IOException e) {
-            LOGGER.error("error while attempting create XLSX workbook, filename: {}, bucket: {}", fileId);
+            LOGGER.error("error while attempting create XLSX workbook, filename: {}, bucket: {}", filename);
             throw e;
         }
     }
@@ -282,9 +296,10 @@ public class Handler {
             return s3Client.getObject(bucket, key);
         }
 
-        String path = vaultPath + "/" + key;
+        String path = vaultPath + "/" + Paths.get(key).getFileName().toString();
         String vaultKey = "key";
-        
+
+        LOGGER.info("reading key from vault path {}", path);
         Map<String, Object> map = vaultOperations.read(path).getData();
 
         String psk = (String) map.get(vaultKey);
