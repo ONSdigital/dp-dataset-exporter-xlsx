@@ -16,6 +16,13 @@ job "dp-dataset-exporter-xlsx" {
       value     = "publishing"
     }
 
+    restart {
+      attempts = 3
+      delay    = "15s"
+      interval = "1m"
+      mode     = "delay"
+    }
+
     task "dp-dataset-exporter-xlsx" {
       driver = "docker"
 
