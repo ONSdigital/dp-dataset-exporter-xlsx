@@ -34,9 +34,9 @@ public class MetadataTest {
         metadata.setDescription("This is the description of the dataset. This is the description of the dataset. This is the description of the dataset. This is the description of the dataset. This is the description of the dataset. This is the description of the dataset.");
 
         metadata.setDimensions(Arrays.asList(
-                new CodeList("dimension1Id", "dimension1 name", "dimension1 description", "http://localhost:22400/code-lists/64d384f1-ea3b-445c-8fb8-aa453f96e58a"),
-                new CodeList("dimension2Id", "dimension2 name", "dimension2 description", "http://localhost:22400/code-lists/64d384f1-ea3b-445c-8fb8-aa453f96e58a"),
-                new CodeList("dimension3Id", "dimension3 name", "dimension3 description", "http://localhost:22400/code-lists/64d384f1-ea3b-445c-8fb8-aa453f96e58a")
+                new CodeList("dimension1Id", "dimension1 name", "dimension1 description", "http://localhost:22400/code-lists/64d384f1-ea3b-445c-8fb8-aa453f96e58a", ""),
+                new CodeList("dimension2Id", "dimension2 name", "dimension2 description", "http://localhost:22400/code-lists/64d384f1-ea3b-445c-8fb8-aa453f96e58a", ""),
+                new CodeList("dimension3Id", "dimension3 name", "dimension3 description", "http://localhost:22400/code-lists/64d384f1-ea3b-445c-8fb8-aa453f96e58a", "")
         ));
 
         metadata.setDistribution(Arrays.asList(

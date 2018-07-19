@@ -7,56 +7,70 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class CodeList {
 
-    @JsonProperty("id")
-    private String id;
+	@JsonProperty("id")
+	private String id;
 
-    @JsonProperty("name")
-    private String name;
+	@JsonProperty("name")
+	private String name;
 
-    @JsonProperty("description")
-    private String description;
+	@JsonProperty("description")
+	private String description;
 
-    @JsonProperty("href")
-    private String href;
+	@JsonProperty("href")
+	private String href;
+	
+	@JsonProperty("label")
+	private String label;
 
-    public CodeList(String id, String name, String description, String href) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.href = href;
-    }
+	public CodeList(String id, String name, String description, String href, String label) {
+		this.id = id;
+		this.name = name;
+		this.description = description;
+		this.href = href;
+		this.label = label;
+	}
 
-    public CodeList() {}
+	public CodeList() {
+	}
 
-    public String getId() {
-        return id;
-    }
+	public String getId() {
+		return id;
+	}
 
-    public void setId(String id) {
-        this.id = id;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public String getDescription() {
-        return description;
-    }
+	public String getDescription() {
+		return description;
+	}
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+	public void setDescription(String description) {
+		this.description = description;
+	}
 
-    public String getHref() {
-        return href;
-    }
+	public String getHref() {
+		return href;
+	}
 
-    public void setHref(String href) {
-        this.href = href;
-    }
+	public void setHref(String href) {
+		this.href = href;
+	}
+	
+	public String getLabel() {
+		return label;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
 }

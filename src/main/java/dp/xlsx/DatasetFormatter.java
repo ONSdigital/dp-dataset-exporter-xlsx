@@ -1,5 +1,6 @@
 package dp.xlsx;
 
+import dp.api.dataset.models.CodeList;
 import dp.api.dataset.models.Metadata;
 import dp.api.dataset.models.UsageNotes;
 import org.apache.poi.ss.usermodel.Cell;
@@ -152,8 +153,15 @@ class DatasetFormatter {
         int columnOffset = 0;
 
         for (DimensionData dimensionData : file.getDimensions()) {
-
-            String dimensionName = StringUtils.capitalize(dimensionData.getValue());
+        	
+        		String dimensionName = StringUtils.capitalize(dimensionData.getValue());
+        		 		
+        		for (CodeList codeList : datasetMetadata.getDimensions()) {
+    				if (StringUtils.capitalize((codeList.getName())).equals(dimensionName) && !codeList.getLabel().isEmpty()) {
+    					dimensionName = codeList.getLabel();
+    				}
+    			}
+            
             addHeaderCell(columnOffset, headerRow, dimensionName);
             columnOffset++;
 
