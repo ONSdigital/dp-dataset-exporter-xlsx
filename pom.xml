@@ -35,7 +35,7 @@
 		<dependency>
 			<groupId>com.github.ONSdigital</groupId>
 			<artifactId>java-s3crypto</artifactId>
-			<version>1327b8b036</version>
+			<version>temporary-logging-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
