@@ -146,6 +146,7 @@ public class Handler {
         Filter filter = filterAPIClient.getFilter(message.getFilterId().toString());
         final AmazonS3URI uri = new AmazonS3URI(message.getS3URL().toString());
         final S3Object object = getObject(uri.getBucket(), uri.getKey(), filter.isPublished());
+        LOGGER.info("successfully got s3Object", message.getFilterId().toString())
 
         String metadataURL;
         try {
@@ -194,6 +195,7 @@ public class Handler {
         boolean isPublished = PUBLISHED_STATE.equals(state);
         final AmazonS3URI uri = new AmazonS3URI(message.getS3URL().toString());
         S3Object object = getObject(uri.getBucket(), uri.getKey(), PUBLISHED_STATE.equals(state));
+        LOGGER.info("successfully got s3Object", versionURL)
 
         Metadata metadata;
         try {
@@ -304,7 +306,9 @@ public class Handler {
 
         String psk = (String) map.get(vaultKey);
 
+        LOGGER.info("decoding psk", path)
         byte[] pskBytes = Hex.decodeHex(psk.toCharArray());
+        LOGGER.info("about to call getObjectWithPSK", path)
         return s3Crypto.getObjectWithPSK(bucket, key, pskBytes);
     }
 
