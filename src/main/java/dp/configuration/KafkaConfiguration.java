@@ -26,7 +26,7 @@ public class KafkaConfiguration {
     @Value("${KAFKA_GROUP:dp-dataset-exporter-xlsx}")
     private String kafkaGroup;
     
-    private static final long POLL_TIMEOUT = 30000;
+    private static final int POLL_TIMEOUT = 30000;
 
     /**
      * We override the default consumer factory to place a AvroDeserializer within
