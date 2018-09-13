@@ -43,7 +43,7 @@ public class XLSXFile {
         this.size = size;
     }
 
-    public Boolean getSkipped() {
+    public Boolean isSkipped() {
         return skipped;
     }
 

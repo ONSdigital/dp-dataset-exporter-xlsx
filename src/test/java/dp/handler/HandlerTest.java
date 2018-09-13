@@ -161,9 +161,9 @@ public class HandlerTest {
 
         handler.listen(exportedFile);
 
-        verify(datasetAPI, times(0)).getVersion("/instances/" + instanceID);
-        verify(datasetAPI, times(0)).putVersionDownloads(any(), any());
-        verify(converter, times(0)).toXLSX(any(), any());
+        verify(datasetAPI, never()).getVersion("/instances/" + instanceID);
+        verify(datasetAPI, never().putVersionDownloads(any(), any());
+        verify(converter, never().toXLSX(any(), any());
     }
 
     @Test
@@ -211,10 +211,10 @@ public class HandlerTest {
 
         handler.listen(exportedFile);
 
-        verify(filterAPI, times(0)).getFilter(exportedFile.getFilterId().toString());
+        verify(filterAPI, never().getFilter(exportedFile.getFilterId().toString());
         verify(filterAPI, times(1)).setToComplete(exportedFile.getFilterId().toString());
-        verify(datasetAPI, times(0)).getMetadata(versionURL);
-        verify(converter, times(0)).toXLSX(any(), any());
+        verify(datasetAPI, never()).getMetadata(versionURL);
+        verify(converter, never()).toXLSX(any(), any());
     }
 
     @Test

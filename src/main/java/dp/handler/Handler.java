@@ -76,6 +76,7 @@ public class Handler {
     @Value("${FILTERED_DATASET_FILE_PREFIX:filtered-datasets/}")
     private String filteredDatasetFilePrefix;
 
+    // 1M row limit in excel - need some buffer for headers/footnotes in file
     @Value("${MAX_OBSERVATION_COUNT:999900}")
     private Integer maxObservationCount;
 
