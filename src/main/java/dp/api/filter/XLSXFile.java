@@ -16,6 +16,9 @@ public class XLSXFile {
     @JsonProperty("size")
     private String size;
 
+    @JsonProperty("skipped")
+    private Boolean skipped;
+
     public String getPublicUrl() {
         return publicUrl;
     }
@@ -38,5 +41,13 @@ public class XLSXFile {
 
     public void setSize(String size) {
         this.size = size;
+    }
+
+    public Boolean getSkipped() {
+        return skipped;
+    }
+
+    public void setSkipped(Boolean skipped) {
+        this.skipped = skipped;
     }
 }

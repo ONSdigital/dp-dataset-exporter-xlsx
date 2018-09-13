@@ -76,6 +76,9 @@ public class Handler {
     @Value("${FILTERED_DATASET_FILE_PREFIX:filtered-datasets/}")
     private String filteredDatasetFilePrefix;
 
+    @Value("${MAX_OBSERVATION_COUNT:999900}")
+    private Integer maxObservationCount;
+
     @Autowired
     @Qualifier("s3-client")
     private AmazonS3 s3Client;
@@ -103,9 +106,17 @@ public class Handler {
         try {
 
             if (FILTER.equals(messageType)) {
-                handleFilterMessage(message);
+                if (message.getRowCount() > maxObservationCount) {
+                  completeFilter(message);
+                } else {
+                  handleFilterMessage(message);
+                }
             } else {
-                handleFullDownloadMessage(message);
+              if (message.getRowCount() <= maxObservationCount) {
+                  handleFullDownloadMessage(message);
+              } else {
+                LOGGER.info("full download too large to export, instanceID {0}, rowCount {1}", message.getInstanceId().toString(), message.getRowCount().toString());
+              }
             }
         } catch (final IOException | FilterAPIException e) {
             if (FILTER.equals(messageType)) {
@@ -138,6 +149,17 @@ public class Handler {
         Version version = datasetAPIClient.getVersion(path);
 
         return version.getState();
+    }
+
+    private void completeFilter(ExportedFile message) throws IOException, DecoderException {
+      LOGGER.info("filter too large to export, filterID {0}, rowCount {1}", message.getFilterId().toString(), message.getRowCount().toString());
+
+      try {
+          filterAPIClient.setToComplete(message.getFilterId().toString());
+      } catch (JsonProcessingException e) {
+          throw new IOException(format("filter api client setToComplete returned error, filterID: {0}",
+                  message.getFilterId().toString()), e);
+      }
     }
 
     private void handleFilterMessage(ExportedFile message) throws IOException, DecoderException {
