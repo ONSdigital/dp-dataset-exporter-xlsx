@@ -103,6 +103,7 @@ public class HandlerTest {
     private String version = "1";
     private String filename = "morty";
     private String versionURL = "/datasets/456/editions/2017/versions/1";
+    private Integer rowCount = 20000;
 
     @Before
     public void setUp() {
@@ -135,7 +136,7 @@ public class HandlerTest {
         when(converter.toXLSX(any(), any())).thenReturn(workBookMock);
 
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/datasets/v4.csv", instanceID, datasetID, edition,
-                version, filename);
+                version, filename, rowCount);
 
         handler.listen(exportedFile);
 
@@ -151,6 +152,18 @@ public class HandlerTest {
 
         assertThat("incorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
         assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("full-datasets/morty.xlsx"));
+    }
+
+    @Test
+    public void validFullDownloadTooLarge() throws Exception {
+        final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/datasets/v4.csv", instanceID, datasetID, edition,
+                version, filename, 500000000);
+
+        handler.listen(exportedFile);
+
+        verify(datasetAPI, never()).getVersion("/instances/" + instanceID);
+        verify(datasetAPI, never()).putVersionDownloads(any(), any());
+        verify(converter, never()).toXLSX(any(), any());
     }
 
     @Test
@@ -172,7 +185,7 @@ public class HandlerTest {
 
         when(converter.toXLSX(any(), any())).thenReturn(workbookMock);
 
-        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "12345", "", "", "", "");
+        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "12345", "", "", "", "", rowCount);
 
         handler.listen(exportedFile);
 
@@ -189,6 +202,22 @@ public class HandlerTest {
     }
 
     @Test
+    public void validFilterTooLarge() throws IOException {
+        boolean published = true;
+        Filter filter = createFilter(published);
+        when(filterAPI.getFilter(any())).thenReturn(filter);
+
+        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "12345", "", "", "", "", 500000000);
+
+        handler.listen(exportedFile);
+
+        verify(filterAPI, never()).getFilter(exportedFile.getFilterId().toString());
+        verify(filterAPI, times(1)).setToComplete(exportedFile.getFilterId().toString());
+        verify(datasetAPI, never()).getMetadata(versionURL);
+        verify(converter, never()).toXLSX(any(), any());
+    }
+
+    @Test
     public void filterLinkInvalidError() throws Exception {
         S3Object s3Object = mock(S3Object.class);
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
@@ -202,7 +231,7 @@ public class HandlerTest {
         when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/sdfsdf"));
         when(filterAPI.getFilter(any())).thenReturn(filter);
 
-        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "12345", "", "", "", "");
+        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "12345", "", "", "", "", rowCount);
 
         handler.listen(exportedFile);
 
@@ -228,7 +257,7 @@ public class HandlerTest {
         when(filterAPI.getFilter(any())).thenReturn(filter);
         when(datasetAPI.getMetadata(versionURL)).thenThrow(new FilterAPIException("flubba wubba dub dub", null));
 
-        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "12345", "", "", "", "");
+        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "12345", "", "", "", "", rowCount);
 
         handler.listen(exportedFile);
 
@@ -256,7 +285,7 @@ public class HandlerTest {
         when(datasetAPI.getMetadata(versionURL)).thenReturn(datasetMetadata);
         when(converter.toXLSX(any(), eq(datasetMetadata))).thenThrow(new IOException());
 
-        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "12345", "", "", "", "");
+        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "12345", "", "", "", "", rowCount);
 
         handler.listen(exportedFile);
 
@@ -288,7 +317,7 @@ public class HandlerTest {
         when(converter.toXLSX(any(), eq(datasetMetadata))).thenReturn(workbookMock);
         when(s3Client.putObject(any())).thenThrow(ex);
 
-        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "12345", "", "", "", "");
+        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "12345", "", "", "", "", rowCount);
 
         handler.listen(exportedFile);
 
@@ -324,7 +353,7 @@ public class HandlerTest {
         when(s3Client.putObject(any())).thenReturn(null);
         doThrow(ex).when(filterAPI).addXLSXFile(any(), any(), anyLong(), anyBoolean());
 
-        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "12345", "", "", "", "");
+        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "12345", "", "", "", "", rowCount);
 
         handler.listen(exportedFile);
 
@@ -360,7 +389,7 @@ public class HandlerTest {
 		when(converter.toXLSX(any(), any())).thenReturn(workBookMock);
 
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
-                version, filename);
+                version, filename, rowCount);
 
         handler.listen(exportedFile);
 
@@ -384,7 +413,7 @@ public class HandlerTest {
         when(s3Client.getObject("bucket", "v4.csv")).thenThrow(mock(SdkClientException.class));
 
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
-                version, filename);
+                version, filename, rowCount);
 
         handler.listen(exportedFile);
 
@@ -409,7 +438,7 @@ public class HandlerTest {
         when(datasetAPI.getMetadata(anyString())).thenThrow(new FilterAPIException("flubba wubba dub dub", null));
 
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
-                version, filename);
+                version, filename, rowCount);
 
         handler.listen(exportedFile);
 
@@ -436,7 +465,7 @@ public class HandlerTest {
         when(converter.toXLSX(stream, metadata)).thenThrow(new IOException());
 
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
-                version, filename);
+                version, filename, rowCount);
 
         handler.listen(exportedFile);
 
@@ -458,7 +487,7 @@ public class HandlerTest {
         when(datasetAPI.getVersion("/instances/123")).thenThrow(new MalformedURLException());
 
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
-                version, filename);
+                version, filename, rowCount);
 
         handler.listen(exportedFile);
 
@@ -492,7 +521,7 @@ public class HandlerTest {
                 .putVersionDownloads(eq(versionURL), any());
 
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
-                version, filename);
+                version, filename, rowCount);
 
         handler.listen(exportedFile);
 
@@ -532,7 +561,7 @@ public class HandlerTest {
         when(converter.toXLSX(any(), any())).thenReturn(workbookMock);
         when(s3Client.putObject(any())).thenThrow(new RuntimeException());
 
-        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "", "", "", "", "");
+        final ExportedFile exportedFile = new ExportedFile("123", "s3://bucket/v4.csv", "", "", "", "", "", rowCount);
 
         try {
             handler.listen(exportedFile);
