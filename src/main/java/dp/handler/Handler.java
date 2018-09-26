@@ -116,7 +116,7 @@ public class Handler {
               if (message.getRowCount() <= maxObservationCount) {
                   handleFullDownloadMessage(message);
               } else {
-                LOGGER.info("full download too large to export, instanceID {0}, rowCount {1}", message.getInstanceId().toString(), message.getRowCount().toString());
+                LOGGER.info("full download too large to export, instanceID {}, rowCount {}", message.getInstanceId().toString(), message.getRowCount().toString());
               }
             }
         } catch (final IOException | FilterAPIException e) {
@@ -153,7 +153,7 @@ public class Handler {
     }
 
     private void completeFilter(ExportedFile message) throws IOException, DecoderException {
-      LOGGER.info("filter too large to export, filterID {0}, rowCount {1}", message.getFilterId().toString(), message.getRowCount().toString());
+      LOGGER.info("filter too large to export, filterID {}, rowCount {}", message.getFilterId().toString(), message.getRowCount().toString());
 
       try {
           filterAPIClient.setToComplete(message.getFilterId().toString());
