@@ -21,6 +21,7 @@ public class AvroDeserializerTest {
     private String version = "1";
     private String filename = "morty";
     private String s3URL = "s3://bucket/v4.csv";
+    private Integer rowCount = 20000;
 
     @Test(expected = org.apache.kafka.common.errors.SerializationException.class)
     public void invalidAvroMessage() {
@@ -37,13 +38,14 @@ public class AvroDeserializerTest {
         assertThat(exportedFile.getEdition().toString()).isEqualTo(edition);
         assertThat(exportedFile.getVersion().toString()).isEqualTo(version);
         assertThat(exportedFile.getFilename().toString()).isEqualTo(filename);
+        assertThat(exportedFile.getRowCount()).isEqualTo(rowCount);
     }
 
     private byte[] getValidMessageBytes() throws Exception {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(out, null);
             DatumWriter<ExportedFile> writer = new SpecificDatumWriter<ExportedFile>(ExportedFile.getClassSchema());
-            ExportedFile f = new ExportedFile(filterID, s3URL, instanceID, datasetID, edition, version, filename);
+            ExportedFile f = new ExportedFile(filterID, s3URL, instanceID, datasetID, edition, version, filename, rowCount);
             writer.write(f, encoder);
             encoder.flush();
             return out.toByteArray();

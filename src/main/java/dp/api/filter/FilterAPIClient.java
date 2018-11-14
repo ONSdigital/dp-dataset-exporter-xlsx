@@ -64,6 +64,23 @@ public class FilterAPIClient {
         }
     }
 
+    public void setToComplete(final String id) throws JsonProcessingException {
+      final String url = UriComponentsBuilder.fromHttpUrl(filterAPIURL + "/filter-outputs/{filterId}").buildAndExpand(id).toUriString();
+
+      XLSXFile xlsxFile = new XLSXFile();
+      xlsxFile.setSkipped(true);
+
+      final PutFileRequest r = new PutFileRequest(new Downloads(xlsxFile));
+
+      try {
+          LOGGER.info("updating filter api, url : {}, json : {}", url, objectMapper.writeValueAsString(r));
+          restTemplate.put(url, AuthUtils.createHeaders(serviceToken, token, r));
+
+      } catch (RestClientException e) {
+          throw new FilterAPIException("expected 200 status code", e);
+      }
+    }
+
     public Filter getFilter(final String filterID) {
 
         final String url = UriComponentsBuilder

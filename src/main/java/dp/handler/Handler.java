@@ -76,6 +76,10 @@ public class Handler {
     @Value("${FILTERED_DATASET_FILE_PREFIX:filtered-datasets/}")
     private String filteredDatasetFilePrefix;
 
+    // 1M row limit in excel - need some buffer for headers/footnotes in file
+    @Value("${MAX_OBSERVATION_COUNT:999900}")
+    private Integer maxObservationCount;
+
     @Autowired
     @Qualifier("s3-client")
     private AmazonS3 s3Client;
@@ -103,9 +107,17 @@ public class Handler {
         try {
 
             if (FILTER.equals(messageType)) {
-                handleFilterMessage(message);
+                if (message.getRowCount() > maxObservationCount) {
+                  completeFilter(message);
+                } else {
+                  handleFilterMessage(message);
+                }
             } else {
-                handleFullDownloadMessage(message);
+              if (message.getRowCount() <= maxObservationCount) {
+                  handleFullDownloadMessage(message);
+              } else {
+                LOGGER.info("full download too large to export, instanceID {}, rowCount {}", message.getInstanceId().toString(), message.getRowCount().toString());
+              }
             }
         } catch (final IOException | FilterAPIException e) {
             if (FILTER.equals(messageType)) {
@@ -140,12 +152,24 @@ public class Handler {
         return version.getState();
     }
 
+    private void completeFilter(ExportedFile message) throws IOException, DecoderException {
+      LOGGER.info("filter too large to export, filterID {}, rowCount {}", message.getFilterId().toString(), message.getRowCount().toString());
+
+      try {
+          filterAPIClient.setToComplete(message.getFilterId().toString());
+      } catch (JsonProcessingException e) {
+          throw new IOException(format("filter api client setToComplete returned error, filterID: {0}",
+                  message.getFilterId().toString()), e);
+      }
+    }
+
     private void handleFilterMessage(ExportedFile message) throws IOException, DecoderException {
         LOGGER.info("handling filter message: ", message.getFilterId().toString());
 
         Filter filter = filterAPIClient.getFilter(message.getFilterId().toString());
         final AmazonS3URI uri = new AmazonS3URI(message.getS3URL().toString());
         final S3Object object = getObject(uri.getBucket(), uri.getKey(), filter.isPublished());
+        LOGGER.info("successfully got s3Object", message.getFilterId().toString());
 
         String metadataURL;
         try {
@@ -194,6 +218,7 @@ public class Handler {
         boolean isPublished = PUBLISHED_STATE.equals(state);
         final AmazonS3URI uri = new AmazonS3URI(message.getS3URL().toString());
         S3Object object = getObject(uri.getBucket(), uri.getKey(), PUBLISHED_STATE.equals(state));
+        LOGGER.info("successfully got s3Object", versionURL);
 
         Metadata metadata;
         try {
@@ -304,7 +329,9 @@ public class Handler {
 
         String psk = (String) map.get(vaultKey);
 
+        LOGGER.info("decoding psk", path);
         byte[] pskBytes = Hex.decodeHex(psk.toCharArray());
+        LOGGER.info("about to call getObjectWithPSK", path);
         return s3Crypto.getObjectWithPSK(bucket, key, pskBytes);
     }
 
