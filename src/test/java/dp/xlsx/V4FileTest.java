@@ -16,7 +16,7 @@ public class V4FileTest {
     @Test
     public void groupSize() throws IOException {
         try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_0.csv")) {
-            final V4File file = new V4File(stream);
+            final V4File file = new V4File(stream, null);
             assertThat(file.groupData().size()).isEqualTo(6);
         }
     }
@@ -31,7 +31,7 @@ public class V4FileTest {
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
 
         // When the V4File constructor is called
-        new V4File(inputStream);
+        new V4File(inputStream, null);
 
         // Then the expected exception is thrown
     }
@@ -47,7 +47,7 @@ public class V4FileTest {
         String csvContent = csvHeader + csvRow1 + csvRow2 + csvRow3;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
-        final V4File file = new V4File(inputStream);
+        final V4File file = new V4File(inputStream, null);
         file.groupData();
 
         // When getOrderedTimeLabels is called.
@@ -61,7 +61,7 @@ public class V4FileTest {
     @Test
     public void groupContainsObservations() throws IOException {
         try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_0.csv")) {
-            final V4File file = new V4File(stream);
+            final V4File file = new V4File(stream, null);
             final Optional<Group> group = file.groupData().stream().filter(g -> {
                 for (DimensionData data : g.getGroupValues()) {
                     if (data.getValue().equals("02.1 Alcoholic beverages")) {
@@ -87,7 +87,7 @@ public class V4FileTest {
         String csvContent = csvHeader + csvRow1 + csvRow2 + csvRow3;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
-        final V4File file = new V4File(inputStream);
+        final V4File file = new V4File(inputStream, null);
         file.groupData();
 
         // When getOrderedTimeLabels is called.
@@ -110,7 +110,7 @@ public class V4FileTest {
         String csvContent = csvHeader + csvRow1 + csvRow2 + csvRow3;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
-        final V4File file = new V4File(inputStream);
+        final V4File file = new V4File(inputStream, null);
         file.groupData();
 
         // When getOrderedTimeLabels is called.
@@ -130,7 +130,7 @@ public class V4FileTest {
         String csvContent = csvHeader + csvRow1;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
-        final V4File file = new V4File(inputStream);
+        final V4File file = new V4File(inputStream, null);
         List<DimensionData> dimensions = file.getDimensions();
 
         assertThat(dimensions.get(0).getValue()).isEqualTo("Geography");
@@ -140,7 +140,7 @@ public class V4FileTest {
     @Test(expected = IOException.class)
     public void noResultsFound() throws IOException {
         try (final InputStream stream = V4FileTest.class.getResourceAsStream("no_data.csv")) {
-            final V4File file = new V4File(stream);
+            final V4File file = new V4File(stream, null);
 
         }
     }

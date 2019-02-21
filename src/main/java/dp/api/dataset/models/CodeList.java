@@ -27,6 +27,7 @@ public class CodeList {
         this.name = name;
         this.description = description;
         this.href = href;
+        this.label = ""; // optionally populated from metadata
     }
 
     public CodeList() {}
@@ -45,7 +46,7 @@ public class CodeList {
 
     // getBestIdentifier will return label by preference, otherwise name
     public String getBestIdentifier() {
-        if (label.isEmpty()) {
+        if ("".equals(label)) {
             return name;
         } else {
             return label;
@@ -54,6 +55,10 @@ public class CodeList {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public String getDescription() {

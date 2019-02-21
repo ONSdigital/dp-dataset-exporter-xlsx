@@ -36,7 +36,7 @@ public class DatasetFormatterTest {
         String csvContent = csvHeader + csvRow + csvRow2;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
-        final V4File file = new V4File(inputStream);
+        final V4File file = new V4File(inputStream, null);
 
         final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
@@ -56,7 +56,7 @@ public class DatasetFormatterTest {
         String csvContent = csvHeader + csvRow + csvRow2;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
-        final V4File file = new V4File(inputStream);
+        final V4File file = new V4File(inputStream, null);
         final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
         // When format is called
@@ -75,7 +75,7 @@ public class DatasetFormatterTest {
         String csvContent = csvHeader + csvRow + csvRow2;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
-        final V4File file = new V4File(inputStream);
+        final V4File file = new V4File(inputStream, null);
         final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
         // When format is called
@@ -95,7 +95,7 @@ public class DatasetFormatterTest {
 
         try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_0.csv")) {
 
-            final V4File file = new V4File(stream);
+            final V4File file = new V4File(stream, null);
             final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
             datasetFormatter.format();
@@ -117,7 +117,7 @@ public class DatasetFormatterTest {
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
 
-        final V4File file = new V4File(inputStream);
+        final V4File file = new V4File(inputStream, null);
         final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
         // When format is called
@@ -137,7 +137,7 @@ public class DatasetFormatterTest {
         String csvContent = csvHeader + csvRow;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
-        final V4File file = new V4File(inputStream);
+        final V4File file = new V4File(inputStream, null);
         final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
         // When format is called
@@ -157,7 +157,7 @@ public class DatasetFormatterTest {
         String csvContent = csvHeader + csvRow;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
-        final V4File file = new V4File(inputStream);
+        final V4File file = new V4File(inputStream, null);
         final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
         // When format is called
@@ -180,7 +180,7 @@ public class DatasetFormatterTest {
         String csvContent = csvHeader + csvRow;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
-        final V4File file = new V4File(inputStream);
+        final V4File file = new V4File(inputStream, null);
         final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
         // When format is called
@@ -212,7 +212,7 @@ public class DatasetFormatterTest {
 
         try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_2.csv")) {
 
-            final V4File file = new V4File(stream);
+            final V4File file = new V4File(stream, null);
             final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
             datasetFormatter.format();
@@ -230,7 +230,7 @@ public class DatasetFormatterTest {
         String csvContent = csvHeader + csvRow1 + csvRow2;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
-        final V4File file = new V4File(inputStream);
+        final V4File file = new V4File(inputStream, null);
         final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
         // When format is called
@@ -265,7 +265,7 @@ public class DatasetFormatterTest {
                     "CV > 20% Estimates are considered unreliable for practical purposes");
             datasetMetadata.setUsageNotes(notes);
 
-            final V4File file = new V4File(stream);
+            final V4File file = new V4File(stream, null);
             final DatasetFormatter datasetFormatter = new DatasetFormatter(workBookStyles, sheet, file, datasetMetadata);
 
             datasetFormatter.format();

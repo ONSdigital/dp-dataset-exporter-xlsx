@@ -8,31 +8,20 @@ import java.util.Map;
 import dp.api.dataset.models.CodeList;
 import dp.api.dataset.models.Metadata;
 
-/**
- * A single unique combination of dimension options, and its associated observations.
- */
 public class Group implements Comparable<Group> {
 
     private List<DimensionData> groupValues; // the unique dimension options
     private Map<String, Observation> observations; // <time, observation>
 
-    void obsRow(String[] data, int offset) {
-        this.processRow(data, offset, null);
-    }
-
-    void headerRow(String[] data, int offset, Metadata datasetMetadata) {
-        this.processRow(data, offset, datasetMetadata);
-    }
-
     /**
-     * Gather relevant cells from a csv row. There is a slight variation of approach for a
+     * Gather relevant cells from a csv row. There is a variation of approach for a
      * header row vs an observational data row (literally everything that's not a header row),
-     * hence boolean switch.
+     * the two are differentiated by the presence of metadata (only the header row has this).
      *
      * @param data   A row from a V4 file
      * @param offset The v4 file offset
      */
-     Group processRow(String[] data, int offset, Metadata datasetMetadata) {
+     Group(String[] data, int offset, Metadata datasetMetadata) {
 
         final int labelOffset = 2; // Skip the code and get the label when iterating columns
         groupValues = new ArrayList<>();
@@ -66,7 +55,6 @@ public class Group implements Comparable<Group> {
             code = data[i -1];
             getGroupValues().add(new DimensionData(DimensionType.OTHER, label, code));
         }
-        return this;
     }
 
     /**
