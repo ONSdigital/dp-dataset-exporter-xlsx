@@ -13,6 +13,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import dp.api.dataset.models.Metadata;
 
 /**
  * A class used to extract information from a V4 file.
@@ -24,7 +25,7 @@ class V4File {
     private Group headerGroup;
     private String[] additionalHeaders;
 
-    V4File(final InputStream inputStream) throws IOException {
+    V4File(final InputStream inputStream, Metadata datasetMetadata) throws IOException {
 
         final Map<Group, Group> groups = new HashMap<>();
 
@@ -48,11 +49,13 @@ class V4File {
                     throw new IOException("header row does not contain any content");
                 }
 
-
                 final String v4Code = header[0];
 
                 headerOffset = Integer.parseInt(v4Code.split("_")[1]) + 1;
-                headerGroup = new Group(header, headerOffset);
+
+                headerGroup = new Group();
+                headerGroup.headerRow(header, headerOffset, datasetMetadata);
+
                 additionalHeaders = Arrays.copyOfRange(header, 1, headerOffset);
             }
 
@@ -63,7 +66,8 @@ class V4File {
                     continue;
                 }
 
-                final Group group = new Group(row, headerOffset);
+                final Group group = new Group();
+                group.obsRow(row, headerOffset);
                 final String timeValue = row[headerOffset + 1];
                 final String observation = row[0];
                 final String additionalData[] = Arrays.copyOfRange(row, 1, headerOffset);

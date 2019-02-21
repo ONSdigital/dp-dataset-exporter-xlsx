@@ -43,7 +43,7 @@ public class Converter {
         final CellStyle linkStyle = createLinkStyle(workbook);
 
         LOGGER.info("creating local copy of data from stream");
-        final V4File v4File = new V4File(stream);
+        final V4File v4File = new V4File(stream, datasetMetadata);
 
         LOGGER.info("creating data sheet");
         final Sheet datasetSheet = workbook.createSheet("Dataset");

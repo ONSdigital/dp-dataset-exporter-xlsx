@@ -13,6 +13,9 @@ public class CodeList {
     @JsonProperty("name")
     private String name;
 
+    @JsonProperty("label")
+    private String label;
+
     @JsonProperty("description")
     private String description;
 
@@ -38,6 +41,15 @@ public class CodeList {
 
     public String getName() {
         return name;
+    }
+
+    // getBestIdentifier will return label by preference, otherwise name
+    public String getBestIdentifier() {
+        if (label.isEmpty()) {
+            return name;
+        } else {
+            return label;
+        }
     }
 
     public void setName(String name) {

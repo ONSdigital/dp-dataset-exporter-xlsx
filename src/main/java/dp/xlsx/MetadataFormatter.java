@@ -179,7 +179,7 @@ class MetadataFormatter {
 
         for (CodeList codelist : datasetMetadata.getDimensions()) {
 
-            writeString("", StringUtils.capitalize(codelist.getName()));
+            writeString("", StringUtils.capitalize(codelist.getBestIdentifier()));
             writeString("", codelist.getDescription());
             writeBlankRow();
         }
