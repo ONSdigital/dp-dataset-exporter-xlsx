@@ -1,6 +1,5 @@
 package dp.xlsx;
 
-import com.sun.xml.internal.xsom.impl.scd.Iterators;
 import dp.api.dataset.DatasetAPIClientImpl;
 import dp.api.dataset.models.CodeList;
 import dp.api.dataset.models.Metadata;
@@ -9,7 +8,6 @@ import dp.configuration.TestConfig;
 import dp.handler.Handler;
 import dp.s3crypto.S3Crypto;
 
-import org.apache.avro.generic.GenericData;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
@@ -27,7 +25,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @RunWith(SpringRunner.class)
@@ -72,14 +69,9 @@ public class ConverterTest {
 			datasetMetadata.setTitle("test title");
 			datasetMetadata.setDimensions(emptyCodeListArray);
 
-			try {
-				Workbook workbook = converter.toXLSX(csv, datasetMetadata);
-				Assertions.assertThat(workbook.getNumberOfSheets()).isEqualTo(2);
-			} catch (Exception e) {
-				System.out.println(">> " + datasetMetadata.getDimensions().toString());
-				System.out.println(e);
+			Workbook workbook = converter.toXLSX(csv, datasetMetadata);
+			Assertions.assertThat(workbook.getNumberOfSheets()).isEqualTo(2);
 
 			}
 		}
 	}
-}
