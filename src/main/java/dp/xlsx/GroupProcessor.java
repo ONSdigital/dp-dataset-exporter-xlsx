@@ -6,11 +6,11 @@ import dp.api.dataset.models.Metadata;
  */
 public class GroupProcessor {
 
-    public static Group processObsRow(String[] data, int offset) {
+    public Group processObsRow(String[] data, int offset) {
         return new Group(data, offset, null);
     }
 
-    public static Group processHeaderRow(String[] data, int offset, Metadata datasetMetadata) {
+    public Group processHeaderRow(String[] data, int offset, Metadata datasetMetadata) {
         return new Group(data, offset, datasetMetadata);}
 
 }

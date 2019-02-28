@@ -28,32 +28,29 @@ public class Group implements Comparable<Group> {
         observations = new HashMap<>();
         int columnOffset = offset + 3; // skip the observation, time code and time label
 
-        // read geography code and label
-        String label = data[columnOffset];
-        String code = data[columnOffset -1];
-
-        getGroupValues().add(new DimensionData(DimensionType.GEOGRAPHY, label, code));
-        columnOffset += labelOffset;
-
         // add all other dimensions
         for (int i = columnOffset; i < data.length; i += labelOffset) {
+
+            String label = data[i];
 
             // if this row has metadata its a header row ...
             // the label will need to be overwritten where a better name has been provided.
             if (datasetMetadata != null) {
 
                 for (CodeList codelist : datasetMetadata.getDimensions()) {
-                    if (codelist.getName() == label) {
+                    if (codelist.getName().equals(label)) {
                         label = codelist.getBestIdentifier();
                     }
                 }
-
-            } else {
-                label = data[i];
             }
 
-            code = data[i -1];
-            getGroupValues().add(new DimensionData(DimensionType.OTHER, label, code));
+            String code = data[i -1];
+
+            if (i == columnOffset) {
+                getGroupValues().add(new DimensionData(DimensionType.GEOGRAPHY, label, code));
+            } else {
+                getGroupValues().add(new DimensionData(DimensionType.OTHER, label, code));
+            }
         }
     }
 
