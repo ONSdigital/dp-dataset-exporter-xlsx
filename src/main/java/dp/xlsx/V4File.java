@@ -28,7 +28,7 @@ class V4File {
     V4File(final InputStream inputStream, Metadata datasetMetadata) throws IOException {
 
         final Map<Group, Group> groups = new HashMap<>();
-        final GroupProcessor processor = new GroupProcessor();
+        final GroupExtractor groupExtractor = new GroupExtractor();
 
         try (final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
              final BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
@@ -53,7 +53,7 @@ class V4File {
                 final String v4Code = header[0];
 
                 headerOffset = Integer.parseInt(v4Code.split("_")[1]) + 1;
-                headerGroup = processor.processHeaderRow(header, headerOffset, datasetMetadata);
+                headerGroup = groupExtractor.extractHeaderRow(header, headerOffset, datasetMetadata);
 
                 additionalHeaders = Arrays.copyOfRange(header, 1, headerOffset);
             }
@@ -65,7 +65,7 @@ class V4File {
                     continue;
                 }
 
-                final Group group = processor.processObsRow(row, headerOffset);
+                final Group group = groupExtractor.extractObsRow(row, headerOffset);
                 final String timeValue = row[headerOffset + 1];
                 final String observation = row[0];
                 final String additionalData[] = Arrays.copyOfRange(row, 1, headerOffset);
