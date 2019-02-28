@@ -55,10 +55,6 @@ class V4File {
                 headerOffset = Integer.parseInt(v4Code.split("_")[1]) + 1;
                 headerGroup = processor.processHeaderRow(header, headerOffset, datasetMetadata);
 
-
-
-
-
                 additionalHeaders = Arrays.copyOfRange(header, 1, headerOffset);
             }
 

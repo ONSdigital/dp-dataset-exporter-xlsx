@@ -62,12 +62,12 @@ public class ConverterTest {
 			This is a testing scenario only, CMD datasets by definition ALWAYS have codelists.
 			*/
 
-			List<CodeList> emptyCodeListArray = new ArrayList<>();
-			emptyCodeListArray.add(new CodeList("1234", "a code list name", " adescription", "a codelist href"));
+			List<CodeList> minimalCodeListArray = new ArrayList<>();
+			minimalCodeListArray.add(new CodeList("1234", "a code list name", "a description", "a codelist href"));
 
 			Metadata datasetMetadata = new Metadata();
 			datasetMetadata.setTitle("test title");
-			datasetMetadata.setDimensions(emptyCodeListArray);
+			datasetMetadata.setDimensions(minimalCodeListArray);
 
 			Workbook workbook = converter.toXLSX(csv, datasetMetadata);
 			Assertions.assertThat(workbook.getNumberOfSheets()).isEqualTo(2);
