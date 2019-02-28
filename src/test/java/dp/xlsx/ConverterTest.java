@@ -63,7 +63,7 @@ public class ConverterTest {
 			*/
 
 			List<CodeList> emptyCodeListArray = new ArrayList<>();
-			emptyCodeListArray.add(new CodeList());
+			emptyCodeListArray.add(new CodeList("1234", "a code list name", " adescription", "a codelist href"));
 
 			Metadata datasetMetadata = new Metadata();
 			datasetMetadata.setTitle("test title");
