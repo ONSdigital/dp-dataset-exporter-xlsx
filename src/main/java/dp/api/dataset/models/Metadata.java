@@ -1,4 +1,6 @@
 package dp.api.dataset.models;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -6,10 +8,15 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.Collection;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Metadata returned from the dataset API related to a specific version.
  */
 public class Metadata {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Metadata.class);
 
     @JsonProperty("alerts")
     private Collection<Alert> alerts;
@@ -231,32 +238,35 @@ public class Metadata {
     }
 
     public String getReleaseDate() {
-        return releaseDate;
+
+        // We're looking to convert `YYYY-MM-DD+T00:00:00.000Z' to DD-MonthText-YYYY
+        String[] SplitDate = releaseDate.split("-");
+
+        Map<String, String> monthMap = new HashMap<String, String>();
+        monthMap.put("01", "January");
+        monthMap.put("02", "February");
+        monthMap.put("03", "March");
+        monthMap.put("04", "April");
+        monthMap.put("05", "May");
+        monthMap.put("06", "June");
+        monthMap.put("07", "July");
+        monthMap.put("08", "August");
+        monthMap.put("09", "September");
+        monthMap.put("10", "October");
+        monthMap.put("11", "November");
+        monthMap.put("12", "December");
+
+        try {
+            String formattedDate = SplitDate[2].substring(0, 2) + "-" + monthMap.get(SplitDate[1]) + "-" + SplitDate[0];
+            return formattedDate;
+        } finally {
+            LOGGER.info("Metadata getReleaseDate: unable to reformat the provided date string, returning unmodified value.");
+            return releaseDate;
+        }
     }
 
     public void setReleaseDate(String releaseDate) {
-
-        // We're looking to convert `YYYY-MM-DD+T00:00:00.000Z' to DD-MonthText-YYYY
-
-        String[] SplitDate = string.split("-", releaseDate);
-
-        Map<String,String> monthMap = new HashMap<String, String>();
-        monthMap.put("01","January");
-        monthMap.put("02","February");
-        monthMap.put("03","March");
-        monthMap.put("04","April");
-        monthMap.put("05","May");
-        monthMap.put("06","June");
-        monthMap.put("07","July");
-        monthMap.put("08","August");
-        monthMap.put("09","September");
-        monthMap.put("10","October");
-        monthMap.put("11","November");
-        monthMap.put("12","December");
-
-        String formattedDate = SplitDate[2] + "-" + monthMap.get(SplitDate[1]) + "-" + SplitDate[2];
-
-        this.releaseDate = formattedDate;
+        this.releaseDate = releaseDate;
     }
 
     public String getReleaseFrequency() {
