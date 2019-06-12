@@ -235,7 +235,28 @@ public class Metadata {
     }
 
     public void setReleaseDate(String releaseDate) {
-        this.releaseDate = releaseDate;
+
+        // We're looking to convert `YYYY-MM-DD+T00:00:00.000Z' to DD-MonthText-YYYY
+
+        String[] SplitDate = string.split("-", releaseDate);
+
+        Map<String,String> monthMap = new HashMap<String, String>();
+        monthMap.put("01","January");
+        monthMap.put("02","February");
+        monthMap.put("03","March");
+        monthMap.put("04","April");
+        monthMap.put("05","May");
+        monthMap.put("06","June");
+        monthMap.put("07","July");
+        monthMap.put("08","August");
+        monthMap.put("09","September");
+        monthMap.put("10","October");
+        monthMap.put("11","November");
+        monthMap.put("12","December");
+
+        String formattedDate = SplitDate[2] + "-" + monthMap.get(SplitDate[1]) + "-" + SplitDate[2];
+
+        this.releaseDate = formattedDate;
     }
 
     public String getReleaseFrequency() {
