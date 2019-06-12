@@ -262,7 +262,7 @@ public class Metadata {
         try {
             // We're looking to convert e.g `YYYY-MM-DD+T00:00:00.000Z' to 'DD-MonthText-YYYY'
             String[] SplitDate = releaseDate.split("-");
-            String formattedDate = SplitDate[2].substring(0, 2) + "-" + monthMap.get(SplitDate[1]) + "-" + SplitDate[0];
+            String formattedDate = SplitDate[2].substring(0, 2) + " " + monthMap.get(SplitDate[1]) + " " + SplitDate[0];
             return formattedDate;
         } finally {
             LOGGER.info("Metadata getReleaseDate: unable to reformat the provided date string, returning unmodified value.");
