@@ -264,8 +264,8 @@ public class Metadata {
             String[] SplitDate = releaseDate.split("-");
             String formattedDate = SplitDate[2].substring(0, 2) + " " + monthMap.get(SplitDate[1]) + " " + SplitDate[0];
             return formattedDate;
-        } finally {
-            LOGGER.info("Metadata getReleaseDate: unable to reformat the provided date string, returning unmodified value.");
+        } catch (Exception e) {
+            LOGGER.error("Metadata getReleaseDate: unable to reformat the provided date string, returning unmodified value.", e);
             return releaseDate;
         }
     }
