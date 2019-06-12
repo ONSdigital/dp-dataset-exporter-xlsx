@@ -12,10 +12,6 @@ import java.util.Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.AbstractMap.SimpleEntry;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 /**
  * Metadata returned from the dataset API related to a specific version.
  */
