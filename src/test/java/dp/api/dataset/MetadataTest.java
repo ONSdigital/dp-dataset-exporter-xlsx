@@ -12,13 +12,10 @@ import dp.api.dataset.models.Metadata;
 import dp.api.dataset.models.MetadataLinks;
 import dp.api.dataset.models.Publisher;
 import dp.api.dataset.models.TemporalFrequency;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 
 public class MetadataTest {
-
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Metadata.class);
 
     public static Metadata createTestMetadata() {
 
