@@ -3,15 +3,7 @@ package dp.api.dataset.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-
-import java.time.format.ResolverStyle;
 import java.util.Collection;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.*;
-import org.joda.time.*;
 import org.joda.time.format.*;
 
 /**
