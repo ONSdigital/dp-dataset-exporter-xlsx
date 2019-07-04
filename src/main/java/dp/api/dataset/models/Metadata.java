@@ -1,42 +1,23 @@
 package dp.api.dataset.models;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import java.time.format.ResolverStyle;
 import java.util.Collection;
-import java.util.Collections;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
+import org.joda.time.*;
+import org.joda.time.format.*;
 
 /**
  * Metadata returned from the dataset API related to a specific version.
  */
 public class Metadata {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Metadata.class);
-
-    protected static Map<String, String> createMonthMap() {
-        final Map<String, String> map = new HashMap<>();
-        map.put("01", "January");
-        map.put("02", "February");
-        map.put("03", "March");
-        map.put("04", "April");
-        map.put("05", "May");
-        map.put("06", "June");
-        map.put("07", "July");
-        map.put("08", "August");
-        map.put("09", "September");
-        map.put("10", "October");
-        map.put("11", "November");
-        map.put("12", "December");
-        return Collections.unmodifiableMap(map);
-    }
-
-    final Map<String, String> monthMap = createMonthMap();
 
     @JsonProperty("alerts")
     private Collection<Alert> alerts;
@@ -259,15 +240,15 @@ public class Metadata {
 
     public String getReleaseDate() {
 
-        try {
-            // We're looking to convert e.g `YYYY-MM-DD+T00:00:00.000Z' to 'DD MonthAsText YYYY'
-            String[] SplitDate = releaseDate.split("-");
-            String formattedDate = SplitDate[2].substring(0, 2) + " " + monthMap.get(SplitDate[1]) + " " + SplitDate[0];
-            return formattedDate;
-        } catch (Exception e) {
-            LOGGER.error("Metadata getReleaseDate: unable to reformat the provided date string, returning unmodified value.", e);
-            return releaseDate;
+        if (this.releaseDate == null) {
+            return "";  // avoid null pointer errors
         }
+
+        DateTimeFormatter parser = ISODateTimeFormat.dateTimeParser();
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("dd MMMM yyyy");
+
+        return formatter.print(parser.parseDateTime(this.releaseDate));
+
     }
 
     public void setReleaseDate(String releaseDate) {
