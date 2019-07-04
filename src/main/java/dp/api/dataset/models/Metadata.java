@@ -234,6 +234,10 @@ public class Metadata {
 
     public String getReleaseDate() {
 
+        if (this.releaseDate == null) {
+            return "";  // avoid null pointer for empty metadata objects
+        }
+
         DateTimeFormatter parser = ISODateTimeFormat.dateTimeParser();
         DateTimeFormatter formatter = DateTimeFormat.forPattern("dd MMMM yyyy");
 
