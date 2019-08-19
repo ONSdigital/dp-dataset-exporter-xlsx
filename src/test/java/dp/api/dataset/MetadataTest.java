@@ -99,7 +99,7 @@ public class MetadataTest {
         ));
 
 
-        metadata.setReleaseDate("release date value");
+        metadata.setReleaseDate("2019-12-31T00:00:00.000Z");
         metadata.setReleaseFrequency("release frequency value");
 
         metadata.setTemporal(Arrays.asList(

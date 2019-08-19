@@ -3,8 +3,11 @@ package dp.api.dataset.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-
+import org.apache.commons.lang3.StringUtils;
 import java.util.Collection;
+import org.joda.time.format.ISODateTimeFormat;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 /**
  * Metadata returned from the dataset API related to a specific version.
@@ -85,6 +88,10 @@ public class Metadata {
 
     @JsonProperty("usage_notes")
     private UsageNotes[] usageNotes;
+
+    private static final DateTimeFormatter PARSER = ISODateTimeFormat.dateTimeParser();
+
+    private static final DateTimeFormatter FORMATTER = DateTimeFormat.forPattern("dd MMMM yyyy");
 
     public Collection<GeneralDetails> getRelatedDatasets() {
         return relatedDatasets;
@@ -231,7 +238,12 @@ public class Metadata {
     }
 
     public String getReleaseDate() {
-        return releaseDate;
+
+        if (StringUtils.isEmpty(this.releaseDate)) {
+            return "";  // avoid null pointer for empty metadata objects
+        }
+
+        return FORMATTER.print(PARSER.parseDateTime(this.releaseDate));
     }
 
     public void setReleaseDate(String releaseDate) {
