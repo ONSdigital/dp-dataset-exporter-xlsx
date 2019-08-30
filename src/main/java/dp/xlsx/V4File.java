@@ -21,7 +21,6 @@ import dp.api.dataset.models.Metadata;
 class V4File {
 
     private final Collection<Group> groupData;
-    private final Set<String> uniqueTimeValues;
     private final Map<String, String> timeLabels;
     private Group headerGroup;
     private String[] additionalHeaders;
@@ -34,7 +33,6 @@ class V4File {
         try (final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
              final BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
 
-            uniqueTimeValues = new HashSet<>();
             timeLabels = new HashMap<String, String>();
 
             String line;
@@ -74,7 +72,6 @@ class V4File {
                 final String additionalData[] = Arrays.copyOfRange(row, 1, headerOffset);
 
                 timeLabels.put(timeValue, timeLabel);
-                uniqueTimeValues.add(timeValue);
                 if (groups.containsKey(group)) {
                     groups.get(group).addObservation(timeLabel, observation, additionalData);
                 } else {
@@ -115,8 +112,8 @@ class V4File {
      *
      * @return
      */
-    List<String> getUniqueTimeLabels() {
-        return new ArrayList<>(uniqueTimeValues);
+    TreeMap<String, String> getUniqueTimeLabels() {
+        return new TreeMap<String, String>(timeLabels);
     }
 
     /**
@@ -126,28 +123,27 @@ class V4File {
      * @return
      */
     Collection<String> getOrderedTimeLabels() {
-        String first = uniqueTimeValues.iterator().next();
+        String first = timeLabels.entrySet().iterator().next().getKey();
         String format = DateLabel.determineDateFormat(first);
 
-        // if the format is not recognised - just sort alphabetically.
+        // if the format is not recognised - return alphabetically (treemap naturally sorts)
         if (StringUtils.isEmpty(format)) {
-            List<String> timeLabels = getUniqueTimeLabels();
-            Collections.sort(timeLabels);
-            return timeLabels;
+            TreeMap<String, String> timeLabels = getUniqueTimeLabels();
+            return timeLabels.values();
         }
 
         DateFormat dateFormat = new SimpleDateFormat(format);
         Map<Date, String> dates = new TreeMap<>();
 
-        for (String timeValue : uniqueTimeValues) {
+        for (Map.Entry<String, String> time : timeLabels.entrySet()) {
             Date date;
             try {
-                date = dateFormat.parse(timeValue);
+                date = dateFormat.parse(time.getKey());
             } catch (ParseException e) {
                 date = new Date(); // cannot sort it if we cannot parse it.
             }
 
-            dates.put(date, timeValue);
+            dates.put(date, time.getKey());
         }
 
         for (Map.Entry<Date, String> date : dates.entrySet()) {

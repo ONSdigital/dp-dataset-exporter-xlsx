@@ -41,9 +41,9 @@ public class V4FileTest {
 
         // Given v4 data with a blank observation row
         String csvHeader = "V4_0,Time_codelist,Time,Geography_codelist,Geography,cpi1dim1aggid,Aggregate\n";
-        String csvRow1 = "88,Month,Oct-00,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow1 = "88,Oct-00,October 2000,K02000001,,cpi1dim1A0,CPI (overall index)\n";
         String csvRow2 = "\n";
-        String csvRow3 = "88,Month,Apr-17,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow3 = "88,Apr-17,April 2017,K02000001,,cpi1dim1A0,CPI (overall index)\n";
         String csvContent = csvHeader + csvRow1 + csvRow2 + csvRow3;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
@@ -54,8 +54,8 @@ public class V4FileTest {
         List<String> labels = new ArrayList<>(file.getOrderedTimeLabels());
 
         // Then the labels are provided in chronological order with the blank row ignored
-        assertThat(labels.get(0)).isEqualTo("Oct-00");
-        assertThat(labels.get(1)).isEqualTo("Apr-17");
+        assertThat(labels.get(0)).isEqualTo("October 2000");
+        assertThat(labels.get(1)).isEqualTo("April 2017");
     }
 
     @Test
@@ -81,9 +81,9 @@ public class V4FileTest {
 
         // Given v4 data with time labels in a recognised format.
         String csvHeader = "V4_0,Time_codelist,Time,Geography_codelist,Geography,cpi1dim1aggid,Aggregate\n";
-        String csvRow1 = "88,Month,Oct-00,K02000001,,cpi1dim1A0,CPI (overall index)\n";
-        String csvRow2 = "88,Month,Jan-96,K02000001,,cpi1dim1A0,CPI (overall index)\n";
-        String csvRow3 = "88,Month,Apr-17,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow1 = "88,Oct-00,October 2000,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow2 = "88,Jan-96,January 1996,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow3 = "88,Apr-17,April 2017,K02000001,,cpi1dim1A0,CPI (overall index)\n";
         String csvContent = csvHeader + csvRow1 + csvRow2 + csvRow3;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
@@ -94,9 +94,9 @@ public class V4FileTest {
         List<String> labels = new ArrayList<>(file.getOrderedTimeLabels());
 
         // Then the labels are provided in chronological order.
-        assertThat(labels.get(0)).isEqualTo("Jan-96");
-        assertThat(labels.get(1)).isEqualTo("Oct-00");
-        assertThat(labels.get(2)).isEqualTo("Apr-17");
+        assertThat(labels.get(0)).isEqualTo("January 1996");
+        assertThat(labels.get(1)).isEqualTo("October 2000");
+        assertThat(labels.get(2)).isEqualTo("April 2017");
     }
 
     @Test
@@ -104,9 +104,9 @@ public class V4FileTest {
 
         // Given v4 data with time labels in an unrecognised format.
         String csvHeader = "V4_0,Time_codelist,Time,Geography_codelist,Geography,cpi1dim1aggid,Aggregate\n";
-        String csvRow1 = "88,Month,10-00,K02000001,,cpi1dim1A0,CPI (overall index)\n";
-        String csvRow2 = "88,Month,01-96,K02000001,,cpi1dim1A0,CPI (overall index)\n";
-        String csvRow3 = "88,Month,11-17,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow1 = "88,10-00,Oct 00,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow2 = "88,01-96,Jan 96,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow3 = "88,11-17,Nov 17,K02000001,,cpi1dim1A0,CPI (overall index)\n";
         String csvContent = csvHeader + csvRow1 + csvRow2 + csvRow3;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
@@ -117,16 +117,16 @@ public class V4FileTest {
         List<String> labels = new ArrayList<>(file.getOrderedTimeLabels());
 
         // Then the labels are provided in alphabetical order.
-        assertThat(labels.get(0)).isEqualTo("01-96");
-        assertThat(labels.get(1)).isEqualTo("10-00");
-        assertThat(labels.get(2)).isEqualTo("11-17");
+        assertThat(labels.get(0)).isEqualTo("Jan 96");
+        assertThat(labels.get(1)).isEqualTo("Oct 00");
+        assertThat(labels.get(2)).isEqualTo("Nov 17");
     }
 
     @Test
     public void getDimensions_ReturnsAllButFirstTimeDimension() throws Exception {
 
         String csvHeader = "V4_0,Time_codelist,Time,Geography_codelist,Geography,cpi1dim1aggid,Aggregate\n";
-        String csvRow1 = "88,Month,10-00,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow1 = "88,10-00,Oct 00,K02000001,,cpi1dim1A0,CPI (overall index)\n";
         String csvContent = csvHeader + csvRow1;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());

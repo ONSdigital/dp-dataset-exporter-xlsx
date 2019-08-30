@@ -31,8 +31,8 @@ public class DatasetFormatterTest {
     public void timeValuesAreOrderedAlphabeticallyWhenUnrecognised() throws IOException {
 
         // Given some V4 input data
-        String csvRow = "45.2,Month,January-96,K02000001,Great Britain,cpi1dim1A0,CPI (overall index)\n";
-        String csvRow2 = "86.9,Month,February-96,K02000001,Great Britain,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow = "45.2,January-96,Jan 1996,K02000001,Great Britain,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow2 = "86.9,February-96,Feb 1996,K02000001,Great Britain,cpi1dim1A0,CPI (overall index)\n";
         String csvContent = csvHeader + csvRow + csvRow2;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
@@ -43,16 +43,16 @@ public class DatasetFormatterTest {
         // When format is called
         datasetFormatter.format();
 
-        assertThat(sheet.getRow(metadataRows + 0).getCell(3).getStringCellValue()).isEqualTo("February-96");
-        assertThat(sheet.getRow(metadataRows + 0).getCell(4).getStringCellValue()).isEqualTo("January-96");
+        assertThat(sheet.getRow(metadataRows + 0).getCell(3).getStringCellValue()).isEqualTo("Feb 1996");
+        assertThat(sheet.getRow(metadataRows + 0).getCell(4).getStringCellValue()).isEqualTo("Jan 1996");
     }
 
     @Test
     public void timeValuesAreOrderedChronologicallyWhenRecognised() throws IOException {
 
         // Given some V4 input data
-        String csvRow = "45.2,Month,Jan-96,K02000001,Great Britain,cpi1dim1A0,CPI (overall index)\n";
-        String csvRow2 = "86.9,Month,Feb-96,K02000001,Great Britain,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow = "45.2,Jan-96,January 1996,K02000001,Great Britain,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow2 = "86.9,Feb-96,February 1996,K02000001,Great Britain,cpi1dim1A0,CPI (overall index)\n";
         String csvContent = csvHeader + csvRow + csvRow2;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
@@ -62,16 +62,16 @@ public class DatasetFormatterTest {
         // When format is called
         datasetFormatter.format();
 
-        assertThat(sheet.getRow(metadataRows + 0).getCell(3).getStringCellValue()).isEqualTo("Jan-96");
-        assertThat(sheet.getRow(metadataRows + 0).getCell(4).getStringCellValue()).isEqualTo("Feb-96");
+        assertThat(sheet.getRow(metadataRows + 0).getCell(3).getStringCellValue()).isEqualTo("January 1996");
+        assertThat(sheet.getRow(metadataRows + 0).getCell(4).getStringCellValue()).isEqualTo("February 1996");
     }
 
     @Test
     public void dimensionsAreOrderedByV4FileOrder() throws IOException {
 
         // Given some V4 input data
-        String csvRow = "45.2,Month,Jan-96,K02000002,Wales,cpi1dim1A1,AAA\n";
-        String csvRow2 = "86.9,Month,Jan-96,K02000003,England,cpi1dim1A2,BBB\n";
+        String csvRow = "45.2,Jan-96,January 1996,K02000002,Wales,cpi1dim1A1,AAA\n";
+        String csvRow2 = "86.9,Jan-96,January 1996,K02000003,England,cpi1dim1A2,BBB\n";
         String csvContent = csvHeader + csvRow + csvRow2;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
@@ -112,7 +112,7 @@ public class DatasetFormatterTest {
         String expectedTitle = "expected title";
         datasetMetadata.setTitle(expectedTitle);
 
-        String csvRow = ",Month,Jan-96,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow = ",Jan-96,January 1996,K02000001,,cpi1dim1A0,CPI (overall index)\n";
         String csvContent = csvHeader + csvRow;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
@@ -133,7 +133,7 @@ public class DatasetFormatterTest {
     public void format_WithEmptyObservation() throws IOException {
 
         // Given some v4 file data with an empty observation field
-        String csvRow = ",Month,Jan-96,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow = ",Jan-96,January 1996,K02000001,,cpi1dim1A0,CPI (overall index)\n";
         String csvContent = csvHeader + csvRow;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
@@ -153,7 +153,7 @@ public class DatasetFormatterTest {
     public void format_ZeroDecimal() throws IOException {
 
         // Given some v4 file data with an observation that has a zero decimal place (88.0)
-        String csvRow = "88.0,Month,Jan-96,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow = "88.0,Jan-96,January 1996,K02000001,,cpi1dim1A0,CPI (overall index)\n";
         String csvContent = csvHeader + csvRow;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
@@ -176,7 +176,7 @@ public class DatasetFormatterTest {
     public void format_NoDecimal() throws IOException {
 
         // Given some v4 file data with an observation that has a zero decimal place (88.0)
-        String csvRow = "88,Month,Jan-96,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow = "88,Jan-96,January 1996,K02000001,,cpi1dim1A0,CPI (overall index)\n";
         String csvContent = csvHeader + csvRow;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
@@ -225,8 +225,8 @@ public class DatasetFormatterTest {
     public void format_withSparsity() throws IOException {
 
         // Given some v4 file data sparsity (missing values in the grid)
-        String csvRow1 = "88,Month,Jan-96,K02000001,,cpi1dim1A0,CPI (overall index)\n";
-        String csvRow2 = "85,Month,Jan-97,K02000001,,cpi1dim1A1,something else\n";
+        String csvRow1 = "88,Jan-96,January 1996,K02000001,,cpi1dim1A0,CPI (overall index)\n";
+        String csvRow2 = "85,Jan-97,January 1997,K02000001,,cpi1dim1A1,something else\n";
         String csvContent = csvHeader + csvRow1 + csvRow2;
 
         InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
