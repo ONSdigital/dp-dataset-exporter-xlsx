@@ -129,7 +129,9 @@ class V4File {
         // if the format is not recognised - return alphabetically (treemap naturally sorts)
         if (StringUtils.isEmpty(format)) {
             TreeMap<String, String> timeLabels = getUniqueTimeLabels();
-            return timeLabels.values();
+            ArrayList<String> labels = new ArrayList<>(timeLabels.values());
+            Collections.sort(labels);
+            return labels;
         }
 
         DateFormat dateFormat = new SimpleDateFormat(format);
