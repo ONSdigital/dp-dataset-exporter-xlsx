@@ -118,8 +118,8 @@ public class V4FileTest {
 
         // Then the labels are provided in alphabetical order.
         assertThat(labels.get(0)).isEqualTo("Jan 96");
-        assertThat(labels.get(1)).isEqualTo("Oct 00");
-        assertThat(labels.get(2)).isEqualTo("Nov 17");
+        assertThat(labels.get(1)).isEqualTo("Nov 17");
+        assertThat(labels.get(2)).isEqualTo("Oct 00");
     }
 
     @Test
