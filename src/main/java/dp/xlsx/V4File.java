@@ -33,7 +33,7 @@ class V4File {
         try (final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
              final BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
 
-            timeLabels = new HashMap<String, String>();
+            this.timeLabels = new HashMap<String, String>();
 
             String line;
             int headerOffset = 0;
@@ -130,7 +130,7 @@ class V4File {
         // treemap naturally sorts on keys, but we need to sort the values
         if (StringUtils.isEmpty(format)) {
             TreeMap<String, String> timeLabels = getUniqueTimeLabels();
-            ArrayList<String> labels = new ArrayList<>(timeLabels.values());
+            List<String> labels = new ArrayList<>(timeLabels.values());
             Collections.sort(labels);
             return labels;
         }
