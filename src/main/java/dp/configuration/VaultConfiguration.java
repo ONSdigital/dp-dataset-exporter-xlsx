@@ -35,7 +35,7 @@ public class VaultConfiguration extends AbstractVaultConfiguration {
     public ClientAuthentication clientAuthentication() {
         String token = System.getenv("VAULT_TOKEN");
         if (StringUtils.isEmpty(token)) {
-            token = "...";
+            throw new RuntimeException("expected VAULT_TOKEN config but none found");
         }
         return new TokenAuthentication(token);
     }
