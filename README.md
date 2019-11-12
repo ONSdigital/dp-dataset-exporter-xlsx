@@ -16,7 +16,7 @@ Ensure you have vault running.
 * Run the auth-stub-api or Zebedee for authentication
 * Setup AWS credentials. The app uses the default provider chain. When running locally this typically means they are provided by the `~/.aws/credentials` file.  Alternatively you can inject the credentials via environment variables as described in the configuration section
 
-To quickly run the service locally run `make debug`. 
+To quickly run the service locally run `make debug`.
 
 ### Kafka scripts
 

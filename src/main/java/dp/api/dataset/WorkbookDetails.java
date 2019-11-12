@@ -5,29 +5,29 @@ package dp.api.dataset;
  */
 public class WorkbookDetails {
 
-    private String dowloadURI;
+    private String downloadURI;
     private long contentLength;
 
     /**
      * Create new Workbook details.
      *
-     * @param dowloadURI    the S3 URL to the download file.
+     * @param downloadURI    the S3 URL to the download file.
      * @param contentLength the size of the download file.
      */
-    public WorkbookDetails(String dowloadURI, long contentLength) {
-        this.dowloadURI = dowloadURI;
+    public WorkbookDetails(String downloadURI, long contentLength) {
+        this.downloadURI = downloadURI;
         this.contentLength = contentLength;
     }
 
     /**
      * @return the S3 URL to the download file.
      */
-    public String getDowloadURI() {
-        return dowloadURI;
+    public String getDownloadURI() {
+        return downloadURI;
     }
 
-    public void setDowloadURI(String dowloadURI) {
-        this.dowloadURI = dowloadURI;
+    public void setDownloadURI(String downloadURI) {
+        this.downloadURI = downloadURI;
     }
 
     /**
@@ -51,14 +51,14 @@ public class WorkbookDetails {
 
         return new org.apache.commons.lang3.builder.EqualsBuilder()
                 .append(getContentLength(), that.getContentLength())
-                .append(getDowloadURI(), that.getDowloadURI())
+                .append(getDownloadURI(), that.getDownloadURI())
                 .isEquals();
     }
 
     @Override
     public int hashCode() {
         return new org.apache.commons.lang3.builder.HashCodeBuilder(17, 37)
-                .append(getDowloadURI())
+                .append(getDownloadURI())
                 .append(getContentLength())
                 .toHashCode();
     }

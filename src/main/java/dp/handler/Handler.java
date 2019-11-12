@@ -311,7 +311,7 @@ public class Handler {
                 throw new FilterAPIException("error while attempting PUT XLSX workbook to S3 bucket", e);
             }
         } catch (IOException e) {
-            LOGGER.error("error while attempting create XLSX workbook, filename: {}, bucket: {}", filename);
+            LOGGER.error("error while attempting create XLSX workbook, filename: {}, bucket: {}", filename, bucket);
             throw e;
         }
     }
