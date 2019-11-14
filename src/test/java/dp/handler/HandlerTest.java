@@ -116,7 +116,6 @@ public class HandlerTest {
         S3Object s3Object = mock(S3Object.class);
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
 
-        SXSSFWorkbook workBookMock = mock(SXSSFWorkbook.class);
         ArgumentCaptor<PutObjectRequest> arguments = ArgumentCaptor.forClass(PutObjectRequest.class);
         ArgumentCaptor<DownloadsList> downLoadArguments = ArgumentCaptor.forClass(DownloadsList.class);
 
@@ -135,7 +134,7 @@ public class HandlerTest {
         when(s3Crypto.getObjectWithPSK("bucket", "datasets/v4.csv", "test-key".getBytes())).thenReturn(s3Object);
         when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/datasets/morty.xlsx"));
         when(datasetAPI.getMetadata("/instances/123")).thenReturn(datasetMetadata);
-        when(converter.toXLSX(any(), any())).thenReturn(workBookMock);
+        when(converter.toXLSX(any(), any())).thenReturn(workbookMock);
 
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/datasets/v4.csv", instanceID, datasetID, edition,
                 version, filename, rowCount);
@@ -144,7 +143,7 @@ public class HandlerTest {
 
         verify(datasetAPI, times(1)).getVersion("/instances/" + instanceID);
         verify(datasetAPI, times(1)).putVersionDownloads(any(), downLoadArguments.capture());
-        verify(workBookMock, times(1)).write(any(OutputStream.class));
+        verify(workbookMock, times(1)).write(any(OutputStream.class));
         verify(vaultTemplate, times(1)).read("secret/shared/psk/v4.csv");
         verify(vaultResponse, times(1)).getData();
         verify(vaultTemplate, times(1)).write(eq("secret/shared/psk/morty.xlsx"), any());
@@ -374,7 +373,6 @@ public class HandlerTest {
         S3Object s3Object = mock(S3Object.class);
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
 
-        SXSSFWorkbook workBookMock = mock(SXSSFWorkbook.class);
         ArgumentCaptor<PutObjectRequest> arguments = ArgumentCaptor.forClass(PutObjectRequest.class);
 
         Metadata datasetMetadata = new Metadata();
@@ -387,7 +385,7 @@ public class HandlerTest {
 		when(s3Client.getObject("bucket", "v4.csv")).thenReturn(s3Object);
 		when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/morty.xlsx"));
 		when(datasetAPI.getMetadata(versionURL)).thenReturn(datasetMetadata);
-		when(converter.toXLSX(any(), any())).thenReturn(workBookMock);
+		when(converter.toXLSX(any(), any())).thenReturn(workbookMock);
 
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
                 version, filename, rowCount);
@@ -398,7 +396,7 @@ public class HandlerTest {
 		verify(datasetAPI, times(1)).getMetadata(versionURL);
 		verify(converter, times(1)).toXLSX(any(), any());
 		verify(datasetAPI, times(1)).putVersionDownloads(any(), any());
-		verify(workBookMock, times(1)).write(any(OutputStream.class));
+		verify(workbookMock, times(1)).write(any(OutputStream.class));
 		verify(s3Client, times(1)).putObject(arguments.capture());
 
         assertThat("incorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
