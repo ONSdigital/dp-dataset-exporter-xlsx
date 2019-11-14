@@ -157,6 +157,48 @@ public class HandlerTest {
     }
 
     @Test
+    public void validFullDownloadWithPublishedStateAndBucketUrl() throws Exception {
+        S3Object s3Object = mock(S3Object.class);
+        // S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
+
+        ArgumentCaptor<PutObjectRequest> arguments = ArgumentCaptor.forClass(PutObjectRequest.class);
+        ArgumentCaptor<DownloadsList> downLoadArguments = ArgumentCaptor.forClass(DownloadsList.class);
+
+        Metadata datasetMetadata = new Metadata();
+
+        Version ver = new Version();
+        ver.setState("published");
+
+        when(datasetAPI.getVersion("/instances/instbuckUrl")).thenReturn(ver);
+        when(datasetAPI.getMetadata("/datasets/dsbuckUrl/editions/2017/versions/1")).thenReturn(datasetMetadata);
+        when(s3Client.getObject(anyString(), anyString())).thenReturn(s3Object);
+        when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/datasets/buckUrl.xlsx"));
+        when(converter.toXLSX(any(), any())).thenReturn(workbookMock);
+
+        final ExportedFile exportedFile = new ExportedFile("", "s3://booket/datasets/buckUrl.csv",
+                "instbuckUrl", "dsbuckUrl", edition, version, "filenamebuckUrl", rowCount);
+
+        handler.setBucketUrl("https://not-empty");
+        handler.listen(exportedFile);
+
+        verify(datasetAPI, times(1)).getVersion("/instances/instbuckUrl");
+        verify(datasetAPI, times(1)).getMetadata("/datasets/dsbuckUrl/editions/2017/versions/1");
+        verify(workbookMock, times(1)).write(any(OutputStream.class));
+
+        verify(vaultTemplate, never()).read(any());
+        verify(s3Crypto, never()).putObjectWithPSK(any(), any());
+
+        verify(converter, times(1)).toXLSX(any(), any());
+        verify(s3Client, times(1)).putObject(arguments.capture());
+        verify(datasetAPI, times(1)).putVersionDownloads(any(), downLoadArguments.capture());
+
+        assertThat("incorrect public URL", downLoadArguments.getValue().getXls().getPublicState(), equalTo("https://not-empty/full-datasets/filenamebuckUrl.xlsx"));
+        assertThat("incorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
+        assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("full-datasets/filenamebuckUrl.xlsx"));
+        handler.setBucketUrl("");
+    }
+
+    @Test
     public void validFullDownloadTooLarge() throws Exception {
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/datasets/v4.csv", instanceID, datasetID, edition,
                 version, filename, 500000000);
