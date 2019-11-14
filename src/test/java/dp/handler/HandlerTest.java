@@ -8,6 +8,7 @@ import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dp.api.Link;
 import dp.api.dataset.DatasetAPIClientImpl;
+import dp.api.dataset.models.DownloadsList;
 import dp.api.dataset.models.Metadata;
 import dp.api.dataset.models.Version;
 import dp.api.filter.Filter;
@@ -117,6 +118,7 @@ public class HandlerTest {
 
         SXSSFWorkbook workBookMock = mock(SXSSFWorkbook.class);
         ArgumentCaptor<PutObjectRequest> arguments = ArgumentCaptor.forClass(PutObjectRequest.class);
+        ArgumentCaptor<DownloadsList> downLoadArguments = ArgumentCaptor.forClass(DownloadsList.class);
 
         Metadata datasetMetadata = new Metadata();
 
@@ -141,7 +143,7 @@ public class HandlerTest {
         handler.listen(exportedFile);
 
         verify(datasetAPI, times(1)).getVersion("/instances/" + instanceID);
-        verify(datasetAPI, times(1)).putVersionDownloads(any(), any());
+        verify(datasetAPI, times(1)).putVersionDownloads(any(), downLoadArguments.capture());
         verify(workBookMock, times(1)).write(any(OutputStream.class));
         verify(vaultTemplate, times(1)).read("secret/shared/psk/v4.csv");
         verify(vaultResponse, times(1)).getData();
@@ -150,6 +152,7 @@ public class HandlerTest {
         verify(s3Crypto, times(1)).putObjectWithPSK(arguments.capture(), any());
         verify(converter, times(1)).toXLSX(any(), any());
 
+        assertThat("public URL should be empty", downLoadArguments.getValue().getXls().getPublicState(), equalTo(null));
         assertThat("incorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
         assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("full-datasets/morty.xlsx"));
     }
@@ -301,7 +304,6 @@ public class HandlerTest {
     public void validFilterMessageS3PutError() throws Exception {
         S3Object s3Object = mock(S3Object.class);
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
-        Workbook workbookMock = mock(Workbook.class);
         SdkClientException ex = mock(SdkClientException.class);
         ArgumentCaptor<PutObjectRequest> arguments = ArgumentCaptor.forClass(PutObjectRequest.class);
 
@@ -336,7 +338,6 @@ public class HandlerTest {
     public void validFilterMessageFilterAPIAddXLSFileError() throws Exception {
         S3Object s3Object = mock(S3Object.class);
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
-        Workbook workbookMock = mock(Workbook.class);
         JsonProcessingException ex = mock(JsonProcessingException.class);
         ArgumentCaptor<PutObjectRequest> arguments = ArgumentCaptor.forClass(PutObjectRequest.class);
 
