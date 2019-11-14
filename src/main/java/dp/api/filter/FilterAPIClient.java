@@ -38,7 +38,7 @@ public class FilterAPIClient {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public void addXLSXFile(final String id, final String s3Location, final long size, boolean filterIsPublished) throws JsonProcessingException {
+    public void addXLSXFile(final String id, final String s3Location, final String s3PublicUrl, final long size, boolean filterIsPublished) throws JsonProcessingException {
 
         final String url = UriComponentsBuilder.fromHttpUrl(filterAPIURL + "/filter-outputs/{filterId}").buildAndExpand(id).toUriString();
         final String sizeToString = Long.toString(size);
@@ -47,7 +47,7 @@ public class FilterAPIClient {
         xlsxFile.setSize(sizeToString);
 
         if (filterIsPublished) {
-            xlsxFile.setPublicUrl(s3Location);
+            xlsxFile.setPublicUrl(s3PublicUrl);
         } else {
             xlsxFile.setPrivateUrl(s3Location);
         }
