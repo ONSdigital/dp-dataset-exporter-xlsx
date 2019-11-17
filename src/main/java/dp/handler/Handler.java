@@ -167,12 +167,13 @@ public class Handler {
     }
 
     private void handleFilterMessage(ExportedFile message) throws IOException, DecoderException {
-        LOGGER.info("handling filter message: ", message.getFilterId().toString());
+        final String filterId = message.getFilterId().toString();
+        LOGGER.info("handling filter message: ", filterId);
 
-        Filter filter = filterAPIClient.getFilter(message.getFilterId().toString());
+        Filter filter = filterAPIClient.getFilter(filterId);
         final AmazonS3URI uri = new AmazonS3URI(message.getS3URL().toString());
         final S3Object object = getObject(uri.getBucket(), uri.getKey(), filter.isPublished());
-        LOGGER.info("successfully got s3Object", message.getFilterId().toString());
+        LOGGER.info("successfully got s3Object", filterId);
 
         String metadataURL;
         try {
@@ -180,7 +181,7 @@ public class Handler {
             metadataURL = url.getPath();
         } catch (MalformedURLException e) {
             throw new IOException(format("error while attempting to create metadata URL filterID {0}, value: {1}",
-                    message.getFilterId().toString(), filter.getLinks().getVersion().getHref()), e);
+                    filterId, filter.getLinks().getVersion().getHref()), e);
         }
 
         Metadata datasetMetadata;
@@ -188,27 +189,26 @@ public class Handler {
             datasetMetadata = datasetAPIClient.getMetadata(metadataURL);
         } catch (FilterAPIException e) {
             throw new IOException(format("dataset api get metadata returned error. filterID {0}, uri: {1}",
-                    message.getFilterId().toString(), metadataURL.toString()), e);
+                    filterId, metadataURL.toString()), e);
         }
 
+        final String filename = filteredDatasetFilePrefix + filterId + ".xlsx";
         WorkbookDetails details;
         try {
-            final String filename = filteredDatasetFilePrefix + message.getFilterId().toString() + ".xlsx";
-
             details = createWorkbook(object, datasetMetadata, filename, filter.isPublished());
         } catch (IOException e) {
             throw new IOException(format("error while attempting to create XLSX workbook filterID: {0}, filename: {1}",
-                    message.getFilterId().toString(), message.getFilename().toString()), e);
+                    filterId, message.getFilename().toString()), e);
         }
 
         try {
-            String publicUrl = getDownloadUrl(filter.isPublished(), bucket + "/" + message.getFilename(), details);
-            filterAPIClient.addXLSXFile(message.getFilterId().toString(),
+            String publicUrl = getDownloadUrl(filter.isPublished(), filename, details);
+            filterAPIClient.addXLSXFile(filterId,
                     details.getDownloadURI(), publicUrl,
                     details.getContentLength(), filter.isPublished());
         } catch (JsonProcessingException e) {
             throw new IOException(format("filter api client addXLSXFile returned error, filterID: {0}",
-                    message.getFilterId().toString()), e);
+                    filterId), e);
         }
     }
 
