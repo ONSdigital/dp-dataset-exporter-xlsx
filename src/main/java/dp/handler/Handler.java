@@ -58,6 +58,9 @@ public class Handler {
     private static final String INSTANCE_URL = "/instances/{0}";
     private static final String PUBLISHED_STATE = "published";
 
+    @Value("${S3_BUCKET_URL:}")
+    private String bucketUrl;
+
     @Value("${S3_BUCKET_NAME:csv-exported}")
     private String bucket;
 
@@ -164,12 +167,13 @@ public class Handler {
     }
 
     private void handleFilterMessage(ExportedFile message) throws IOException, DecoderException {
-        LOGGER.info("handling filter message: ", message.getFilterId().toString());
+        final String filterId = message.getFilterId().toString();
+        LOGGER.info("handling filter message: ", filterId);
 
-        Filter filter = filterAPIClient.getFilter(message.getFilterId().toString());
+        Filter filter = filterAPIClient.getFilter(filterId);
         final AmazonS3URI uri = new AmazonS3URI(message.getS3URL().toString());
         final S3Object object = getObject(uri.getBucket(), uri.getKey(), filter.isPublished());
-        LOGGER.info("successfully got s3Object", message.getFilterId().toString());
+        LOGGER.info("successfully got s3Object", filterId);
 
         String metadataURL;
         try {
@@ -177,7 +181,7 @@ public class Handler {
             metadataURL = url.getPath();
         } catch (MalformedURLException e) {
             throw new IOException(format("error while attempting to create metadata URL filterID {0}, value: {1}",
-                    message.getFilterId().toString(), filter.getLinks().getVersion().getHref()), e);
+                    filterId, filter.getLinks().getVersion().getHref()), e);
         }
 
         Metadata datasetMetadata;
@@ -185,25 +189,26 @@ public class Handler {
             datasetMetadata = datasetAPIClient.getMetadata(metadataURL);
         } catch (FilterAPIException e) {
             throw new IOException(format("dataset api get metadata returned error. filterID {0}, uri: {1}",
-                    message.getFilterId().toString(), metadataURL.toString()), e);
+                    filterId, metadataURL.toString()), e);
         }
 
+        final String filename = filteredDatasetFilePrefix + filterId + ".xlsx";
         WorkbookDetails details;
         try {
-            final String filename = filteredDatasetFilePrefix + message.getFilterId().toString() + ".xlsx";
-
             details = createWorkbook(object, datasetMetadata, filename, filter.isPublished());
         } catch (IOException e) {
             throw new IOException(format("error while attempting to create XLSX workbook filterID: {0}, filename: {1}",
-                    message.getFilterId().toString(), message.getFilename().toString()), e);
+                    filterId, message.getFilename().toString()), e);
         }
 
         try {
-            filterAPIClient.addXLSXFile(message.getFilterId().toString(), details.getDowloadURI(),
+            String publicUrl = getDownloadUrl(filter.isPublished(), filename, details);
+            filterAPIClient.addXLSXFile(filterId,
+                    details.getDownloadURI(), publicUrl,
                     details.getContentLength(), filter.isPublished());
         } catch (JsonProcessingException e) {
             throw new IOException(format("filter api client addXLSXFile returned error, filterID: {0}",
-                    message.getFilterId().toString()), e);
+                    filterId), e);
         }
     }
 
@@ -240,24 +245,18 @@ public class Handler {
                 String downloadUrl = downloadServiceUrl + "/downloads" + format(VERSION_DOWNLOADS_URL, message.getDatasetId(),
                         message.getEdition(), message.getVersion()) + ".xlsx";
 
-                DownloadsList downloadsList;
-
+                Download download = new Download(downloadUrl, String.valueOf(details.getContentLength()));
+                String downloadableUrl = getDownloadUrl(isPublished, filename, details);
                 if (isPublished) {
-                    Download download = new Download(downloadUrl, String.valueOf(details.getContentLength()));
-                    download.setPublicState(details.getDowloadURI());
-
-                    downloadsList = new DownloadsList(download, null);
+                    download.setPublicState(downloadableUrl);
                 } else {
-                    Download download = new Download(downloadUrl, String.valueOf(details.getContentLength()));
-                    download.setPrivateState(details.getDowloadURI());
-
-                    downloadsList = new DownloadsList(download, null);
+                    download.setPrivateState(downloadableUrl);
                 }
+                DownloadsList downloadsList = new DownloadsList(download, null);
 
                 datasetAPIClient.putVersionDownloads(versionURL, downloadsList);
-            } catch (MalformedURLException | FilterAPIException e)
 
-            {
+            } catch (MalformedURLException | FilterAPIException e) {
                 LOGGER.error("dataset api PUT version returned error, filename: {}, URL: {}",
                         message.getFilename().toString(), versionURL);
                 throw e;
@@ -311,7 +310,7 @@ public class Handler {
                 throw new FilterAPIException("error while attempting PUT XLSX workbook to S3 bucket", e);
             }
         } catch (IOException e) {
-            LOGGER.error("error while attempting create XLSX workbook, filename: {}, bucket: {}", filename);
+            LOGGER.error("error while attempting create XLSX workbook, filename: {}, bucket: {}", filename, bucket);
             throw e;
         }
     }
@@ -339,5 +338,17 @@ public class Handler {
         byte[] b = new byte[16];
         new Random().nextBytes(b);
         return b;
+    }
+
+    private String getDownloadUrl(boolean isPublished, String filePath, WorkbookDetails details) {
+        if (isPublished && bucketUrl.length() > 0) {
+            return bucketUrl + "/" + filePath;
+        }
+        return details.getDownloadURI();
+    }
+
+
+    public void setBucketUrl(String newBucketUrl) {
+        bucketUrl = newBucketUrl;
     }
 }

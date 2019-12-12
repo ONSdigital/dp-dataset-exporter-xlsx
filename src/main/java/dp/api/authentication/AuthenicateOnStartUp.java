@@ -39,8 +39,7 @@ public class AuthenicateOnStartUp implements ApplicationListener<ApplicationRead
         // If no url to zebedee is provided we assume the app is running on the webnet. As zebedee
         // will only be accessible from the publishing subnet
         if (StringUtils.isNotEmpty(zebedee_url) && !isAuthenticated()) {
-            LOGGER.error("failed to authenticate against zebedee closing app");
-            System.exit(1);
+            LOGGER.error("Failed to authenticate against zebedee. Please, try to authenticate again later");
         }
     }
 
