@@ -1,6 +1,9 @@
 .idea
 dp-dataset-exporter-xlsx.iml
 target/
+.settings
+.classpath
+.project
 
 ### Java template
 # Compiled class file
