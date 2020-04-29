@@ -1,18 +1,17 @@
 ---
-
 platform: linux
 
 image_resource:
   type: docker-image
   source:
     repository: maven
-    tag: 3.5-jdk-8-slim
+    tag: 3.5.0-jdk-8
 
 inputs:
-  - name: dp-dataset-exporter-xlsx
+  - name: zebedee
 
 params:
   APPLICATION:
 
 run:
-  path: dp-dataset-exporter-xlsx/ci/scripts/unit.sh
+  path: dp-dataset-exporter-xlsx/ci/scripts/audit.sh
