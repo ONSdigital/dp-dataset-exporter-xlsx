@@ -148,22 +148,6 @@
                     <!-- if CVSS >= 7.0 (high or critical) then ERROR else WARN -->
                     <fail>true</fail>
                     <cvssScoreThreshold>7.0</cvssScoreThreshold>
-                    <excludeCoordinates>
-                        <!--
-                            Example of how to exclude a dependency from the audit check.
-
-                            jackson-databind is a particularly tough one to fix as its required by both dp-logging
-                            and the website apps using an older version of Elastic search which forces us to stay on
-                             this version until we can figure out a way around it i.e. Not a change we can make
-                             quickly so excluding to use the audit functionality  while we work out how to update it.
-                              This allows us to still run the audit check in CI and get some value from it.
-                        -->
-                        <exclude>
-                            <groupId>com.fasterxml.jackson.core</groupId>
-                            <artifactId>jackson-databind</artifactId>
-                            <version>2.8.10</version>
-                        </exclude>
-                    </excludeCoordinates>
                 </configuration>
             </plugin>
 
