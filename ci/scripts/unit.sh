@@ -1,5 +1,5 @@
 #!/bin/bash -eux
 
 pushd dp-dataset-exporter-xlsx
-  mvn test
+  mvn -Dossindex.skip=true test
 popd
