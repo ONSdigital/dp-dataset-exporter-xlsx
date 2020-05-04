@@ -11,8 +11,5 @@ image_resource:
 inputs:
   - name: dp-dataset-exporter-xlsx
 
-params:
-  APPLICATION:
-
 run:
   path: dp-dataset-exporter-xlsx/ci/scripts/unit.sh

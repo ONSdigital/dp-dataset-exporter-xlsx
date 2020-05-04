@@ -10,7 +10,7 @@ TOKEN_INFO:="$(shell vault token create -address=$(VAULT_ADDR) -policy=write-psk
 APP_TOKEN:="$(shell echo $(TOKEN_INFO) | awk '{print $$6}')"
 
 build:
-	mvn clean install -DskipTests -Dossindex.skip=true
+	mvn -Dmaven.test.skip -Dossindex.skip=true clean package dependency:copy-dependencies
 debug: build
 	HUMAN_LOG=1 VAULT_TOKEN=$(APP_TOKEN) VAULT_ADDR=$(VAULT_ADDR) java -jar target/dp-dataset-exporter-xlsx-*.jar
 acceptance:
