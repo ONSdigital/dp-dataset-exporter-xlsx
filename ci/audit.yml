@@ -1,5 +1,4 @@
 ---
-
 platform: linux
 
 image_resource:
@@ -10,8 +9,5 @@ image_resource:
 inputs:
   - name: dp-dataset-exporter-xlsx
 
-outputs:
-  - name: build
-
 run:
-  path: dp-dataset-exporter-xlsx/ci/scripts/build.sh
+  path: dp-dataset-exporter-xlsx/ci/scripts/audit.sh

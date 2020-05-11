@@ -10,15 +10,17 @@ TOKEN_INFO:="$(shell vault token create -address=$(VAULT_ADDR) -policy=write-psk
 APP_TOKEN:="$(shell echo $(TOKEN_INFO) | awk '{print $$6}')"
 
 build:
-	mvn clean install -DskipTests
+	mvn -Dmaven.test.skip -Dossindex.skip=true clean package dependency:copy-dependencies
 debug: build
 	HUMAN_LOG=1 VAULT_TOKEN=$(APP_TOKEN) VAULT_ADDR=$(VAULT_ADDR) java -jar target/dp-dataset-exporter-xlsx-*.jar
 acceptance:
 	HUMAN_LOG=1 VAULT_TOKEN=$(APP_TOKEN) VAULT_ADDR=$(VAULT_ADDR) java -jar target/dp-dataset-exporter-xlsx-*.jar
 test:
-	mvn test
+	mvn test -Dossindex.skip=true
+audit:
+	mvn ossindex:audit
 vault:
 	@echo "$(VAULT_POLICY)"
 	@echo "$(TOKEN_INFO)"
 	@echo "$(APP_TOKEN)"
-.PHONY: build debug test vault acceptance
+.PHONY: build debug test vault acceptance audit

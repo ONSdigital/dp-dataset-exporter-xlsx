@@ -22,6 +22,7 @@ import dp.s3crypto.S3Crypto;
 import dp.xlsx.Converter;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -166,12 +167,22 @@ public class Handler {
       }
     }
 
+    private String getSafeS3URL(String url) {
+        String s3uri = url;
+        if (!StringUtils.isEmpty(s3uri) && s3uri.startsWith(bucketUrl)) {
+            s3uri = s3uri.replace(bucketUrl, bucketUrl + ".s3.eu-west-1.amazonaws.com");
+        }
+        return s3uri;
+    }
+
     private void handleFilterMessage(ExportedFile message) throws IOException, DecoderException {
         final String filterId = message.getFilterId().toString();
         LOGGER.info("handling filter message: ", filterId);
 
+
+        String s3uri = getSafeS3URL(message.getS3URL().toString());
         Filter filter = filterAPIClient.getFilter(filterId);
-        final AmazonS3URI uri = new AmazonS3URI(message.getS3URL().toString());
+        final AmazonS3URI uri = new AmazonS3URI(s3uri);
         final S3Object object = getObject(uri.getBucket(), uri.getKey(), filter.isPublished());
         LOGGER.info("successfully got s3Object", filterId);
 
@@ -221,7 +232,8 @@ public class Handler {
                 message.getVersion());
         String state = getVersionState(message);
         boolean isPublished = PUBLISHED_STATE.equals(state);
-        final AmazonS3URI uri = new AmazonS3URI(message.getS3URL().toString());
+        String s3uri = getSafeS3URL(message.getS3URL().toString());
+        final AmazonS3URI uri = new AmazonS3URI(s3uri);
         S3Object object = getObject(uri.getBucket(), uri.getKey(), PUBLISHED_STATE.equals(state));
         LOGGER.info("successfully got s3Object", versionURL);
 

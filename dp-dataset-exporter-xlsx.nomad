@@ -11,7 +11,7 @@ job "dp-dataset-exporter-xlsx" {
     auto_revert      = true
   }
 
-  group "publising" {
+  group "publishing" {
     count = "{{PUBLISHING_TASK_COUNT}}"
 
     constraint {
