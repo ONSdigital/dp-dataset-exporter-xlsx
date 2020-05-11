@@ -167,7 +167,7 @@ public class Handler {
       }
     }
 
-    private String getSafeS3URL(String url) {
+    public String getSafeS3URL(String url) {
         String s3uri = url;
         if (!StringUtils.isEmpty(bucketUrl) && s3uri.startsWith(bucketUrl)) {
             s3uri = s3uri.replace(bucketUrl, bucketUrl + ".s3.eu-west-1.amazonaws.com");
