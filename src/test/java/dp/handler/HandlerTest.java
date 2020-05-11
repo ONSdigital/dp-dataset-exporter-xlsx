@@ -105,10 +105,12 @@ public class HandlerTest {
     private String filename = "morty";
     private String versionURL = "/datasets/ds456/editions/2017/versions/1";
     private Integer rowCount = 20000;
+    private String bucketURL = "bucket";
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        handler.setBucketUrl(bucketURL);
     }
 
     @Test
@@ -131,7 +133,7 @@ public class HandlerTest {
 
         when(datasetAPI.getVersion("/instances/inst123")).thenReturn(ver);
         when(s3Object.getObjectContent()).thenReturn(stream);
-        when(s3Crypto.getObjectWithPSK("bucket", "datasets/v4.csv", "test-key".getBytes())).thenReturn(s3Object);
+        when(s3Crypto.getObjectWithPSK(bucketURL, "datasets/v4.csv", "test-key".getBytes())).thenReturn(s3Object);
         when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/datasets/morty.xlsx"));
         when(datasetAPI.getMetadata("/instances/inst123")).thenReturn(datasetMetadata);
         when(converter.toXLSX(any(), any())).thenReturn(workbookMock);
@@ -256,7 +258,7 @@ public class HandlerTest {
         ArgumentCaptor<PutObjectRequest> arguments = ArgumentCaptor.forClass(PutObjectRequest.class);
 
         when(s3Object.getObjectContent()).thenReturn(stream);
-        when(s3Client.getObject("bucket", "v4.csv")).thenReturn(s3Object);
+        when(s3Client.getObject(bucketURL, "v4.csv")).thenReturn(s3Object);
         when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/sdfsdf"));
 
         boolean published = true;
@@ -310,7 +312,7 @@ public class HandlerTest {
         filter.getLinks().getVersion().setHref("this is not a link");
 
         when(s3Object.getObjectContent()).thenReturn(stream);
-        when(s3Client.getObject("bucket", "v4.csv")).thenReturn(s3Object);
+        when(s3Client.getObject(bucketURL, "v4.csv")).thenReturn(s3Object);
         when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/sdfsdf"));
         when(filterAPI.getFilter(any())).thenReturn(filter);
 
@@ -335,7 +337,7 @@ public class HandlerTest {
         Filter filter = createFilter(published);
 
         when(s3Object.getObjectContent()).thenReturn(stream);
-        when(s3Client.getObject("bucket", "v4.csv")).thenReturn(s3Object);
+        when(s3Client.getObject(bucketURL, "v4.csv")).thenReturn(s3Object);
         when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/sdfsdf"));
         when(filterAPI.getFilter(any())).thenReturn(filter);
         when(datasetAPI.getMetadata(versionURL)).thenThrow(new FilterAPIException("flubba wubba dub dub", null));
@@ -362,7 +364,7 @@ public class HandlerTest {
         Metadata datasetMetadata = new Metadata();
 
         when(s3Object.getObjectContent()).thenReturn(stream);
-        when(s3Client.getObject("bucket", "v4.csv")).thenReturn(s3Object);
+        when(s3Client.getObject(bucketURL, "v4.csv")).thenReturn(s3Object);
         when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/sdfsdf"));
         when(filterAPI.getFilter(any())).thenReturn(filter);
         when(datasetAPI.getMetadata(versionURL)).thenReturn(datasetMetadata);
@@ -392,7 +394,7 @@ public class HandlerTest {
         Metadata datasetMetadata = new Metadata();
 
         when(s3Object.getObjectContent()).thenReturn(stream);
-        when(s3Client.getObject("bucket", "v4.csv")).thenReturn(s3Object);
+        when(s3Client.getObject(bucketURL, "v4.csv")).thenReturn(s3Object);
         when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/sdfsdf"));
         when(filterAPI.getFilter(any())).thenReturn(filter);
         when(datasetAPI.getMetadata(versionURL)).thenReturn(datasetMetadata);
@@ -426,7 +428,7 @@ public class HandlerTest {
         Metadata datasetMetadata = new Metadata();
 
         when(s3Object.getObjectContent()).thenReturn(stream);
-        when(s3Client.getObject("bucket", "v4.csv")).thenReturn(s3Object);
+        when(s3Client.getObject(bucketURL, "v4.csv")).thenReturn(s3Object);
         when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/sdfsdf"));
         when(filterAPI.getFilter(any())).thenReturn(filter);
         when(datasetAPI.getMetadata(versionURL)).thenReturn(datasetMetadata);
@@ -463,7 +465,7 @@ public class HandlerTest {
 
 		when(datasetAPI.getVersion("/instances/inst123")).thenReturn(ver);
 		when(s3Object.getObjectContent()).thenReturn(stream);
-		when(s3Client.getObject("bucket", "v4.csv")).thenReturn(s3Object);
+		when(s3Client.getObject(bucketURL, "v4.csv")).thenReturn(s3Object);
 		when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/morty.xlsx"));
 		when(datasetAPI.getMetadata(versionURL)).thenReturn(datasetMetadata);
 		when(converter.toXLSX(any(), any())).thenReturn(workbookMock);
@@ -490,7 +492,7 @@ public class HandlerTest {
         ver.setState("published");
 
         when(datasetAPI.getVersion("/instances/inst123")).thenReturn(ver);
-        when(s3Client.getObject("bucket", "v4.csv")).thenThrow(mock(SdkClientException.class));
+        when(s3Client.getObject(bucketURL, "v4.csv")).thenThrow(mock(SdkClientException.class));
 
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
                 version, filename, rowCount);
@@ -498,7 +500,7 @@ public class HandlerTest {
         handler.listen(exportedFile);
 
         verify(datasetAPI, times(1)).getVersion(anyString());
-        verify(s3Client, times(1)).getObject("bucket", "v4.csv");
+        verify(s3Client, times(1)).getObject(bucketURL, "v4.csv");
         verify(datasetAPI, never()).getMetadata(versionURL);
         verify(converter, never()).toXLSX(any(), any());
         verify(datasetAPI, never()).putVersionDownloads(any(), any());
@@ -514,7 +516,7 @@ public class HandlerTest {
 
         when(datasetAPI.getVersion("/instances/inst123")).thenReturn(ver);
 
-        when(s3Client.getObject("bucket", "v4.csv")).thenReturn(s3Object);
+        when(s3Client.getObject(bucketURL, "v4.csv")).thenReturn(s3Object);
         when(datasetAPI.getMetadata(anyString())).thenThrow(new FilterAPIException("flubba wubba dub dub", null));
 
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
@@ -523,7 +525,7 @@ public class HandlerTest {
         handler.listen(exportedFile);
 
         verify(datasetAPI, times(1)).getVersion(anyString());
-        verify(s3Client, times(1)).getObject("bucket", "v4.csv");
+        verify(s3Client, times(1)).getObject(bucketURL, "v4.csv");
         verify(datasetAPI, times(1)).getMetadata(versionURL);
         verify(converter, never()).toXLSX(any(), any());
         verify(datasetAPI, never()).putVersionDownloads(any(), any());
@@ -539,7 +541,7 @@ public class HandlerTest {
         ver.setState("published");
 
         when(datasetAPI.getVersion("/instances/inst123")).thenReturn(ver);
-        when(s3Client.getObject("bucket", "v4.csv")).thenReturn(s3Object);
+        when(s3Client.getObject(bucketURL, "v4.csv")).thenReturn(s3Object);
         when(datasetAPI.getMetadata(versionURL)).thenReturn(metadata);
         when(s3Object.getObjectContent()).thenReturn(stream);
         when(converter.toXLSX(stream, metadata)).thenThrow(new IOException());
@@ -550,7 +552,7 @@ public class HandlerTest {
         handler.listen(exportedFile);
 
         verify(datasetAPI, times(1)).getVersion(anyString());
-        verify(s3Client, times(1)).getObject("bucket", "v4.csv");
+        verify(s3Client, times(1)).getObject(bucketURL, "v4.csv");
         verify(s3Object, times(1)).getObjectContent();
         verify(datasetAPI, times(1)).getMetadata(versionURL);
         verify(converter, times(1)).toXLSX(stream, metadata);
@@ -572,7 +574,7 @@ public class HandlerTest {
         handler.listen(exportedFile);
 
         verify(datasetAPI, times(1)).getVersion(anyString());
-        verify(s3Client, never()).getObject("bucket", "v4.csv");
+        verify(s3Client, never()).getObject(bucketURL, "v4.csv");
         verify(s3Object, never()).getObjectContent();
         verify(datasetAPI, never()).getMetadata(versionURL);
         verify(converter, never()).toXLSX(stream, metadata);
@@ -593,7 +595,7 @@ public class HandlerTest {
         Metadata metadata = new Metadata();
 
         when(s3Object.getObjectContent()).thenReturn(stream);
-        when(s3Client.getObject("bucket", "v4.csv")).thenReturn(s3Object);
+        when(s3Client.getObject(bucketURL, "v4.csv")).thenReturn(s3Object);
         when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/morty.xlsx"));
         when(datasetAPI.getMetadata(versionURL)).thenReturn(metadata);
         when(converter.toXLSX(any(), any())).thenReturn(workbookMock);
@@ -606,7 +608,7 @@ public class HandlerTest {
         handler.listen(exportedFile);
 
         verify(datasetAPI, times(1)).getVersion(anyString());
-        verify(s3Client, times(1)).getObject("bucket", "v4.csv");
+        verify(s3Client, times(1)).getObject(bucketURL, "v4.csv");
         verify(s3Object, times(1)).getObjectContent();
         verify(datasetAPI, times(1)).getMetadata(versionURL);
         verify(converter, times(1)).toXLSX(stream, metadata);
@@ -628,7 +630,7 @@ public class HandlerTest {
 
         when(datasetAPI.getVersion("/instances/inst123")).thenReturn(ver);
         when(s3Object.getObjectContent()).thenReturn(stream);
-        when(s3Client.getObject("bucket", "v4.csv")).thenReturn(s3Object);
+        when(s3Client.getObject(bucketURL, "v4.csv")).thenReturn(s3Object);
         when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/sdfsdf"));
 
         boolean published = true;
