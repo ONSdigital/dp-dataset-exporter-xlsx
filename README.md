@@ -35,6 +35,7 @@ Scripts for updating and debugging Kafka can be found [here](https://github.com/
 | S3_REGION                   | eu-west-1                            | AWS region for S3
 | S3_BUCKET_NAME              | csv-exported                         | AWS bucket to store the XLSX files
 | S3_BUCKET_URL               | _unset_     (e.g. `https://cf.host`) | If set, the URL prefix for public, exported downloads
+| S3_BUCKET_S3_URL            | _unset_  (e.g. `https://bkt.s3.aws`) | If set, S3-friendly URL prefix replacing S3_BUCKET_URL for obtaining CSV
 | FILTER_API_URL              | http://localhost:22100               | Filter api URL
 | FILTER_API_AUTH_TOKEN       | FD0108EA-825D-411C-9B1D-41EF7727F465 | Secret token to use the Filter api
 | DATASET_API_URL             | http://localhost:22000               | Dataset api URL

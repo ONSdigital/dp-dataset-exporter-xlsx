@@ -110,7 +110,6 @@ public class HandlerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        handler.setBucketUrl(bucketURL);
     }
 
     @Test
@@ -156,6 +155,26 @@ public class HandlerTest {
         assertThat("public URL should be empty", downLoadArguments.getValue().getXls().getPublicState(), equalTo(null));
         assertThat("incorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
         assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("full-datasets/morty.xlsx"));
+    }
+
+    @Test
+    public void usesS3uri() throws Exception {
+        handler.setBucketUrl("http://bucket");
+        handler.setBucketS3Url("s3://s3-bucket-url");
+
+        String s3uri = handler.getS3URL("http://bucket/test");
+
+        assertThat("correctly uses the bucketS3URL value", s3uri, equalTo("s3://s3-bucket-url/test"));
+
+        handler.setBucketS3Url("");
+        handler.setBucketUrl("");
+    }
+
+    @Test
+    public void doesNotUseS3uri() throws Exception {
+        String s3uri = handler.getS3URL("test-bucket");
+
+        assertThat("correctly avoids empty bucketS3URL value", s3uri, equalTo("test-bucket"));
     }
 
     @Test
