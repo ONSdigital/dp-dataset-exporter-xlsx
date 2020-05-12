@@ -353,11 +353,17 @@ public class Handler {
         return details.getDownloadURI();
     }
 
-    public String getS3URL(String url) {
-        if (StringUtils.isEmpty(bucketUrl) || StringUtils.isEmpty(bucketS3Url)) {
-            return url;
+    /** 
+     * getS3URL returns an S3-compatible version of url:
+     * replaces the CloudFront/S3 bucket URL (bucketUrl) prefix in url
+     * with the more S3-lib-friendly prefix (bucketS3Url).
+     * Both vars must be non-empty for the replacement to occur.
+     */
+    String getS3URL(String url) {
+        if (StringUtils.isNotEmpty(bucketUrl) && StringUtils.isNotEmpty(bucketS3Url)) {
+            url = url.replace(bucketUrl, bucketS3Url);
         }
-        return url.replace(bucketUrl, bucketS3Url);
+        return url;
     }
 
     public void setBucketS3Url(String newBucketS3Url) {
