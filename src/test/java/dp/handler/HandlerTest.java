@@ -158,20 +158,23 @@ public class HandlerTest {
     }
 
     @Test
-    public void appendS3uri() throws Exception {
-        handler.setBucketUrl("test-bucket");
+    public void usesS3uri() throws Exception {
+        handler.setBucketUrl("http://bucket");
+        handler.setBucketS3Url("s3://s3-bucket-url");
 
-        String s3uri = handler.getSafeS3URL("test-bucket");
+        String s3uri = handler.getS3URL("http://bucket/test");
 
-        assertThat("correctly appends the s3uri value", s3uri, equalTo("test-bucket.s3.eu-west-1.amazonaws.com"));
+        assertThat("correctly uses the bucketS3URL value", s3uri, equalTo("s3://s3-bucket-url/test"));
 
+        handler.setBucketS3Url("");
         handler.setBucketUrl("");
     }
 
-    public void doesNotappendS3uri() throws Exception {
-        String s3uri = handler.getSafeS3URL("test-bucket");
+    @Test
+    public void doesNotUseS3uri() throws Exception {
+        String s3uri = handler.getS3URL("test-bucket");
 
-        assertThat("correctly appends the s3uri value", s3uri, equalTo("test-bucket"));
+        assertThat("correctly avoids empty bucketS3URL value", s3uri, equalTo("test-bucket"));
     }
 
     @Test

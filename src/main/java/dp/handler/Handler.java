@@ -62,6 +62,9 @@ public class Handler {
     @Value("${S3_BUCKET_URL:}")
     private String bucketUrl;
 
+    @Value("${S3_BUCKET_S3_URL:}")
+    private String bucketS3Url;
+
     @Value("${S3_BUCKET_NAME:csv-exported}")
     private String bucket;
 
@@ -167,20 +170,11 @@ public class Handler {
       }
     }
 
-    public String getSafeS3URL(String url) {
-        String s3uri = url;
-        if (!StringUtils.isEmpty(bucketUrl) && s3uri.startsWith(bucketUrl)) {
-            s3uri = s3uri.replace(bucketUrl, bucketUrl + ".s3.eu-west-1.amazonaws.com");
-        }
-        return s3uri;
-    }
-
     private void handleFilterMessage(ExportedFile message) throws IOException, DecoderException {
         final String filterId = message.getFilterId().toString();
         LOGGER.info("handling filter message: ", filterId);
 
-
-        String s3uri = getSafeS3URL(message.getS3URL().toString());
+        String s3uri = getS3URL(message.getS3URL().toString());
         Filter filter = filterAPIClient.getFilter(filterId);
         final AmazonS3URI uri = new AmazonS3URI(s3uri);
         final S3Object object = getObject(uri.getBucket(), uri.getKey(), filter.isPublished());
@@ -232,7 +226,7 @@ public class Handler {
                 message.getVersion());
         String state = getVersionState(message);
         boolean isPublished = PUBLISHED_STATE.equals(state);
-        String s3uri = getSafeS3URL(message.getS3URL().toString());
+        String s3uri = getS3URL(message.getS3URL().toString());
         final AmazonS3URI uri = new AmazonS3URI(s3uri);
         S3Object object = getObject(uri.getBucket(), uri.getKey(), PUBLISHED_STATE.equals(state));
         LOGGER.info("successfully got s3Object", versionURL);
@@ -353,12 +347,22 @@ public class Handler {
     }
 
     private String getDownloadUrl(boolean isPublished, String filePath, WorkbookDetails details) {
-        if (isPublished && bucketUrl.length() > 0) {
+        if (isPublished && StringUtils.isNotEmpty(bucketUrl)) {
             return bucketUrl + "/" + filePath;
         }
         return details.getDownloadURI();
     }
 
+    public String getS3URL(String url) {
+        if (StringUtils.isEmpty(bucketUrl) || StringUtils.isEmpty(bucketS3Url)) {
+            return url;
+        }
+        return url.replace(bucketUrl, bucketS3Url);
+    }
+
+    public void setBucketS3Url(String newBucketS3Url) {
+        bucketS3Url = newBucketS3Url;
+    }
 
     public void setBucketUrl(String newBucketUrl) {
         bucketUrl = newBucketUrl;
