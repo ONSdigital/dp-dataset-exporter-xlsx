@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
@@ -251,9 +252,9 @@ public class HandlerTest {
         verify(s3Client, times(1)).putObject(arguments.capture());
         verify(filterAPI, times(1)).addXLSXFile(any(), any(), xlsArguments.capture(), anyLong(), anyBoolean());
 
-        assertThat("incorrect public URL", xlsArguments.getValue(), equalTo("https://not-empty/filtered-datasets/filter-id-1212.xlsx"));
+        assertThat("incorrect public URL", xlsArguments.getValue(), containsString("https://not-empty/filtered-datasets/filter-id-1212/dsFiltbuckUrl-2017-v1-filtered-"));
         assertThat("incorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
-        assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("filtered-datasets/filter-id-1212.xlsx"));
+        assertThat("incorrect filename", arguments.getValue().getKey(), containsString("filtered-datasets/filter-id-1212/dsFiltbuckUrl-2017-v1-filtered-"));
 
         handler.setBucketUrl("");
     }
@@ -289,7 +290,7 @@ public class HandlerTest {
 
         when(converter.toXLSX(any(), any())).thenReturn(workbookMock);
 
-        final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "", "", "", "", rowCount);
+        final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "cpih", "2018", "1", "", rowCount);
 
         handler.listen(exportedFile);
 
@@ -302,7 +303,7 @@ public class HandlerTest {
         verify(s3Client, times(1)).putObject(arguments.capture());
 
         assertThat("inccorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
-        assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("filtered-datasets/inst123.xlsx"));
+        assertThat("inccorrect filename", arguments.getValue().getKey(), containsString("filtered-datasets/inst123/cpih-2018-v1-filtered"));
     }
 
     @Test
@@ -420,7 +421,7 @@ public class HandlerTest {
         when(converter.toXLSX(any(), eq(datasetMetadata))).thenReturn(workbookMock);
         when(s3Client.putObject(any())).thenThrow(ex);
 
-        final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "", "", "", "", rowCount);
+        final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "ASHE-8", "2019", "1", "", rowCount);
 
         handler.listen(exportedFile);
 
@@ -432,7 +433,7 @@ public class HandlerTest {
         verify(filterAPI, never()).addXLSXFile(any(), any(), any(), anyLong(), anyBoolean());
 
         assertThat("incorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
-        assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("filtered-datasets/inst123.xlsx"));
+        assertThat("incorrect filename", arguments.getValue().getKey(), containsString("filtered-datasets/inst123/ASHE-8-2019-v1-filtered-"));
     }
 
     @Test
@@ -455,7 +456,7 @@ public class HandlerTest {
         when(s3Client.putObject(any())).thenReturn(null);
         doThrow(ex).when(filterAPI).addXLSXFile(any(), any(), any(), anyLong(), anyBoolean());
 
-        final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "", "", "", "", rowCount);
+        final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "cpih01", "2020", "11", "", rowCount);
 
         handler.listen(exportedFile);
 
@@ -467,7 +468,7 @@ public class HandlerTest {
         verify(filterAPI, times(1)).addXLSXFile(any(), any(), any(), anyLong(), anyBoolean());
 
         assertThat("incorrect buck name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
-        assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("filtered-datasets/inst123.xlsx"));
+        assertThat("incorrect filename", arguments.getValue().getKey(), containsString("filtered-datasets/inst123/cpih01-2020-v11-filtered-"));
     }
 
     @Test

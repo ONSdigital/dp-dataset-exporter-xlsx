@@ -42,6 +42,9 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.Date;
+import java.util.TimeZone;
+import java.text.SimpleDateFormat;
 
 import static dp.api.dataset.MessageType.FILTER;
 import static dp.api.dataset.MessageType.GetMessageType;
@@ -172,10 +175,15 @@ public class Handler {
 
     private void handleFilterMessage(ExportedFile message) throws IOException, DecoderException {
         final String filterId = message.getFilterId().toString();
+        final String datasetId = message.getDatasetId().toString();
+        final String edition = message.getEdition().toString();
+        final String version = message.getVersion().toString();
+
         LOGGER.info("handling filter message: ", filterId);
 
         String s3uri = getS3URL(message.getS3URL().toString());
         Filter filter = filterAPIClient.getFilter(filterId);
+
         final AmazonS3URI uri = new AmazonS3URI(s3uri);
         final S3Object object = getObject(uri.getBucket(), uri.getKey(), filter.isPublished());
         LOGGER.info("successfully got s3Object", filterId);
@@ -197,7 +205,12 @@ public class Handler {
                     filterId, metadataURL.toString()), e);
         }
 
-        final String filename = filteredDatasetFilePrefix + filterId + ".xlsx";
+        TimeZone london = TimeZone.getTimeZone("Europe/London");
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+        df.setTimeZone(london);
+        String datetime = df.format(new Date());
+
+        final String filename = filteredDatasetFilePrefix + filterId + "/" + datasetId + "-" + edition + "-v" + version + "-filtered-" + datetime + ".xlsx";
         WorkbookDetails details;
         try {
             details = createWorkbook(object, datasetMetadata, filename, filter.isPublished());
