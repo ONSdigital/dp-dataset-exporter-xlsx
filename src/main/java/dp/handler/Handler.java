@@ -61,6 +61,9 @@ public class Handler {
     private static final String VERSION_DOWNLOADS_URL = "/datasets/{0}/editions/{1}/versions/{2}";
     private static final String INSTANCE_URL = "/instances/{0}";
     private static final String PUBLISHED_STATE = "published";
+    
+    private static final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss'Z'");
+    private static final TimeZone utc = TimeZone.getTimeZone("UTC");
 
     @Value("${S3_BUCKET_URL:}")
     private String bucketUrl;
@@ -204,9 +207,7 @@ public class Handler {
             throw new IOException(format("dataset api get metadata returned error. filterID {0}, uri: {1}",
                     filterId, metadataURL.toString()), e);
         }
-
-        TimeZone utc = TimeZone.getTimeZone("UTC");
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss'Z'");
+        
         df.setTimeZone(utc);
         String datetime = df.format(new Date());
 
