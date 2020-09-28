@@ -205,9 +205,9 @@ public class Handler {
                     filterId, metadataURL.toString()), e);
         }
 
-        TimeZone london = TimeZone.getTimeZone("Europe/London");
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-        df.setTimeZone(london);
+        TimeZone utc = TimeZone.getTimeZone("UTC");
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss'Z'");
+        df.setTimeZone(utc);
         String datetime = df.format(new Date());
 
         final String filename = filteredDatasetFilePrefix + filterId + "/" + datasetId + "-" + edition + "-v" + version + "-filtered-" + datetime + ".xlsx";
