@@ -42,6 +42,9 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.Date;
+import java.util.TimeZone;
+import java.text.SimpleDateFormat;
 
 import static dp.api.dataset.MessageType.FILTER;
 import static dp.api.dataset.MessageType.GetMessageType;
@@ -58,9 +61,15 @@ public class Handler {
     private static final String VERSION_DOWNLOADS_URL = "/datasets/{0}/editions/{1}/versions/{2}";
     private static final String INSTANCE_URL = "/instances/{0}";
     private static final String PUBLISHED_STATE = "published";
+    
+    private static final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss'Z'");
+    private static final TimeZone utc = TimeZone.getTimeZone("UTC");
 
     @Value("${S3_BUCKET_URL:}")
     private String bucketUrl;
+
+    @Value("${S3_BUCKET_S3_URL:}")
+    private String bucketS3Url;
 
     @Value("${S3_BUCKET_NAME:csv-exported}")
     private String bucket;
@@ -167,21 +176,17 @@ public class Handler {
       }
     }
 
-    private String getSafeS3URL(String url) {
-        String s3uri = url;
-        if (!StringUtils.isEmpty(s3uri) && s3uri.startsWith(bucketUrl)) {
-            s3uri = s3uri.replace(bucketUrl, bucketUrl + ".s3.eu-west-1.amazonaws.com");
-        }
-        return s3uri;
-    }
-
     private void handleFilterMessage(ExportedFile message) throws IOException, DecoderException {
         final String filterId = message.getFilterId().toString();
+        final String datasetId = message.getDatasetId().toString();
+        final String edition = message.getEdition().toString();
+        final String version = message.getVersion().toString();
+
         LOGGER.info("handling filter message: ", filterId);
 
-
-        String s3uri = getSafeS3URL(message.getS3URL().toString());
+        String s3uri = getS3URL(message.getS3URL().toString());
         Filter filter = filterAPIClient.getFilter(filterId);
+
         final AmazonS3URI uri = new AmazonS3URI(s3uri);
         final S3Object object = getObject(uri.getBucket(), uri.getKey(), filter.isPublished());
         LOGGER.info("successfully got s3Object", filterId);
@@ -202,8 +207,11 @@ public class Handler {
             throw new IOException(format("dataset api get metadata returned error. filterID {0}, uri: {1}",
                     filterId, metadataURL.toString()), e);
         }
+        
+        df.setTimeZone(utc);
+        String datetime = df.format(new Date());
 
-        final String filename = filteredDatasetFilePrefix + filterId + ".xlsx";
+        final String filename = filteredDatasetFilePrefix + filterId + "/" + datasetId + "-" + edition + "-v" + version + "-filtered-" + datetime + ".xlsx";
         WorkbookDetails details;
         try {
             details = createWorkbook(object, datasetMetadata, filename, filter.isPublished());
@@ -232,7 +240,7 @@ public class Handler {
                 message.getVersion());
         String state = getVersionState(message);
         boolean isPublished = PUBLISHED_STATE.equals(state);
-        String s3uri = getSafeS3URL(message.getS3URL().toString());
+        String s3uri = getS3URL(message.getS3URL().toString());
         final AmazonS3URI uri = new AmazonS3URI(s3uri);
         S3Object object = getObject(uri.getBucket(), uri.getKey(), PUBLISHED_STATE.equals(state));
         LOGGER.info("successfully got s3Object", versionURL);
@@ -353,12 +361,28 @@ public class Handler {
     }
 
     private String getDownloadUrl(boolean isPublished, String filePath, WorkbookDetails details) {
-        if (isPublished && bucketUrl.length() > 0) {
+        if (isPublished && StringUtils.isNotEmpty(bucketUrl)) {
             return bucketUrl + "/" + filePath;
         }
         return details.getDownloadURI();
     }
 
+    /** 
+     * getS3URL returns an S3-compatible version of url:
+     * replaces the CloudFront/S3 bucket URL (bucketUrl) prefix in url
+     * with the more S3-lib-friendly prefix (bucketS3Url).
+     * Both vars must be non-empty for the replacement to occur.
+     */
+    String getS3URL(String url) {
+        if (StringUtils.isNotEmpty(bucketUrl) && StringUtils.isNotEmpty(bucketS3Url)) {
+            url = url.replace(bucketUrl, bucketS3Url);
+        }
+        return url;
+    }
+
+    public void setBucketS3Url(String newBucketS3Url) {
+        bucketS3Url = newBucketS3Url;
+    }
 
     public void setBucketUrl(String newBucketUrl) {
         bucketUrl = newBucketUrl;
