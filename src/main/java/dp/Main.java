@@ -52,8 +52,11 @@ public class Main {
     }
 
     private static LogSerialiser getLogSerialiser() {
-        boolean formatLogging = Boolean.valueOf(System.getenv(HUMAN_LOG));
-        return new JacksonLogSerialiser(formatLogging);
+        if(Integer.valueOf(System.getenv(HUMAN_LOG)) == 1){
+            return new JacksonLogSerialiser(true);
+        } else{
+            return new JacksonLogSerialiser(false);
+        }
     }
 
 }
