@@ -5,8 +5,6 @@ import dp.api.dataset.models.DownloadsList;
 import dp.api.dataset.models.Metadata;
 import dp.api.dataset.models.Version;
 import dp.exceptions.FilterAPIException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -21,11 +19,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import static java.text.MessageFormat.format;
+import static dp.logging.LogEvent.info;
 
 @Component
 public class DatasetAPIClientImpl implements DatasetAPIClient {
-
-	private final static Logger LOGGER = LoggerFactory.getLogger(DatasetAPIClientImpl.class);
 
 	@Value("${DATASET_API_URL:http://localhost:22000}")
 	private String datasetAPIURL;
@@ -43,13 +40,13 @@ public class DatasetAPIClientImpl implements DatasetAPIClient {
 	public Metadata getMetadata(final String versionPath) throws MalformedURLException, FilterAPIException {
 		URL metadataURL = new URL(datasetAPIURL + versionPath + "/metadata");
 
-		LOGGER.info("getting dataset version data from the dataset api, url : {}", metadataURL);
+		info().url(metadataURL.toString()).log("getting dataset version data from the dataset api");
 		try {
 			HttpEntity entity = AuthUtils.createHeaders(serviceToken, token, null);
 			ResponseEntity<Metadata> responseEntity = restTemplate.exchange(metadataURL.toString(), HttpMethod.GET,
 					entity, Metadata.class);
-			LOGGER.info("dataset api get response, url : {}, response {}", metadataURL.toString(),
-					responseEntity.getStatusCode());
+			info().url(metadataURL.toString()).statusCode(responseEntity.getStatusCode())
+					.log("dataset api get response");
 			return responseEntity.getBody();
 
 		} catch (RestClientException e) {
@@ -78,12 +75,11 @@ public class DatasetAPIClientImpl implements DatasetAPIClient {
 	public Version getVersion(String versionPath) throws MalformedURLException, FilterAPIException {
 		final String url = new URL(datasetAPIURL + versionPath).toString();
 
-		LOGGER.info("getting dataset version from the dataset api, url : {}", url);
+		info().url(url).log("getting dataset version from the dataset api");
 		try {
 			HttpEntity entity = AuthUtils.createHeaders(serviceToken, token, null);
 			ResponseEntity<Version> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, Version.class);
-			LOGGER.info("dataset api get response, url : {}, response {}", url.toString(),
-					responseEntity.getStatusCode());
+			info().url(url).statusCode(responseEntity.getStatusCode()).log("dataset api get response");
 			return responseEntity.getBody();
 
 		} catch (RestClientException e) {

@@ -3,25 +3,22 @@ package dp.xlsx;
 import dp.api.dataset.models.Metadata;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
+
+import static dp.logging.LogEvent.info;
 
 /**
  * A spring component used to convert a V4 file to a XLSX file
  */
 @Component
 public class Converter {
-
-    private final static Logger LOGGER = LoggerFactory.getLogger(Converter.class);
 
     /**
      * The maximum number of rows to hold in memory
@@ -36,16 +33,16 @@ public class Converter {
      * @throws IOException Failed to convert the V4 file to XLSX
      */
     public Workbook toXLSX(final InputStream stream, Metadata datasetMetadata) throws IOException {
-        LOGGER.info("beginning xlsx file generation");
+        info().log("beginning xlsx file generation");
         final Workbook workbook = new CMDWorkbook(MAX_IN_MEMORY_ROWS);
         final CellStyle headingStyle = createBoldStyle(workbook);
         final CellStyle valueStyle = createStyle(workbook);
         final CellStyle linkStyle = createLinkStyle(workbook);
 
-        LOGGER.info("creating local copy of data from stream");
+        info().log("creating local copy of data from stream");
         final V4File v4File = new V4File(stream, datasetMetadata);
 
-        LOGGER.info("creating data sheet");
+        info().log("creating data sheet");
         final Sheet datasetSheet = workbook.createSheet("Dataset");
         final WorkBookStyles workBookStyles = new WorkBookStyles(workbook);
         final DatasetFormatter datasetFormatter = new DatasetFormatter(
@@ -54,12 +51,12 @@ public class Converter {
                 v4File,
                 datasetMetadata);
 
-        LOGGER.info("formatting data sheet");
+        info().log("formatting data sheet");
         datasetFormatter.format();
 
-        LOGGER.info("creating metadata sheet");
+        info().log("creating metadata sheet");
         final Sheet metadataSheet = workbook.createSheet("Metadata");
-        LOGGER.info("adding metadata sheet to workbook");
+        info().log("adding metadata sheet to workbook");
         final MetadataFormatter metadataFormatter = new MetadataFormatter(
                 metadataSheet,
                 datasetMetadata,
@@ -67,9 +64,9 @@ public class Converter {
                 valueStyle,
                 linkStyle);
 
-        LOGGER.info("formatting metadata");
+        info().log("formatting metadata");
         metadataFormatter.format();
-        LOGGER.info("formatting metadata completed");
+        info().log("formatting metadata completed");
 
         return workbook;
     }

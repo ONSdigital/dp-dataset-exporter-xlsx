@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dp.api.AuthUtils;
 import dp.api.authentication.ServiceIdentity;
 import dp.exceptions.FilterAPIException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -17,10 +15,10 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import static dp.logging.LogEvent.info;
+
 @Component
 public class FilterAPIClient {
-
-    private final static Logger LOGGER = LoggerFactory.getLogger(FilterAPIClient.class);
 
     @Value("${FILTER_API_URL:http://localhost:22100}")
     private String filterAPIURL;
@@ -55,8 +53,7 @@ public class FilterAPIClient {
         final PutFileRequest r = new PutFileRequest(new Downloads(xlsxFile));
 
         try {
-
-            LOGGER.info("updating filter api, url : {}, json : {}", url, objectMapper.writeValueAsString(r));
+            info().url(url).json(objectMapper.writeValueAsString(r)).log("updating filter api");
             restTemplate.put(url, AuthUtils.createHeaders(serviceToken, token, r));
 
         } catch (RestClientException e) {
@@ -73,7 +70,7 @@ public class FilterAPIClient {
       final PutFileRequest r = new PutFileRequest(new Downloads(xlsxFile));
 
       try {
-          LOGGER.info("updating filter api, url : {}, json : {}", url, objectMapper.writeValueAsString(r));
+          info().url(url).json(objectMapper.writeValueAsString(r)).log("updating filter api");
           restTemplate.put(url, AuthUtils.createHeaders(serviceToken, token, r));
 
       } catch (RestClientException e) {
@@ -86,15 +83,14 @@ public class FilterAPIClient {
         final String url = UriComponentsBuilder
                 .fromHttpUrl(filterAPIURL + "/filter-outputs/{filterId}")
                 .buildAndExpand(filterID).toUriString();
-
-        LOGGER.info("getting filter data from the filter api, url : {}", url);
+        info().url(url).log("getting filter data from the filter api");
 
         try {
 
             HttpEntity<ServiceIdentity> entity = AuthUtils.createAuthHeaders(serviceToken);
             ResponseEntity<Filter> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, Filter.class);
 
-            LOGGER.info("filter api get response, url : {}, response {}", url, responseEntity.getStatusCode());
+            info().url(url).statusCode(responseEntity.getStatusCode()).log("filter api get response");
             return responseEntity.getBody();
 
         } catch (RestClientException e) {

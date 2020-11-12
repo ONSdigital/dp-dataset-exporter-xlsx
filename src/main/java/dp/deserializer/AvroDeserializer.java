@@ -7,8 +7,8 @@ import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static com.github.onsdigital.logging.v2.event.SimpleEvent.info;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -20,8 +20,6 @@ import java.util.Map;
  * @param <T> The type of object to be returned must extend SpecificRecordBase
  */
 public class AvroDeserializer<T extends SpecificRecordBase> implements Deserializer<T> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AvroDeserializer.class);
 
     private final Class<T> targetType;
 
@@ -40,11 +38,10 @@ public class AvroDeserializer<T extends SpecificRecordBase> implements Deseriali
             T result = null;
 
             if (data != null) {
-                LOGGER.debug("data='{}'", data);
+                info().data("data", data).log("deserialized data");
                 final DatumReader<T> datumReader = new SpecificDatumReader<>(targetType.newInstance().getSchema());
                 final Decoder decoder = DecoderFactory.get().binaryDecoder(data, null);
                 result = datumReader.read(null, decoder);
-                LOGGER.debug("deserialized data='{}'", result);
             }
             return result;
         } catch (Exception ex) {

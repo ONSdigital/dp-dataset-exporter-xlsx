@@ -3,4 +3,5 @@
     <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
     <include resource="org/springframework/boot/logging/logback/defaults.xml" />
     <logger name="org.springframework.web" level="INFO"/>
+    <logger name="dp-dataset-exporter-xlsx" level="INFO"/>
 </configuration>

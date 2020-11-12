@@ -9,6 +9,14 @@
 
     <repositories>
         <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
@@ -80,6 +88,11 @@
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
             <version>4.11</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ONSdigital</groupId>
+            <artifactId>dp-logging</artifactId>
+            <version>v1.7.0</version>
         </dependency>
 
         <dependency>
