@@ -54,9 +54,8 @@ public class Main {
     private static LogSerialiser getLogSerialiser() {
         if(Integer.valueOf(System.getenv(HUMAN_LOG)) == 1){
             return new JacksonLogSerialiser(true);
-        } else{
-            return new JacksonLogSerialiser(false);
         }
+        return new JacksonLogSerialiser(false);
     }
 
 }
