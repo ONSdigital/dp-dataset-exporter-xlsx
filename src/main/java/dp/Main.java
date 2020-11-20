@@ -52,7 +52,8 @@ public class Main {
     }
 
     private static LogSerialiser getLogSerialiser() {
-        if(Integer.valueOf(System.getenv(HUMAN_LOG)) == 1){
+        String humanLog = System.getenv(HUMAN_LOG);
+        if (humanLog.length() > 0 && Integer.valueOf(humanLog) == 1) {
             return new JacksonLogSerialiser(true);
         }
         return new JacksonLogSerialiser(false);
