@@ -1,2 +1,5 @@
 server:
   port: ${PORT:22800}
+spring:
+  main:
+    allow-bean-definition-overriding: true
