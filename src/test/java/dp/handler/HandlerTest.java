@@ -440,8 +440,10 @@ public class HandlerTest {
     public void validFilterMessageFilterAPIAddXLSFileError() throws Exception {
         S3Object s3Object = mock(S3Object.class);
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
-        JsonProcessingException ex = mock(JsonProcessingException.class);
         ArgumentCaptor<PutObjectRequest> arguments = ArgumentCaptor.forClass(PutObjectRequest.class);
+        JsonProcessingException ex = mock(JsonProcessingException.class);
+        StackTraceElement[] s = {new StackTraceElement("class", "method", "filename", 1)};
+        when(ex.getStackTrace()).thenReturn(s);
 
         boolean published = true;
         Filter filter = createFilter(published);
@@ -511,8 +513,11 @@ public class HandlerTest {
         Version ver = new Version();
         ver.setState("published");
 
+        SdkClientException mockSdkClientException = mock(SdkClientException.class);
+        StackTraceElement[] s = {new StackTraceElement("class", "method", "filename", 1)};
+        when(mockSdkClientException.getStackTrace()).thenReturn(s);
         when(datasetAPI.getVersion("/instances/inst123")).thenReturn(ver);
-        when(s3Client.getObject(bucketURL, "v4.csv")).thenThrow(mock(SdkClientException.class));
+        when(s3Client.getObject(bucketURL, "v4.csv")).thenThrow(mockSdkClientException);
 
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
                 version, filename, rowCount);

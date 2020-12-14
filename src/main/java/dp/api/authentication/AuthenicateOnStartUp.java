@@ -2,8 +2,6 @@ package dp.api.authentication;
 
 import dp.api.AuthUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -19,10 +17,11 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.net.URL;
 
+import static dp.logging.LogEvent.info;
+import static dp.logging.LogEvent.error;
+
 @Component
 public class AuthenicateOnStartUp implements ApplicationListener<ApplicationReadyEvent> {
-
-    private final static Logger LOGGER = LoggerFactory.getLogger(AuthenicateOnStartUp.class);
 
     @Value("${ZEBEDEE_URL:}")
     private String zebedee_url;
@@ -39,7 +38,8 @@ public class AuthenicateOnStartUp implements ApplicationListener<ApplicationRead
         // If no url to zebedee is provided we assume the app is running on the webnet. As zebedee
         // will only be accessible from the publishing subnet
         if (StringUtils.isNotEmpty(zebedee_url) && !isAuthenticated()) {
-            LOGGER.error("Failed to authenticate against zebedee. Please, try to authenticate again later");
+            error().zebedeeURL(zebedee_url)
+                    .log("failed to authenticate against zebedee. Please, try to authenticate again later");
         }
     }
 
@@ -47,11 +47,12 @@ public class AuthenicateOnStartUp implements ApplicationListener<ApplicationRead
         try {
             final URL url = new URL(zebedee_url + "/identity");
             HttpEntity<ServiceIdentity> entity = AuthUtils.createAuthHeaders(token);
-            ResponseEntity<ServiceIdentity> responseEntity = restTemplate.exchange(url.toString(), HttpMethod.GET, entity, ServiceIdentity.class);
-            LOGGER.info("authenicated as {}", responseEntity.getBody().getId());
+            ResponseEntity<ServiceIdentity> responseEntity = restTemplate.exchange(
+                    url.toString(), HttpMethod.GET, entity, ServiceIdentity.class);
+            info().zebedeeURL(zebedee_url).id(responseEntity.getBody().getId()).log("authenticated");
             return responseEntity.getStatusCodeValue() == HttpStatus.OK.value();
         } catch (RestClientException | IOException e) {
-            LOGGER.error("failed to sent http request to zebedee", e);
+            error().logException(e, "failed to send http request to zebedee");
             return false;
         }
     }
