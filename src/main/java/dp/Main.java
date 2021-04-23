@@ -11,12 +11,8 @@ import com.github.onsdigital.logging.v2.serializer.JacksonLogSerialiser;
 import com.github.onsdigital.logging.v2.serializer.LogSerialiser;
 import com.github.onsdigital.logging.v2.storage.LogStore;
 import com.github.onsdigital.logging.v2.storage.MDCLogStore;
-import dp.configuration.S3Configuration;
 import org.springframework.boot.SpringApplication;
-
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
 
 import static dp.logging.LogEvent.info;
 
