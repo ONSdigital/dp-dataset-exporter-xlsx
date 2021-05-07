@@ -27,6 +27,12 @@
     </properties>
 
     <dependencies>
+        <!-- Forcing spring-boot-starter V2.4.5 to use the current latest version of snakeyml -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.28</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.vault</groupId>
             <artifactId>spring-vault-core</artifactId>
