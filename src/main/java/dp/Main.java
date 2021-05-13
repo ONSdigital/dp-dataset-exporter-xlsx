@@ -12,7 +12,6 @@ import com.github.onsdigital.logging.v2.serializer.LogSerialiser;
 import com.github.onsdigital.logging.v2.storage.LogStore;
 import com.github.onsdigital.logging.v2.storage.MDCLogStore;
 import org.springframework.boot.SpringApplication;
-
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import static dp.logging.LogEvent.info;
