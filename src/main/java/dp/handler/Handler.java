@@ -114,6 +114,7 @@ public class Handler {
 
     @KafkaListener(topics = "${KAFKA_TOPIC:common-output-created}")
     public void listen(final ExportedFile message) {
+        info().traceID(null);
         MessageType messageType = GetMessageType(message);
 
         try {
