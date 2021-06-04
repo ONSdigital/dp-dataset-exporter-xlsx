@@ -114,7 +114,11 @@ public class Handler {
 
     @KafkaListener(topics = "${KAFKA_TOPIC:common-output-created}")
     public void listen(final ExportedFile message) {
+        // reset traceID every time that we receive a new Kafka Message
+        // This should be part of dp-logging, which should handle Kafka Messages in a more elegant way,
+        // similarly to how it handles HTTP requests at the moment.
         info().traceID(null);
+
         MessageType messageType = GetMessageType(message);
 
         try {
