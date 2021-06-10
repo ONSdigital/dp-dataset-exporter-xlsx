@@ -8,7 +8,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
+import static dp.xlsx.DebugUtil.dimMatcher;
+import static dp.xlsx.DebugUtil.filterGroups;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class V4FileTest {
@@ -144,4 +147,33 @@ public class V4FileTest {
 
         }
     }
+
+    @Test
+    public void shouldCreateTheExpectedGroupMapping() throws IOException {
+        try (final InputStream stream = V4FileTest.class.getResourceAsStream("v4_2_generational_income.csv")) {
+            final V4File file = new V4File(stream, null);
+
+            // 36 csv rows should translate to 36 groups for this dataset.
+            assertThat(file.groupData().size()).isEqualTo(36);
+
+            Predicate<Group> filter = dimMatcher("19", "19")
+                    .and(dimMatcher("1980s", "1980s"))
+                    .and(dimMatcher("gross-income", "Gross income"));
+
+            List<Group> results = filterGroups(file.groupData(), filter);
+
+            assertThat(results.size()).isEqualTo(1);
+            assertThat(results.get(0).getObservation("1978 to 2018-19").getValue()).isEqualTo("14854");
+
+            filter = dimMatcher("18", "18")
+                    .and(dimMatcher("1990s", "1990s"))
+                    .and(dimMatcher("gross-income", "Gross income"));
+
+            results = filterGroups(file.groupData(), filter);
+
+            assertThat(results.size()).isEqualTo(1);
+            assertThat(results.get(0).getObservation("1978 to 2018-19").getValue()).isEqualTo("");
+        }
+    }
+
 }
