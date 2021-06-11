@@ -48,12 +48,12 @@ public class GroupTest {
 
     @Test
     public void testEquals_twoObjectWithSameValues_shouldBeEqual() {
-        Group dupplicate = new Group(new ArrayList<DimensionData>() {{
+        Group duplicate = new Group(new ArrayList<DimensionData>() {{
             add(new DimensionData(DimensionType.GEOGRAPHY, "K02000001", "K02000001"));
             add(new DimensionData(DimensionType.OTHER, "cpi1dim1G20100", "02.1 Alcoholic beverages"));
         }}, null);
 
-        assertThat(alcoholicBeverages).isEqualTo(dupplicate);
+        assertThat(alcoholicBeverages).isEqualTo(duplicate);
     }
 
     @Test
@@ -63,11 +63,11 @@ public class GroupTest {
 
     @Test
     public void testHashCode_twoEqualObjects_shouldProduceEqualHashcode() {
-        Group dupplicate = new Group(new ArrayList<DimensionData>() {{
+        Group duplicate = new Group(new ArrayList<DimensionData>() {{
             add(new DimensionData(DimensionType.GEOGRAPHY, "K02000001", "K02000001"));
             add(new DimensionData(DimensionType.OTHER, "cpi1dim1G20100", "02.1 Alcoholic beverages"));
         }}, null);
 
-        assertThat(alcoholicBeverages).isEqualTo(dupplicate);
+        assertThat(alcoholicBeverages.hashCode()).isEqualTo(duplicate.hashCode());
     }
 }
