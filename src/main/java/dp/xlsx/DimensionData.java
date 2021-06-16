@@ -54,4 +54,9 @@ public class DimensionData implements Comparable<DimensionData> {
     public int compareTo(DimensionData o) {
         return this.getValue().compareTo(o.getValue());
     }
+
+    @Override
+    public String toString() {
+        return code + "|" + value;
+    }
 }

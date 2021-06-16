@@ -1,17 +1,26 @@
 package dp.xlsx;
 
+import dp.api.dataset.models.CodeList;
+import dp.api.dataset.models.Metadata;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import dp.api.dataset.models.CodeList;
-import dp.api.dataset.models.Metadata;
-
 public class Group implements Comparable<Group> {
 
     private List<DimensionData> groupValues; // the unique dimension options
     private Map<String, Observation> observations; // <time, observation>
+
+    /**
+     * Construct a new Group from the provided parameters.
+     */
+    Group(final List<DimensionData> groupValues, final Map<String, Observation> observations) {
+        this.groupValues = groupValues;
+        this.observations = observations;
+    }
 
     /**
      * Gather relevant cells from a csv row. There is a variation of approach for a
@@ -21,7 +30,7 @@ public class Group implements Comparable<Group> {
      * @param data   A row from a V4 file
      * @param offset The v4 file offset
      */
-     Group(String[] data, int offset, Metadata datasetMetadata) {
+    Group(String[] data, int offset, Metadata datasetMetadata) {
 
         final int labelOffset = 2; // Skip the code and get the label when iterating columns
         groupValues = new ArrayList<>();
@@ -44,7 +53,7 @@ public class Group implements Comparable<Group> {
                 }
             }
 
-            String code = data[i -1];
+            String code = data[i - 1];
 
             if (i == columnOffset) {
                 getGroupValues().add(new DimensionData(DimensionType.GEOGRAPHY, label, code));
@@ -57,8 +66,8 @@ public class Group implements Comparable<Group> {
     /**
      * Add a observation into the group
      *
-     * @param timeLabel   The label used for the time
-     * @param observation The observation value
+     * @param timeLabel        The label used for the time
+     * @param observation      The observation value
      * @param additionalValues The addition values which are related to the observation
      */
     void addObservation(final String timeLabel, final String observation, final String[] additionalValues) {
@@ -74,9 +83,20 @@ public class Group implements Comparable<Group> {
         return getGroupValues().hashCode();
     }
 
+
+    /**
+     * 2 groups are considered to be equal if their {@link Group#getGroupValues()} are equal. The obeservation values
+     * are not considered as part of the equality check.
+     */
     @Override
-    public boolean equals(Object object) {
-        return this.hashCode() == object.hashCode();
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+
+        if (o == null || this.getClass() != o.getClass()) return false;
+
+        final Group group = (Group) o;
+
+        return new EqualsBuilder().append(this.getGroupValues(), group.getGroupValues()).isEquals();
     }
 
     protected List<DimensionData> getGroupValues() {
@@ -103,5 +123,9 @@ public class Group implements Comparable<Group> {
         }
 
         return compared;
+    }
+
+    public Map<String, Observation> getObservations() {
+        return this.observations;
     }
 }
