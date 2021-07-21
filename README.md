@@ -30,6 +30,9 @@ Scripts for updating and debugging Kafka can be found [here](https://github.com/
 | KAFKA_ADDR                  | localhost:9092                       | Kafka address to use
 | KAFKA_GROUP                 | dp-dataset-exporter-xlsx             | Kafka consumer group name
 | KAFKA_TOPIC                 | common-output-created                | Kafka topic to listen to
+| KAFKA_SEC_PROTO             | _unset_                              | if set to "TLS", kafka connections will use TLS
+| KAFKA_SEC_CLIENT_KEY        | _unset_                              | if using TLS (see above), this is the path to the keystore (optional, used for client auth) - only used if `KAFKA_SEC_CLIENT_KEY_P12` is unset
+| KAFKA_SEC_CLIENT_KEY_P12    | _unset_                              | if using TLS (see above), this is a base64-encoded PKCS12 keystore (optional, used for client auth)
 | AWS_ACCESS_KEY_ID           | access-key-id                        | AWS access id for s3 (must be provided)
 | AWS_SECRET_ACCESS_KEY       | access-key-secret                    | AWS secret key for s3 (must be provided)
 | S3_REGION                   | eu-west-1                            | AWS region for S3
