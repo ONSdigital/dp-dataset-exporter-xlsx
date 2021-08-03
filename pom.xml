@@ -111,6 +111,15 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <!-- temporary fix an audit (vulnerability) issue -->
+            <!-- (this lib is needed by org.apache.avro 1.10.2 which has no upgrade at time of writing) -->
+            <!-- considered low risk, because the data is all generated within ONS -->
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.21</version>
+        </dependency>
+
     </dependencies>
 
     <build>
