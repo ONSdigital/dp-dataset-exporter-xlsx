@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
@@ -110,7 +111,6 @@ public class HandlerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        handler.setBucketUrl(bucketURL);
     }
 
     @Test
@@ -156,6 +156,26 @@ public class HandlerTest {
         assertThat("public URL should be empty", downLoadArguments.getValue().getXls().getPublicState(), equalTo(null));
         assertThat("incorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
         assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("full-datasets/morty.xlsx"));
+    }
+
+    @Test
+    public void usesS3uri() throws Exception {
+        handler.setBucketUrl("http://bucket");
+        handler.setBucketS3Url("s3://s3-bucket-url");
+
+        String s3uri = handler.getS3URL("http://bucket/test");
+
+        assertThat("correctly uses the bucketS3URL value", s3uri, equalTo("s3://s3-bucket-url/test"));
+
+        handler.setBucketS3Url("");
+        handler.setBucketUrl("");
+    }
+
+    @Test
+    public void doesNotUseS3uri() throws Exception {
+        String s3uri = handler.getS3URL("test-bucket");
+
+        assertThat("correctly avoids empty bucketS3URL value", s3uri, equalTo("test-bucket"));
     }
 
     @Test
@@ -232,9 +252,9 @@ public class HandlerTest {
         verify(s3Client, times(1)).putObject(arguments.capture());
         verify(filterAPI, times(1)).addXLSXFile(any(), any(), xlsArguments.capture(), anyLong(), anyBoolean());
 
-        assertThat("incorrect public URL", xlsArguments.getValue(), equalTo("https://not-empty/filtered-datasets/filter-id-1212.xlsx"));
+        assertThat("incorrect public URL", xlsArguments.getValue(), containsString("https://not-empty/filtered-datasets/filter-id-1212/dsFiltbuckUrl-2017-v1-filtered-"));
         assertThat("incorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
-        assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("filtered-datasets/filter-id-1212.xlsx"));
+        assertThat("incorrect filename", arguments.getValue().getKey(), containsString("filtered-datasets/filter-id-1212/dsFiltbuckUrl-2017-v1-filtered-"));
 
         handler.setBucketUrl("");
     }
@@ -270,7 +290,7 @@ public class HandlerTest {
 
         when(converter.toXLSX(any(), any())).thenReturn(workbookMock);
 
-        final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "", "", "", "", rowCount);
+        final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "cpih", "2018", "1", "", rowCount);
 
         handler.listen(exportedFile);
 
@@ -283,7 +303,7 @@ public class HandlerTest {
         verify(s3Client, times(1)).putObject(arguments.capture());
 
         assertThat("inccorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
-        assertThat("inccorrect filename", arguments.getValue().getKey(), equalTo("filtered-datasets/inst123.xlsx"));
+        assertThat("inccorrect filename", arguments.getValue().getKey(), containsString("filtered-datasets/inst123/cpih-2018-v1-filtered"));
     }
 
     @Test
@@ -401,7 +421,7 @@ public class HandlerTest {
         when(converter.toXLSX(any(), eq(datasetMetadata))).thenReturn(workbookMock);
         when(s3Client.putObject(any())).thenThrow(ex);
 
-        final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "", "", "", "", rowCount);
+        final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "ASHE-8", "2019", "1", "", rowCount);
 
         handler.listen(exportedFile);
 
@@ -413,15 +433,17 @@ public class HandlerTest {
         verify(filterAPI, never()).addXLSXFile(any(), any(), any(), anyLong(), anyBoolean());
 
         assertThat("incorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
-        assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("filtered-datasets/inst123.xlsx"));
+        assertThat("incorrect filename", arguments.getValue().getKey(), containsString("filtered-datasets/inst123/ASHE-8-2019-v1-filtered-"));
     }
 
     @Test
     public void validFilterMessageFilterAPIAddXLSFileError() throws Exception {
         S3Object s3Object = mock(S3Object.class);
         S3ObjectInputStream stream = mock(S3ObjectInputStream.class);
-        JsonProcessingException ex = mock(JsonProcessingException.class);
         ArgumentCaptor<PutObjectRequest> arguments = ArgumentCaptor.forClass(PutObjectRequest.class);
+        JsonProcessingException ex = mock(JsonProcessingException.class);
+        StackTraceElement[] s = {new StackTraceElement("class", "method", "filename", 1)};
+        when(ex.getStackTrace()).thenReturn(s);
 
         boolean published = true;
         Filter filter = createFilter(published);
@@ -436,7 +458,7 @@ public class HandlerTest {
         when(s3Client.putObject(any())).thenReturn(null);
         doThrow(ex).when(filterAPI).addXLSXFile(any(), any(), any(), anyLong(), anyBoolean());
 
-        final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "", "", "", "", rowCount);
+        final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "cpih01", "2020", "11", "", rowCount);
 
         handler.listen(exportedFile);
 
@@ -448,7 +470,7 @@ public class HandlerTest {
         verify(filterAPI, times(1)).addXLSXFile(any(), any(), any(), anyLong(), anyBoolean());
 
         assertThat("incorrect buck name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
-        assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("filtered-datasets/inst123.xlsx"));
+        assertThat("incorrect filename", arguments.getValue().getKey(), containsString("filtered-datasets/inst123/cpih01-2020-v11-filtered-"));
     }
 
     @Test
@@ -491,8 +513,11 @@ public class HandlerTest {
         Version ver = new Version();
         ver.setState("published");
 
+        SdkClientException mockSdkClientException = mock(SdkClientException.class);
+        StackTraceElement[] s = {new StackTraceElement("class", "method", "filename", 1)};
+        when(mockSdkClientException.getStackTrace()).thenReturn(s);
         when(datasetAPI.getVersion("/instances/inst123")).thenReturn(ver);
-        when(s3Client.getObject(bucketURL, "v4.csv")).thenThrow(mock(SdkClientException.class));
+        when(s3Client.getObject(bucketURL, "v4.csv")).thenThrow(mockSdkClientException);
 
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
                 version, filename, rowCount);

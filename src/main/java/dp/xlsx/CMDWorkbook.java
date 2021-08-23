@@ -2,10 +2,10 @@ package dp.xlsx;
 
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+
+import static dp.logging.LogEvent.info;
 
 /**
  * CMDWorkbook provides a wrapper around {@link SXSSFWorkbook} - calling {@link CMDWorkbook#close()} first invokes
@@ -13,8 +13,6 @@ import java.io.IOException;
  * automatically closed.
  */
 public class CMDWorkbook extends SXSSFWorkbook {
-
-    private final static Logger LOGGER = LoggerFactory.getLogger(CMDWorkbook.class);
 
     public CMDWorkbook() {
         super();
@@ -43,10 +41,10 @@ public class CMDWorkbook extends SXSSFWorkbook {
     @Override
     public void close() throws IOException {
         if (super.dispose()) {
-            LOGGER.info(this.getClass().getSimpleName() + ".dispose completed successfully");
+            info().log(this.getClass().getSimpleName() + ".dispose completed successfully");
         }
-        LOGGER.info("attempting to close CMDWorkbook");
+        info().log("attempting to close CMDWorkbook");
         super.close();
-        LOGGER.info("CMDWorkbook closed successfully");
+        info().log("CMDWorkbook closed successfully");
     }
 }
