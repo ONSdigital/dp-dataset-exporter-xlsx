@@ -122,7 +122,13 @@ public class Handler {
         MessageType messageType = GetMessageType(message);
 
         try {
-
+            if (message.getRowCount() != null){
+                if (message.getDatasetId() != null) {
+                    info().datasetID(message.getDatasetId().toString()).rowCount(message.getRowCount().toString());
+                } else if (message.getInstanceId() != null) {
+                    info().instanceID(message.getInstanceId().toString()).rowCount(message.getRowCount().toString());
+                }
+            }
             if (FILTER.equals(messageType)) {
                 if (message.getRowCount() > maxObservationCount) {
                   completeFilter(message);
