@@ -122,11 +122,13 @@ public class Handler {
         MessageType messageType = GetMessageType(message);
 
         try {
+            String rowCount="unknown";
             if (message.getRowCount() != null){
+                rowCount = message.getRowCount().toString();
                 if (message.getDatasetId() != null) {
-                    info().datasetID(message.getDatasetId().toString()).rowCount(message.getRowCount().toString());
+                    info().datasetID(message.getDatasetId().toString()).rowCount(rowCount);
                 } else if (message.getInstanceId() != null) {
-                    info().instanceID(message.getInstanceId().toString()).rowCount(message.getRowCount().toString());
+                    info().instanceID(message.getInstanceId().toString()).rowCount(rowCount);
                 }
             }
             if (FILTER.equals(messageType)) {
@@ -139,7 +141,7 @@ public class Handler {
               if (message.getRowCount() <= maxObservationCount) {
                   handleFullDownloadMessage(message);
               } else {
-                  info().instanceID(message.getInstanceId().toString()).rowCount(message.getRowCount().toString())
+                  info().instanceID(message.getInstanceId().toString()).rowCount(rowCount)
                           .log("full download too large to export");
               }
             }
