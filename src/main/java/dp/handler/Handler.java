@@ -133,7 +133,6 @@ public class Handler {
                 info().filterID(message.getFilterId().toString()).rowCount(rowCount.toString());
             }
 
-
             if (FILTER.equals(messageType)) {
                 if (rowCount > maxObservationCount) {
                   completeFilter(message);
