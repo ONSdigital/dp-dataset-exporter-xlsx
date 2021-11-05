@@ -129,6 +129,8 @@ public class Handler {
                 info().datasetID(message.getDatasetId().toString()).rowCount(rowCount.toString());
             } else if (message.getInstanceId() != null) {
                 info().instanceID(message.getInstanceId().toString()).rowCount(rowCount.toString());
+            } else if (message.getFilterId() != null){
+                info().filterID(message.getFilterId().toString()).rowCount(rowCount.toString());
             }
 
             if (FILTER.equals(messageType)) {
