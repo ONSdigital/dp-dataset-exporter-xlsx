@@ -123,11 +123,14 @@ public class Handler {
 
         try {
             Integer rowCount = message.getRowCount() != null ? message.getRowCount() : 0;
-            
+            final String logMessage = "attempting to export";
+
             if (message.getDatasetId() != null) {
-                info().datasetID(message.getDatasetId().toString()).rowCount(rowCount.toString());
+                info().datasetID(message.getDatasetId().toString()).rowCount(rowCount.toString()).log(logMessage);
             } else if (message.getInstanceId() != null) {
-                info().instanceID(message.getInstanceId().toString()).rowCount(rowCount.toString());
+                info().instanceID(message.getInstanceId().toString()).rowCount(rowCount.toString()).log(logMessage);
+            } else if (message.getFilterId() != null){
+                info().filterID(message.getFilterId().toString()).rowCount(rowCount.toString()).log(logMessage);
             }
             
             if (FILTER.equals(messageType)) {
