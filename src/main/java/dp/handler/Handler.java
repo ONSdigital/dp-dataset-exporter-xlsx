@@ -123,17 +123,28 @@ public class Handler {
 
         try {
 
+            Integer rowCount = message.getRowCount() != null ? message.getRowCount() : 0;
+            String logMessage = "attempting to export";
+
+            if (message.getDatasetId() != null) {
+                info().datasetID(message.getDatasetId().toString()).rowCount(rowCount.toString()).log(logMessage);
+            } else if (message.getInstanceId() != null) {
+                info().instanceID(message.getInstanceId().toString()).rowCount(rowCount.toString()).log(logMessage);
+            } else if (message.getFilterId() != null){
+                info().filterID(message.getFilterId().toString()).rowCount(rowCount.toString()).log(logMessage);
+            }
+
             if (FILTER.equals(messageType)) {
-                if (message.getRowCount() > maxObservationCount) {
+                if (rowCount > maxObservationCount) {
                   completeFilter(message);
                 } else {
                   handleFilterMessage(message);
                 }
             } else {
-              if (message.getRowCount() <= maxObservationCount) {
+              if (rowCount <= maxObservationCount) {
                   handleFullDownloadMessage(message);
               } else {
-                  info().instanceID(message.getInstanceId().toString()).rowCount(message.getRowCount().toString())
+                  info().instanceID(message.getInstanceId().toString()).rowCount(rowCount.toString())
                           .log("full download too large to export");
               }
             }
