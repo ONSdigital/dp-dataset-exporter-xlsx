@@ -40,6 +40,10 @@ public class KafkaConfiguration {
 
     @Value("${KAFKA_GROUP:dp-dataset-exporter-xlsx}")
     private String kafkaGroup;
+
+    // maximum number of kafka records returned in a single call when consumer talks to the kafka topic.
+    @Value("${KAFKA_POLL_MAX_RECORDS:5}")
+    private int kafkaPollMaxRecords;
     
     private static final int POLL_TIMEOUT = 30000;
     private static final String KEY_FILE_PREFIX = "client-key";
@@ -56,6 +60,7 @@ public class KafkaConfiguration {
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaAddress);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaGroup);
         props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, POLL_TIMEOUT);
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, kafkaPollMaxRecords);
 
         if (kafkaSecProtocol.equals("TLS")) {
             props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SSL");
