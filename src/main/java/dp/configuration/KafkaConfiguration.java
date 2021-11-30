@@ -41,9 +41,9 @@ public class KafkaConfiguration {
     @Value("${KAFKA_GROUP:dp-dataset-exporter-xlsx}")
     private String kafkaGroup;
 
-    // maximum number of records returned in a single call to poll().
+    // maximum number of kafka records returned in a single call when consumer talks to the kafka topic.
     @Value("${KAFKA_POLL_MAX_RECORDS:5}")
-    private String kafkaPollMaxRecords;
+    private int kafkaPollMaxRecords;
     
     private static final int POLL_TIMEOUT = 30000;
     private static final String KEY_FILE_PREFIX = "client-key";
