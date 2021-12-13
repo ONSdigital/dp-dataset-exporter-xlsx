@@ -12,13 +12,13 @@ TOKEN_INFO:="$(shell vault token create -address=$(VAULT_ADDR) -policy=write-psk
 APP_TOKEN:="$(shell echo $(TOKEN_INFO) | awk '{print $$6}')"
 
 build:
-	mvn -Dmaven.test.skip -Dossindex.skip=true clean package dependency:copy-dependencies
+	mvn -Dmaven.test.skip -Dossindex.skip=true clean package dependency:copy-dependencies -Dlog4j2.formatMsgNoLookups=true
 debug: build
 	HUMAN_LOG=1 VAULT_TOKEN=$(APP_TOKEN) VAULT_ADDR=$(VAULT_ADDR) java -jar target/$(APP)-*.jar
 acceptance:
 	HUMAN_LOG=1 VAULT_TOKEN=$(APP_TOKEN) VAULT_ADDR=$(VAULT_ADDR) java -jar target/$(APP)-*.jar
 test:
-	mvn test -Dossindex.skip=true
+	mvn test -Dossindex.skip=true -Dlog4j2.formatMsgNoLookups=true
 audit:
 	mvn ossindex:audit
 vault:
