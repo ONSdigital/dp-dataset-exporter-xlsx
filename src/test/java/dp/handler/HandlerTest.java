@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.vault.authentication.SessionManager;
@@ -99,6 +100,9 @@ public class HandlerTest {
     @Mock
     private VaultResponse vaultResponse;
 
+    @Mock
+    private Acknowledgment ack;
+
     private String instanceID = "inst123";
     private String datasetID = "ds456";
     private String edition = "2017";
@@ -141,7 +145,7 @@ public class HandlerTest {
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/datasets/v4.csv", instanceID, datasetID, edition,
                 version, filename, rowCount);
 
-        handler.listen(exportedFile);
+        handler.listen(exportedFile, ack);
 
         verify(datasetAPI, times(1)).getVersion("/instances/" + instanceID);
         verify(datasetAPI, times(1)).putVersionDownloads(any(), downLoadArguments.capture());
@@ -200,7 +204,7 @@ public class HandlerTest {
                 "instbuckUrl", "dsbuckUrl", edition, version, "filenamebuckUrl", rowCount);
 
         handler.setBucketUrl("https://not-empty");
-        handler.listen(exportedFile);
+        handler.listen(exportedFile, ack);
 
         verify(datasetAPI, times(1)).getVersion("/instances/instbuckUrl");
         verify(datasetAPI, times(1)).getMetadata("/datasets/dsbuckUrl/editions/2017/versions/1");
@@ -241,7 +245,7 @@ public class HandlerTest {
                                 "instFiltbuckUrl", "dsFiltbuckUrl", edition, version, "filenameFiltbuckUrl.xlsx", rowCount);
 
         handler.setBucketUrl("https://not-empty");
-        handler.listen(exportedFile);
+        handler.listen(exportedFile, ack);
 
         verify(workbookMock, times(1)).write(any(OutputStream.class));
 
@@ -264,7 +268,7 @@ public class HandlerTest {
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/datasets/v4.csv", instanceID, datasetID, edition,
                 version, filename, 500000000);
 
-        handler.listen(exportedFile);
+        handler.listen(exportedFile, ack);
 
         verify(datasetAPI, never()).getVersion("/instances/" + instanceID);
         verify(datasetAPI, never()).putVersionDownloads(any(), any());
@@ -292,7 +296,7 @@ public class HandlerTest {
 
         final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "cpih", "2018", "1", "", rowCount);
 
-        handler.listen(exportedFile);
+        handler.listen(exportedFile, ack);
 
         verify(s3Client, times(1)).getObject(anyString(), anyString());
         verify(filterAPI, times(1)).getFilter(exportedFile.getFilterId().toString());
@@ -314,7 +318,7 @@ public class HandlerTest {
 
         final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "", "", "", "", 500000000);
 
-        handler.listen(exportedFile);
+        handler.listen(exportedFile, ack);
 
         verify(filterAPI, never()).getFilter(exportedFile.getFilterId().toString());
         verify(filterAPI, times(1)).setToComplete(exportedFile.getFilterId().toString());
@@ -338,7 +342,7 @@ public class HandlerTest {
 
         final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "", "", "", "", rowCount);
 
-        handler.listen(exportedFile);
+        handler.listen(exportedFile, ack);
 
         verify(s3Client, times(1)).getObject(anyString(), anyString());
         verify(filterAPI, times(1)).getFilter(exportedFile.getFilterId().toString());
@@ -364,7 +368,7 @@ public class HandlerTest {
 
         final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "", "", "", "", rowCount);
 
-        handler.listen(exportedFile);
+        handler.listen(exportedFile, ack);
 
         verify(s3Client, times(1)).getObject(anyString(), anyString());
         verify(filterAPI, times(1)).getFilter(exportedFile.getFilterId().toString());
@@ -392,7 +396,7 @@ public class HandlerTest {
 
         final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "", "", "", "", rowCount);
 
-        handler.listen(exportedFile);
+        handler.listen(exportedFile, ack);
 
         verify(s3Client, times(1)).getObject(anyString(), anyString());
         verify(filterAPI, times(1)).getFilter(exportedFile.getFilterId().toString());
@@ -423,7 +427,7 @@ public class HandlerTest {
 
         final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "ASHE-8", "2019", "1", "", rowCount);
 
-        handler.listen(exportedFile);
+        handler.listen(exportedFile, ack);
 
         verify(s3Client, times(1)).getObject(anyString(), anyString());
         verify(filterAPI, times(1)).getFilter(exportedFile.getFilterId().toString());
@@ -460,7 +464,7 @@ public class HandlerTest {
 
         final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "12345", "cpih01", "2020", "11", "", rowCount);
 
-        handler.listen(exportedFile);
+        handler.listen(exportedFile, ack);
 
         verify(s3Client, times(1)).getObject(anyString(), anyString());
         verify(filterAPI, times(1)).getFilter(exportedFile.getFilterId().toString());
@@ -495,7 +499,7 @@ public class HandlerTest {
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
                 version, filename, rowCount);
 
-        handler.listen(exportedFile);
+        handler.listen(exportedFile, ack);
 
 		verify(datasetAPI, times(1)).getVersion(anyString());
 		verify(datasetAPI, times(1)).getMetadata(versionURL);
@@ -522,7 +526,7 @@ public class HandlerTest {
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
                 version, filename, rowCount);
 
-        handler.listen(exportedFile);
+        handler.listen(exportedFile, ack);
 
         verify(datasetAPI, times(1)).getVersion(anyString());
         verify(s3Client, times(1)).getObject(bucketURL, "v4.csv");
@@ -547,7 +551,7 @@ public class HandlerTest {
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
                 version, filename, rowCount);
 
-        handler.listen(exportedFile);
+        handler.listen(exportedFile, ack);
 
         verify(datasetAPI, times(1)).getVersion(anyString());
         verify(s3Client, times(1)).getObject(bucketURL, "v4.csv");
@@ -574,7 +578,7 @@ public class HandlerTest {
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
                 version, filename, rowCount);
 
-        handler.listen(exportedFile);
+        handler.listen(exportedFile, ack);
 
         verify(datasetAPI, times(1)).getVersion(anyString());
         verify(s3Client, times(1)).getObject(bucketURL, "v4.csv");
@@ -596,7 +600,7 @@ public class HandlerTest {
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
                 version, filename, rowCount);
 
-        handler.listen(exportedFile);
+        handler.listen(exportedFile, ack);
 
         verify(datasetAPI, times(1)).getVersion(anyString());
         verify(s3Client, never()).getObject(bucketURL, "v4.csv");
@@ -630,7 +634,7 @@ public class HandlerTest {
         final ExportedFile exportedFile = new ExportedFile("", "s3://bucket/v4.csv", instanceID, datasetID, edition,
                 version, filename, rowCount);
 
-        handler.listen(exportedFile);
+        handler.listen(exportedFile, ack);
 
         verify(datasetAPI, times(1)).getVersion(anyString());
         verify(s3Client, times(1)).getObject(bucketURL, "v4.csv");
@@ -671,7 +675,7 @@ public class HandlerTest {
         final ExportedFile exportedFile = new ExportedFile("inst123", "s3://bucket/v4.csv", "", "", "", "", "", rowCount);
 
         try {
-            handler.listen(exportedFile);
+            handler.listen(exportedFile, ack);
         } catch (Exception e) {
             verify(datasetAPI, times(1)).getVersion(anyString());
             verify(s3Client, times(1)).getObject(anyString(), anyString());

@@ -44,13 +44,14 @@ public class KafkaConfiguration {
 
     // maximum number of kafka records returned in a single call when consumer talks to the kafka topic.
     // default to one, because each kafka message will potentially need to perform a long operation
-    // (create and upload one XLSX file)
     @Value("${KAFKA_POLL_MAX_RECORDS:1}")
     private int kafkaPollMaxRecords;
 
-    // default to 1 min This value should be greater than the maximum expected time to process a message
-    // (create and upload one XLSX file)
-    private static final int POLL_TIMEOUT = 60000;
+    // this value should be greater than the maximum expected time to process each message.
+    // default to one minute
+    @Value("${KAFKA_POLL_TIMEOUT:60000}")
+    private int kafkaPollTimeout;
+
     private static final String KEY_FILE_PREFIX = "client-key";
 
     /**
@@ -64,7 +65,7 @@ public class KafkaConfiguration {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaAddress);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaGroup);
-        props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, POLL_TIMEOUT);
+        props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, kafkaPollTimeout);
         props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, kafkaPollMaxRecords);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 
