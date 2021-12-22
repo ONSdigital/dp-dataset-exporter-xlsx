@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 import org.springframework.vault.core.VaultOperations;
 
@@ -113,7 +114,7 @@ public class Handler {
     private DatasetAPIClient datasetAPIClient;
 
     @KafkaListener(topics = "${KAFKA_TOPIC:common-output-created}")
-    public void listen(final ExportedFile message) {
+    public void listen(final ExportedFile message, Acknowledgment ack) {
         // reset traceID every time that we receive a new Kafka Message
         // This should be part of dp-logging, which should handle Kafka Messages in a more elegant way,
         // similarly to how it handles HTTP requests at the moment.
@@ -158,7 +159,11 @@ public class Handler {
             return;
         } catch (Exception e) {
             error().logException(e, "unexpected error throw while attempting to process message");
+        } finally {
+            ack.acknowledge(); // always commit the offset, regardless of any error
         }
+
+        // log 'export completed' message
         if (FILTER.equals(messageType)) {
             info().filterID(message.getFilterId().toString()).log("exported completed");
         } else {
