@@ -42,15 +42,24 @@ public class KafkaConfiguration {
     @Value("${KAFKA_GROUP:dp-dataset-exporter-xlsx}")
     private String kafkaGroup;
 
-    // maximum number of kafka records returned in a single call when consumer talks to the kafka topic.
-    // default to one, because each kafka message will potentially need to perform a long operation
+    // maximum number of kafka records returned in a single poll.
+    // default to one, because each kafka message will potentially need to perform a long operation.
     @Value("${KAFKA_POLL_MAX_RECORDS:1}")
     private int kafkaPollMaxRecords;
 
-    // this value should be greater than the maximum expected time to process each message.
-    // default to one minute
-    @Value("${KAFKA_POLL_TIMEOUT:60000}")
+    // maximum time allowed for a batch to be processed
+    // this value should be greater than the maximum expected time to process each message times KAFKA_POLL_MAX_RECORDS
+    // default to 2 minutes.
+    // note: new messages will be consumed straight away after one is completed, not every KAFKA_POLL_TIMEOUT period.
+    @Value("${KAFKA_POLL_TIMEOUT:120000}")
     private int kafkaPollTimeout;
+
+    // maximum period of time between heartbeats for the consumer to be considered healthy
+    // this value may be smaller than the maximum expected time to process a message.
+    // this value should be between the broker's values for group.min.session.timeout.ms (default: 6000)
+    // and group.max.session.timeout.ms (default: 30000)
+    @Value("${KAFKA_SESSION_TIMEOUT:10000}")
+    private int kafkaSessionTimeout;
 
     private static final String KEY_FILE_PREFIX = "client-key";
 
@@ -65,6 +74,7 @@ public class KafkaConfiguration {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaAddress);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaGroup);
+        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, kafkaSessionTimeout);
         props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, kafkaPollTimeout);
         props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, kafkaPollMaxRecords);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
