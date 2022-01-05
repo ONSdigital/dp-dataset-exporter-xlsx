@@ -30,6 +30,9 @@ Scripts for updating and debugging Kafka can be found [here](https://github.com/
 | KAFKA_ADDR                  | localhost:9092                       | Kafka address to use
 | KAFKA_GROUP                 | dp-dataset-exporter-xlsx             | Kafka consumer group name
 | KAFKA_TOPIC                 | common-output-created                | Kafka topic to listen to
+| KAFKA_POLL_MAX_RECORDS      | 1                                    | Maximum number of Kafka messages that will be consumed each time (batch).
+| KAFKA_POLL_TIMEOUT          | 120000                               | Timeout to process a batch of Kafka messages, after this time the consumer is considered failed and the group will rebalance in order to reassign the partitions to another member. This value must be greater than the maximum expected time to process a batch of messages.
+| KAFKA_SESSION_TIMEOUT       | 10000                                | The timeout used to detect client failures when using Kafka's group management facility, this value may be smaller than the time to process a message.
 | KAFKA_SEC_PROTO             | _unset_                              | if set to "TLS", kafka connections will use TLS
 | KAFKA_SEC_CLIENT_KEY        | _unset_                              | if using TLS (see above), this is the path to the keystore (optional, used for client auth) - only used if `KAFKA_SEC_CLIENT_KEY_P12` is unset
 | KAFKA_SEC_CLIENT_KEY_P12    | _unset_                              | if using TLS (see above), this is a base64-encoded PKCS12 keystore (optional, used for client auth)
