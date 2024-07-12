@@ -168,7 +168,7 @@ public class DatasetFormatterTest {
 
         Cell cell = sheet.getRow(metadataRows + 1).getCell(3);
 
-        assertThat(cell.getCellTypeEnum()).isEqualTo(CellType.NUMERIC);
+        assertThat(cell.getCellType()).isEqualTo(CellType.NUMERIC);
         assertThat(cell.getNumericCellValue()).isEqualTo(88.0);
     }
 
@@ -190,7 +190,7 @@ public class DatasetFormatterTest {
         assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 2);
         Cell cell = sheet.getRow(metadataRows + 1).getCell(3);
 
-        assertThat(cell.getCellTypeEnum()).isEqualTo(CellType.NUMERIC);
+        assertThat(cell.getCellType()).isEqualTo(CellType.NUMERIC);
         assertThat(cell.getNumericCellValue()).isEqualTo(88.0);
     }
 
@@ -240,12 +240,12 @@ public class DatasetFormatterTest {
         assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(metadataRows + 3);
 
         Cell cell = sheet.getRow(metadataRows + 1).getCell(3);
-        assertThat(cell.getCellTypeEnum()).isEqualTo(CellType.NUMERIC);
+        assertThat(cell.getCellType()).isEqualTo(CellType.NUMERIC);
         assertThat(cell.getNumericCellValue()).isEqualTo(88.0);
 
         // Then the sparse values are empty
         cell = sheet.getRow(metadataRows + 1).getCell(4);
-        assertThat(cell.getCellTypeEnum()).isEqualTo(CellType.BLANK);
+        assertThat(cell.getCellType()).isEqualTo(CellType.BLANK);
     }
 
     @Test
