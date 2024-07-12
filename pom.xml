@@ -91,7 +91,7 @@
         <dependency>
             <groupId>com.github.ONSdigital</groupId>
             <artifactId>dp-logging</artifactId>
-            <version>v2.0.0-beta</version>
+            <version>v2.0.0-beta.11</version>
         </dependency>
 
         <dependency>
