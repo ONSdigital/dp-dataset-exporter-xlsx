@@ -191,8 +191,8 @@
                     <cvssScoreThreshold>7.0</cvssScoreThreshold>
                     <excludeCoordinates>
                         <!--
-                            Trello card
-                            https://trello.com/c/im9ku6Vw/2108-orgspringframeworkspring-corejar536compile-audit-failure
+                            Jira ticket for fixing remaining vulnerabilities
+                            https://jira.ons.gov.uk/browse/DIS-1209
                         -->
                         <exclude>
                             <groupId>org.springframework</groupId>
