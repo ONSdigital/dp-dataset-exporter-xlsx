@@ -29,7 +29,7 @@ public class TestUtils {
 
                 Cell cell = cellIterator.next();
 
-                if (cell.getCellTypeEnum().equals(CellType.NUMERIC)) {
+                if (cell.getCellType().equals(CellType.NUMERIC)) {
                     System.out.print(cell.getNumericCellValue() + ",");
                 } else {
                     System.out.print(cell.getStringCellValue().replace("\n", ":") + ",");
