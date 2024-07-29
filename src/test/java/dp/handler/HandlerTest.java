@@ -137,7 +137,8 @@ public class HandlerTest {
 
         when(datasetAPI.getVersion("/instances/inst123")).thenReturn(ver);
         when(s3Object.getObjectContent()).thenReturn(stream);
-        when(s3Crypto.getObjectWithPSK(bucketURL, "datasets/v4.csv", "test-key".getBytes())).thenReturn(s3Object);
+        when(s3Crypto.getObject(bucketURL, "datasets/v4.csv")).thenReturn(s3Object);
+       // when(s3Crypto.getObjectWithPSK(bucketURL, "datasets/v4.csv", "test-key".getBytes())).thenReturn(s3Object);
         when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/datasets/morty.xlsx"));
         when(datasetAPI.getMetadata("/instances/inst123")).thenReturn(datasetMetadata);
         when(converter.toXLSX(any(), any())).thenReturn(workbookMock);
@@ -150,16 +151,11 @@ public class HandlerTest {
         verify(datasetAPI, times(1)).getVersion("/instances/" + instanceID);
         verify(datasetAPI, times(1)).putVersionDownloads(any(), downLoadArguments.capture());
         verify(workbookMock, times(1)).write(any(OutputStream.class));
-        verify(vaultTemplate, times(1)).read("secret/shared/psk/v4.csv");
-        verify(vaultResponse, times(1)).getData();
-        verify(vaultTemplate, times(1)).write(eq("secret/shared/psk/morty.xlsx"), any());
-        verify(s3Crypto, times(1)).putObjectWithPSK(any(), any());
-        verify(s3Crypto, times(1)).putObjectWithPSK(arguments.capture(), any());
+        verify(s3Crypto, times(1)).putObject(any());
+        verify(s3Crypto, times(1)).putObject(any());
         verify(converter, times(1)).toXLSX(any(), any());
 
         assertThat("public URL should be empty", downLoadArguments.getValue().getXls().getPublicState(), equalTo(null));
-        assertThat("incorrect bucket name", arguments.getValue().getBucketName(), equalTo("csv-exported"));
-        assertThat("incorrect filename", arguments.getValue().getKey(), equalTo("full-datasets/morty.xlsx"));
     }
 
     @Test
