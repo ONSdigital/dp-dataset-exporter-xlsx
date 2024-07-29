@@ -138,7 +138,6 @@ public class HandlerTest {
         when(datasetAPI.getVersion("/instances/inst123")).thenReturn(ver);
         when(s3Object.getObjectContent()).thenReturn(stream);
         when(s3Crypto.getObject(bucketURL, "datasets/v4.csv")).thenReturn(s3Object);
-       // when(s3Crypto.getObjectWithPSK(bucketURL, "datasets/v4.csv", "test-key".getBytes())).thenReturn(s3Object);
         when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/datasets/morty.xlsx"));
         when(datasetAPI.getMetadata("/instances/inst123")).thenReturn(datasetMetadata);
         when(converter.toXLSX(any(), any())).thenReturn(workbookMock);
