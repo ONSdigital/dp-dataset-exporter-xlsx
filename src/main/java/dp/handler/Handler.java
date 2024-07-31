@@ -18,10 +18,8 @@ import dp.api.filter.Filter;
 import dp.api.filter.FilterAPIClient;
 import dp.avro.ExportedFile;
 import dp.exceptions.FilterAPIException;
-import dp.s3crypto.S3Crypto;
 import dp.xlsx.Converter;
 import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +28,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
-import org.springframework.vault.core.VaultOperations;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -77,9 +74,6 @@ public class Handler {
     @Value("${S3_PRIVATE_BUCKET_NAME:csv-exported}")
     private String privateBucket;
 
-    @Value("${VAULT_PATH:secret/shared/psk}")
-    private String vaultPath;
-
     @Value("${DOWNLOAD_SERVICE_URL:http://localhost:23600}")
     private String downloadServiceUrl;
 
@@ -96,13 +90,6 @@ public class Handler {
     @Autowired
     @Qualifier("s3-client")
     private AmazonS3 s3Client;
-
-    @Autowired
-    @Qualifier("crypto-client")
-    private S3Crypto s3Crypto;
-
-    @Autowired
-    private VaultOperations vaultOperations;
 
     @Autowired
     private Converter converter;
@@ -332,7 +319,7 @@ public class Handler {
                     s3Client.putObject(putObjectRequest);
                 } else {
                     putObjectRequest.setBucketName(privateBucket);
-                    s3Crypto.putObject(putObjectRequest);
+                    s3Client.putObject(putObjectRequest);
                 }
                 return new WorkbookDetails(s3Client.getUrl(bucket, filename).toString(), contentLength);
             } catch (SdkClientException e) {
@@ -350,7 +337,7 @@ public class Handler {
         if (isPublished) {
             return s3Client.getObject(bucket, key);
         }
-        return s3Crypto.getObject(bucket, key);
+        return s3Client.getObject(bucket, key);
     }
 
     private String getDownloadUrl(boolean isPublished, String filePath, WorkbookDetails details) {

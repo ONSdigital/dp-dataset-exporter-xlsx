@@ -17,11 +17,8 @@ import dp.api.filter.FilterLinks;
 import dp.avro.ExportedFile;
 import dp.configuration.TestConfig;
 import dp.exceptions.FilterAPIException;
-import dp.s3crypto.S3Crypto;
 import dp.xlsx.CMDWorkbook;
 import dp.xlsx.Converter;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,9 +33,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.vault.authentication.SessionManager;
-import org.springframework.vault.core.VaultOperations;
-import org.springframework.vault.support.VaultResponse;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -50,11 +44,11 @@ import java.util.Map;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -80,25 +74,12 @@ public class HandlerTest {
     @MockBean
     private DatasetAPIClientImpl datasetAPI;
 
-    @MockBean
-    @Qualifier("crypto-client")
-    private S3Crypto s3Crypto;
-
-    @MockBean
-    private SessionManager sessionManager;
-
     @Mock
     private CMDWorkbook workbookMock;
 
     @Autowired
     @InjectMocks
     private Handler handler;
-
-    @Mock
-    private VaultOperations vaultTemplate;
-
-    @Mock
-    private VaultResponse vaultResponse;
 
     @Mock
     private Acknowledgment ack;
@@ -132,12 +113,10 @@ public class HandlerTest {
 
         Map<String, Object> map = new HashMap<>();
         map.put("key", "746573742D6B6579");
-        when(vaultTemplate.read(anyString())).thenReturn(vaultResponse);
-        when(vaultResponse.getData()).thenReturn(map);
 
         when(datasetAPI.getVersion("/instances/inst123")).thenReturn(ver);
         when(s3Object.getObjectContent()).thenReturn(stream);
-        when(s3Crypto.getObject(bucketURL, "datasets/v4.csv")).thenReturn(s3Object);
+        when(s3Client.getObject(bucketURL, "datasets/v4.csv")).thenReturn(s3Object);
         when(s3Client.getUrl(anyString(), anyString())).thenReturn(new URL("https://amazon.com/datasets/morty.xlsx"));
         when(datasetAPI.getMetadata("/instances/inst123")).thenReturn(datasetMetadata);
         when(converter.toXLSX(any(), any())).thenReturn(workbookMock);
@@ -150,8 +129,8 @@ public class HandlerTest {
         verify(datasetAPI, times(1)).getVersion("/instances/" + instanceID);
         verify(datasetAPI, times(1)).putVersionDownloads(any(), downLoadArguments.capture());
         verify(workbookMock, times(1)).write(any(OutputStream.class));
-        verify(s3Crypto, times(1)).putObject(any());
-        verify(s3Crypto, times(1)).putObject(any());
+        verify(s3Client, times(1)).putObject(any());
+        verify(s3Client, times(1)).putObject(any());
         verify(converter, times(1)).toXLSX(any(), any());
 
         assertThat("public URL should be empty", downLoadArguments.getValue().getXls().getPublicState(), equalTo(null));
@@ -205,9 +184,6 @@ public class HandlerTest {
         verify(datasetAPI, times(1)).getMetadata("/datasets/dsbuckUrl/editions/2017/versions/1");
         verify(workbookMock, times(1)).write(any(OutputStream.class));
 
-        verify(vaultTemplate, never()).read(any());
-        verify(s3Crypto, never()).putObjectWithPSK(any(), any());
-
         verify(converter, times(1)).toXLSX(any(), any());
         verify(s3Client, times(1)).putObject(arguments.capture());
         verify(datasetAPI, times(1)).putVersionDownloads(any(), downLoadArguments.capture());
@@ -243,9 +219,6 @@ public class HandlerTest {
         handler.listen(exportedFile, ack);
 
         verify(workbookMock, times(1)).write(any(OutputStream.class));
-
-        verify(vaultTemplate, never()).read(any());
-        verify(s3Crypto, never()).putObjectWithPSK(any(), any());
 
         verify(converter, times(1)).toXLSX(any(), any());
         verify(s3Client, times(1)).putObject(arguments.capture());
