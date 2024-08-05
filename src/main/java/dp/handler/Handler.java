@@ -18,10 +18,8 @@ import dp.api.filter.Filter;
 import dp.api.filter.FilterAPIClient;
 import dp.avro.ExportedFile;
 import dp.exceptions.FilterAPIException;
-import dp.s3crypto.S3Crypto;
 import dp.xlsx.Converter;
 import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +28,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
-import org.springframework.vault.core.VaultOperations;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -77,9 +74,6 @@ public class Handler {
     @Value("${S3_PRIVATE_BUCKET_NAME:csv-exported}")
     private String privateBucket;
 
-    @Value("${VAULT_PATH:secret/shared/psk}")
-    private String vaultPath;
-
     @Value("${DOWNLOAD_SERVICE_URL:http://localhost:23600}")
     private String downloadServiceUrl;
 
@@ -96,13 +90,6 @@ public class Handler {
     @Autowired
     @Qualifier("s3-client")
     private AmazonS3 s3Client;
-
-    @Autowired
-    @Qualifier("crypto-client")
-    private S3Crypto s3Crypto;
-
-    @Autowired
-    private VaultOperations vaultOperations;
 
     @Autowired
     private Converter converter;
@@ -263,6 +250,7 @@ public class Handler {
         String state = getVersionState(message);
         boolean isPublished = PUBLISHED_STATE.equals(state);
         String s3uri = getS3URL(message.getS3URL().toString());
+
         final AmazonS3URI uri = new AmazonS3URI(s3uri);
         S3Object object = getObject(uri.getBucket(), uri.getKey(), PUBLISHED_STATE.equals(state));
         info().versionURL(versionURL).log("successfully got s3Object");
@@ -330,20 +318,8 @@ public class Handler {
                 if (isPublished) {
                     s3Client.putObject(putObjectRequest);
                 } else {
-                    byte[] psk = createPSK();
-
-                    String path = vaultPath + "/" + Paths.get(filename).getFileName().toString();
-                    String vaultKey = "key";
-
-                    Map<String, Object> map = new HashMap<>();
-                    map.put(vaultKey, Hex.encodeHexString(psk));
-
-                    info().path(path).log("writing key to vault");
-
-                    vaultOperations.write(path, map);
                     putObjectRequest.setBucketName(privateBucket);
-
-                    s3Crypto.putObjectWithPSK(putObjectRequest, psk);
+                    s3Client.putObject(putObjectRequest);
                 }
                 return new WorkbookDetails(s3Client.getUrl(bucket, filename).toString(), contentLength);
             } catch (SdkClientException e) {
@@ -361,25 +337,7 @@ public class Handler {
         if (isPublished) {
             return s3Client.getObject(bucket, key);
         }
-
-        String path = vaultPath + "/" + Paths.get(key).getFileName().toString();
-        String vaultKey = "key";
-
-        info().path(path).log("reading key from vault");
-        Map<String, Object> map = vaultOperations.read(path).getData();
-
-        String psk = (String) map.get(vaultKey);
-
-        info().path(path).log("decoding psk");
-        byte[] pskBytes = Hex.decodeHex(psk.toCharArray());
-        info().path(path).log("about to call getObjectWithPSK");
-        return s3Crypto.getObjectWithPSK(bucket, key, pskBytes);
-    }
-
-    private byte[] createPSK() {
-        byte[] b = new byte[16];
-        new Random().nextBytes(b);
-        return b;
+        return s3Client.getObject(bucket, key);
     }
 
     private String getDownloadUrl(boolean isPublished, String filePath, WorkbookDetails details) {

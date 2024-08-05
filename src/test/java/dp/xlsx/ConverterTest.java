@@ -6,7 +6,6 @@ import dp.api.dataset.models.Metadata;
 import dp.api.filter.FilterAPIClient;
 import dp.configuration.TestConfig;
 import dp.handler.Handler;
-import dp.s3crypto.S3Crypto;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.assertj.core.api.Assertions;
@@ -31,10 +30,6 @@ import java.util.List;
 @SpringBootTest
 @ContextConfiguration(classes = TestConfig.class)
 public class ConverterTest {
-
-	@MockBean
-	@Qualifier("crypto-client")
-	private S3Crypto s3Crypto;
 
 	@MockBean
 	@Qualifier("s3-client")

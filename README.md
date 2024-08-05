@@ -5,11 +5,6 @@ A service which converts a V4 into a formatted XLSX file
 
 ### Getting started
 
-Ensure you have vault running.
-
-`brew install vault`
-`vault server -dev`
-
 * Install maven 3.5+ `brew install maven`
 * Install Java 1.8+
 * Install kafka `brew install kafka` supports versions (0.9, 0.10, 0.11)
@@ -47,9 +42,6 @@ Scripts for updating and debugging Kafka can be found [here](https://github.com/
 | DATASET_API_URL             | http://localhost:22000               | Dataset api URL
 | DATASET_API_AUTH_TOKEN      | FD0108EA-825D-411C-9B1D-41EF7727F465 | Secret token to use the Dataset api
 | DOWNLOAD_SERVICE_URL        | http://localhost:23600               | URL for the download service
-| VAULT_ADDR                  | http://localhost:8200                | The address of vault
-| VAULT_TOKEN                 | -                                    | Use `make debug` to set a vault token
-| VAULT_PATH                  | secret/shared/psk                    | The vault path to store psks
 | SERVICE_AUTH_TOKEN          | 7049050e-5d55-440d-b461-319f8cdf6670 | Service token to authenticate against Zebedee
 | ZEBEDEE_URL                 |                                      | A url to zebedee, if provided the service auth token will be checked on startup
 | AWS_ACCESS_KEY_ID           | -                                    | The AWS access key credential
