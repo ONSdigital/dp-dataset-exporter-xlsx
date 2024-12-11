@@ -45,7 +45,7 @@ public class DatasetAPIClientImpl implements DatasetAPIClient {
 			HttpEntity entity = AuthUtils.createHeaders(serviceToken, token, null);
 			ResponseEntity<Metadata> responseEntity = restTemplate.exchange(metadataURL.toString(), HttpMethod.GET,
 					entity, Metadata.class);
-			info().url(metadataURL.toString()).statusCode(responseEntity.getStatusCode())
+			info().url(metadataURL.toString()).statusCode(HttpStatus.valueOf(responseEntity.getStatusCode().value()))
 					.log("dataset api get response");
 			return responseEntity.getBody();
 
@@ -79,7 +79,7 @@ public class DatasetAPIClientImpl implements DatasetAPIClient {
 		try {
 			HttpEntity entity = AuthUtils.createHeaders(serviceToken, token, null);
 			ResponseEntity<Version> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, Version.class);
-			info().url(url).statusCode(responseEntity.getStatusCode()).log("dataset api get response");
+			info().url(url).statusCode(HttpStatus.valueOf(responseEntity.getStatusCode().value())).log("dataset api get response");
 			return responseEntity.getBody();
 
 		} catch (RestClientException e) {

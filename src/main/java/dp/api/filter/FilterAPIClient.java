@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
@@ -90,7 +91,7 @@ public class FilterAPIClient {
             HttpEntity<ServiceIdentity> entity = AuthUtils.createAuthHeaders(serviceToken);
             ResponseEntity<Filter> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, Filter.class);
 
-            info().url(url).statusCode(responseEntity.getStatusCode()).log("filter api get response");
+            info().url(url).statusCode(HttpStatus.valueOf(responseEntity.getStatusCode().value())).log("filter api get response");
             return responseEntity.getBody();
 
         } catch (RestClientException e) {
