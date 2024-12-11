@@ -1,4 +1,4 @@
-FROM openjdk:8-jre
+FROM eclipse-temurin:17-jre
 
 WORKDIR /usr/src
 
