@@ -175,6 +175,7 @@
                         <!-- configuration for mvn validate -->
                         <configuration>
                             <!-- if CVSS >= 9.0 (critical) then ERROR else WARN -->
+                            <authId>ossindex</authId>
                             <fail>true</fail>
                             <cvssScoreThreshold>9.0</cvssScoreThreshold>
                         </configuration>
