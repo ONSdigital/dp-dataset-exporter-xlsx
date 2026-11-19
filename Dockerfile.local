@@ -4,4 +4,4 @@ WORKDIR /usr/src
 
 COPY target/dp-dataset-exporter-xlsx-*.jar dp-dataset-exporter-xlsx.jar
 
-ENTRYPOINT java -jar dp-dataset-exporter-xlsx.jar
+ENTRYPOINT java -XX:UseAVX=2 -jar dp-dataset-exporter-xlsx.jar

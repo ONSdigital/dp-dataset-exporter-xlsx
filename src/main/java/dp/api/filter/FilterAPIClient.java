@@ -39,7 +39,7 @@ public class FilterAPIClient {
 
     public void addXLSXFile(final String id, final String s3Location, final String s3PublicUrl, final long size, boolean filterIsPublished) throws JsonProcessingException {
 
-        final String url = UriComponentsBuilder.fromHttpUrl(filterAPIURL + "/filter-outputs/{filterId}").buildAndExpand(id).toUriString();
+        final String url = UriComponentsBuilder.fromUriString(filterAPIURL + "/filter-outputs/{filterId}").buildAndExpand(id).toUriString();
         final String sizeToString = Long.toString(size);
 
         XLSXFile xlsxFile = new XLSXFile();
@@ -63,7 +63,7 @@ public class FilterAPIClient {
     }
 
     public void setToComplete(final String id) throws JsonProcessingException {
-      final String url = UriComponentsBuilder.fromHttpUrl(filterAPIURL + "/filter-outputs/{filterId}").buildAndExpand(id).toUriString();
+      final String url = UriComponentsBuilder.fromUriString(filterAPIURL + "/filter-outputs/{filterId}").buildAndExpand(id).toUriString();
 
       XLSXFile xlsxFile = new XLSXFile();
       xlsxFile.setSkipped(true);
@@ -82,7 +82,7 @@ public class FilterAPIClient {
     public Filter getFilter(final String filterID) {
 
         final String url = UriComponentsBuilder
-                .fromHttpUrl(filterAPIURL + "/filter-outputs/{filterId}")
+                .fromUriString(filterAPIURL + "/filter-outputs/{filterId}")
                 .buildAndExpand(filterID).toUriString();
         info().url(url).log("getting filter data from the filter api");
 

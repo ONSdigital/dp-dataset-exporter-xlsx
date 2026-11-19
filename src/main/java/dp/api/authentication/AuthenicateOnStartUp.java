@@ -50,7 +50,7 @@ public class AuthenicateOnStartUp implements ApplicationListener<ApplicationRead
             ResponseEntity<ServiceIdentity> responseEntity = restTemplate.exchange(
                     url.toString(), HttpMethod.GET, entity, ServiceIdentity.class);
             info().zebedeeURL(zebedee_url).id(responseEntity.getBody().getId()).log("authenticated");
-            return responseEntity.getStatusCodeValue() == HttpStatus.OK.value();
+            return responseEntity.getStatusCode().value() == HttpStatus.OK.value();
         } catch (RestClientException | IOException e) {
             error().logException(e, "failed to send http request to zebedee");
             return false;
