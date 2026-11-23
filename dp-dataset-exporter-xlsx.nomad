@@ -38,6 +38,8 @@ job "dp-dataset-exporter-xlsx" {
 
         args = [
           "java",
+          "-XX:UseAVX=2",
+          "-Dorg.apache.avro.SERIALIZABLE_CLASSES=dp.avro.ExportedFile",
           "-jar",
           "dp-dataset-exporter-xlsx.jar",
         ]

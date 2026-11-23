@@ -29,9 +29,9 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
@@ -61,17 +61,17 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = TestConfig.class)
 public class HandlerTest {
 
-    @MockBean
+    @MockitoBean
     @Qualifier("s3-client")
     private AmazonS3 s3Client;
 
-    @MockBean
+    @MockitoBean
     private Converter converter;
 
-    @MockBean
+    @MockitoBean
     private FilterAPIClient filterAPI;
 
-    @MockBean
+    @MockitoBean
     private DatasetAPIClientImpl datasetAPI;
 
     @Mock

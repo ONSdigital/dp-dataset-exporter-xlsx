@@ -15,8 +15,8 @@ import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -31,7 +31,7 @@ import java.util.List;
 @ContextConfiguration(classes = TestConfig.class)
 public class ConverterTest {
 
-	@MockBean
+	@MockitoBean
 	@Qualifier("s3-client")
 	private AmazonS3 s3Client;
 
@@ -42,10 +42,10 @@ public class ConverterTest {
 	@InjectMocks
 	private Handler handler;
 
-	@MockBean
+	@MockitoBean
 	private FilterAPIClient filterAPI;
 
-	@MockBean
+	@MockitoBean
 	private DatasetAPIClientImpl datasetAPI;
 
 	@Test

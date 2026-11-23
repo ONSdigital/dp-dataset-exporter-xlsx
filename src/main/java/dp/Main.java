@@ -13,11 +13,13 @@ import com.github.onsdigital.logging.v2.storage.LogStore;
 import com.github.onsdigital.logging.v2.storage.MDCLogStore;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.kafka.annotation.EnableKafka;
 
 import static dp.logging.LogEvent.info;
 
 
 @SpringBootApplication
+@EnableKafka
 public class Main {
 
     private static final String HUMAN_LOG = "HUMAN_LOG";

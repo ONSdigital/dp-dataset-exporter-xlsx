@@ -25,14 +25,14 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.6</version>
+        <version>4.1.3</version>
     </parent>
 
     <properties>
         <!-- Force maven to use JDK 1.9 and to not default -->
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <log4j2.version>2.17.1</log4j2.version>
+        <log4j2.version>2.23.1</log4j2.version>
     </properties>
 
     <dependencies>
@@ -43,32 +43,43 @@
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
-            <version>3.3.0</version>
+            <version>4.1.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-            <version>4.1.0</version>
+            <version>4.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.xerial.snappy</groupId>
+            <artifactId>snappy-java</artifactId>
+            <version>1.1.10.12</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+            <version>11.0.29</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk</artifactId>
-            <version>1.12.780</version>
+            <version>1.12.797</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.16.1</version>
+            <version>2.17.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.14.0</version>
+            <version>3.22.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>5.3.0</version>
+            <version>5.5.0</version>
         </dependency>
         <dependency>
             <groupId>com.univocity</groupId>
@@ -79,7 +90,7 @@
         <dependency>
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
-            <version>1.11.4</version>
+            <version>1.12.2</version>
         </dependency>
         <dependency>
             <groupId>net.logstash.logback</groupId>
@@ -96,7 +107,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-            <version>3.3.1</version>
+            <version>3.3.13</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -117,6 +128,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-to-slf4j</artifactId>
+            <version>${log4j2.version}</version>
+        </dependency>
+
+        <dependency>
             <!-- temporary fix an audit (vulnerability) issue -->
             <!-- (this lib is needed by org.apache.avro 1.10.2 which has no upgrade at time of writing) -->
             <!-- considered low risk, because the data is all generated within ONS -->
@@ -126,9 +143,9 @@
         </dependency>
 
         <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.3.1</version>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>2.3.3</version>
         </dependency>
 
     </dependencies>
@@ -151,8 +168,11 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <useSystemClassLoader>false</useSystemClassLoader>
+                    <systemPropertyVariables>
+                        <org.apache.avro.SERIALIZABLE_PACKAGES>dp.avro</org.apache.avro.SERIALIZABLE_PACKAGES>
+                    </systemPropertyVariables>
                 </configuration>
-                <version>2.22.2</version>
+                <version>3.1.2</version>
             </plugin>
             <plugin>
                 <!-- Used to create avro classes -->
@@ -169,10 +189,29 @@
                 </executions>
             </plugin>
 
-            <plugin>
+             <plugin>
                 <groupId>org.sonatype.ossindex.maven</groupId>
                 <artifactId>ossindex-maven-plugin</artifactId>
                 <version>3.2.0</version>
+                <!-- configuration for mvn ossindex:audit -->
+                <configuration>
+                    <!-- if CVSS >= 7.0 (high or critical) then ERROR else WARN -->
+                    <authId>ossindex</authId>
+                    <fail>true</fail>
+                    <cvssScoreThreshold>7.0</cvssScoreThreshold>
+                    <excludeCoordinates>
+                       
+                    </excludeCoordinates>
+                    <excludeVulnerabilityIds>
+                        <!-- Note - OSS Index suppressions are global, not per dependency -->
+                        <!--
+                            Exluded for now until we upgrade to aws-sdk v2 for Java
+                         -->
+                        <exclude>CVE-2026-106451</exclude>
+                        <exclude>CVE-2026-106554</exclude>
+                        <exclude>CVE-2026-110879</exclude> <!-- avro using old version in old location-->
+                        </excludeVulnerabilityIds>
+                </configuration>
                 <executions>
                     <execution>
                         <id>audit-dependencies-critical</id>
@@ -180,23 +219,8 @@
                         <goals>
                             <goal>audit</goal>
                         </goals>
-                        <!-- configuration for mvn validate -->
-                        <configuration>
-                            <!-- if CVSS >= 9.0 (critical) then ERROR else WARN -->
-                            <authId>ossindex</authId>
-                            <fail>true</fail>
-                            <cvssScoreThreshold>9.0</cvssScoreThreshold>
-                        </configuration>
                     </execution>
                 </executions>
-                <!-- configuration for mvn ossindex:audit -->
-                <configuration>
-                    <!-- if CVSS >= 7.0 (high or critical) then ERROR else WARN -->
-                    <fail>true</fail>
-                    <cvssScoreThreshold>7.0</cvssScoreThreshold>
-                    <excludeCoordinates>
-                    </excludeCoordinates>
-                </configuration>
             </plugin>
 
 
