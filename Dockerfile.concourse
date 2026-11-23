@@ -4,4 +4,4 @@ WORKDIR /usr/src
 
 COPY target/dp-dataset-exporter-xlsx-*.jar dp-dataset-exporter-xlsx.jar
 
-ENTRYPOINT ["java", "-XX:UseAVX=2", "-Dorg.apache.avro.SERIALIZABLE_CLASSES=dp.avro.ExportedFile", "-jar", "dp-dataset-exporter-xlsx.jar"]
+CMD java -jar dp-dataset-exporter-xlsx.jar
